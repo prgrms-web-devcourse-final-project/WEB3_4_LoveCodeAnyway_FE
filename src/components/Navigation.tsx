@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 
 export function Navigation({ activePage }: { activePage?: string }) {
   const handleActivityClick = (e: React.MouseEvent) => {
@@ -15,7 +16,13 @@ export function Navigation({ activePage }: { activePage?: string }) {
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
               <Link href="/">
-                <img className="h-8 w-auto" src="/logo.svg" alt="도망" />
+                <Image
+                  className="h-8 w-auto"
+                  src="/logo.svg"
+                  alt="도망"
+                  width={32}
+                  height={32}
+                />
               </Link>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">

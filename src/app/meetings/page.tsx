@@ -98,7 +98,7 @@ export default function MeetingsPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleCardClick = (room: EscapeRoom) => {
+  const handleCardClick = (_: EscapeRoom) => {
     alert("준비 중입니다.");
   };
 

@@ -1,5 +1,8 @@
+"use client";
+
 import { EscapeRoom } from "@/types/EscapeRoom";
 import Link from "next/link";
+import Image from "next/image";
 
 // 인기/최신 테마 카드 컴포넌트
 export function ThemeCard({ room }: { room: EscapeRoom }) {
@@ -9,10 +12,12 @@ export function ThemeCard({ room }: { room: EscapeRoom }) {
         {/* 이미지 섹션 */}
         <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
           {room.image && !room.image.startsWith("/images/") ? (
-            <img
+            <Image
               src={room.image}
               alt={room.title}
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
@@ -41,13 +46,25 @@ export function ThemeCard({ room }: { room: EscapeRoom }) {
           </p>
           <div className="flex items-center mb-4">
             <div className="flex items-center text-gray-700 text-sm mr-4">
-              <img src="/time.svg" alt="시간" className="w-4 h-4 mr-1.5" />
+              <Image
+                src="/time.svg"
+                alt="시간"
+                width={16}
+                height={16}
+                className="mr-1.5"
+              />
               <span>
                 {room.subInfo?.includes("분") ? room.subInfo : "60분"}
               </span>
             </div>
             <div className="flex items-center text-gray-700 text-sm">
-              <img src="/members.svg" alt="인원" className="w-4 h-4 mr-1.5" />
+              <Image
+                src="/members.svg"
+                alt="인원"
+                width={16}
+                height={16}
+                className="mr-1.5"
+              />
               <span>{room.participants || "2-4인"}</span>
             </div>
           </div>
