@@ -98,7 +98,7 @@ export default function MeetingsPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleCardClick = (_: EscapeRoom) => {
+  const handleCardClick = () => {
     alert("준비 중입니다.");
   };
 
@@ -147,7 +147,11 @@ export default function MeetingsPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredRooms.map((room) => (
-            <MeetingCard key={room.id} room={room} onClick={handleCardClick} />
+            <MeetingCard
+              key={room.id}
+              room={room}
+              onClick={() => handleCardClick()}
+            />
           ))}
         </div>
 
