@@ -47,7 +47,7 @@ export default function CreateMeetingPage() {
     <main className="bg-gray-50 min-h-screen">
       <Navigation activePage="meetings" />
 
-      <div className="max-w-3xl mx-auto px-6 sm:px-8 lg:px-10 py-8">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-8">
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8">
           <h1 className="text-2xl font-bold mb-6">모임 등록</h1>
 
@@ -88,7 +88,7 @@ export default function CreateMeetingPage() {
                 <button
                   type="button"
                   onClick={() => setIsThemeSearchModalOpen(true)}
-                  className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
+                  className="px-4 py-2 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFB130]/90"
                 >
                   테마 검색
                 </button>
@@ -212,16 +212,16 @@ export default function CreateMeetingPage() {
             </div>
 
             {/* 버튼 그룹 */}
-            <div className="flex justify-end gap-3">
+            <div className="flex gap-3 mt-8">
               <Link
                 href="/meetings"
-                className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 text-center"
               >
                 취소
               </Link>
               <button
                 type="submit"
-                className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
+                className="flex-1 px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFB130]/90"
               >
                 등록하기
               </button>

@@ -38,7 +38,7 @@ export function ThemeSearchModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-xl w-full max-w-md p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">테마 검색</h2>

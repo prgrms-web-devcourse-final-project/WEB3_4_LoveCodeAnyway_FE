@@ -44,9 +44,9 @@ export function Navigation({ activePage }: { activePage?: string }) {
                 모임 탐색
               </Link>
               <Link
-                href="/activity"
+                href="/my-escape"
                 className={`${
-                  activePage === "activity"
+                  activePage === "my-escape"
                     ? "text-[#FFD896]"
                     : "text-gray-300 hover:text-[#FFD896]"
                 } text-sm font-medium`}
