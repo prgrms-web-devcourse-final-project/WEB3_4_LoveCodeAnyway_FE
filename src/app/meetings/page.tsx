@@ -1,23 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useInView } from "react-intersection-observer";
 import { Navigation } from "@/components/Navigation";
 import { MeetingCard } from "@/components/MeetingCard";
 import { MeetingSearch } from "@/components/MeetingSearch";
-import { Pagination } from "@/components/Pagination";
 import { EscapeRoom } from "@/types/EscapeRoom";
 
-export default function MeetingsPage() {
-  const [searchKeyword, setSearchKeyword] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [activeFilters, setActiveFilters] = useState({
-    region: "",
-    date: "",
-    members: "",
-  });
-
-  // 더미 데이터
-  const meetingRooms: EscapeRoom[] = [
+// 더미 데이터 생성 함수
+const generateMeetings = (start: number, end: number): EscapeRoom[] => {
+  const baseMeetings = [
     {
       id: "1",
       title: "공포 테마 같이 도전하실 분!",
@@ -198,11 +190,133 @@ export default function MeetingsPage() {
       description:
         "급할 것 없이 여유롭게 즐기실 분들 모집합니다. 함께 힐링해요!",
     },
+    {
+      id: "13",
+      title: "추리 테마 도전자 모집",
+      category: "명탐정의 방",
+      date: "2024.03.27 19:00",
+      location: "신촌역",
+      participants: "2/4명",
+      host: {
+        name: "추리마스터",
+        image: "/images/host1.jpg",
+      },
+      image: "/images/mystery-room.jpg",
+      description: "추리력이 뛰어난 분들 모여주세요! 함께 미스터리를 풀어봐요.",
+    },
+    {
+      id: "14",
+      title: "공포 테마 같이 가실 분",
+      category: "저주받은 저택",
+      date: "2024.03.28 20:00",
+      location: "강남역",
+      participants: "3/4명",
+      host: {
+        name: "공포전문가",
+        image: "/images/host2.jpg",
+      },
+      image: "/images/horror-room.jpg",
+      description:
+        "무서운 걸 좋아하시는 분들 모여주세요! 함께 공포 테마를 정복해봐요.",
+    },
+    {
+      id: "15",
+      title: "SF 테마 도전하실 분",
+      category: "우주정거장",
+      date: "2024.03.29 15:00",
+      location: "건대입구역",
+      participants: "2/4명",
+      host: {
+        name: "우주탐험가",
+        image: "/images/host3.jpg",
+      },
+      image: "/images/sf-room.jpg",
+      description:
+        "우주를 배경으로 한 SF 테마에 도전할 분들을 찾습니다. 미래적인 퍼즐을 함께 풀어봐요!",
+    },
+    {
+      id: "16",
+      title: "판타지 테마 멤버 구합니다",
+      category: "마법사의 성",
+      date: "2024.03.30 14:00",
+      location: "홍대입구역",
+      participants: "2/4명",
+      host: {
+        name: "마법사",
+        image: "/images/host4.jpg",
+      },
+      image: "/images/mystery-room.jpg",
+      description:
+        "신비로운 판타지 테마에 도전하실 분들을 찾습니다. 마법과 환상의 세계로 함께 떠나요!",
+    },
   ];
+
+  return baseMeetings.map((meeting, index) => ({
+    ...meeting,
+    id: (start + index + 1).toString(),
+  }));
+};
+
+export default function MeetingsPage() {
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [activeFilters, setActiveFilters] = useState({
+    region: "",
+    date: "",
+    members: "",
+  });
+  const [meetings, setMeetings] = useState<EscapeRoom[]>([]);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const { ref, inView } = useInView({
+    threshold: 0,
+  });
+
+  const ITEMS_PER_PAGE = 8;
+
+  const loadMoreMeetings = async () => {
+    if (loading || !hasMore) return;
+
+    setLoading(true);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    const start = (page - 1) * ITEMS_PER_PAGE;
+    const end = start + ITEMS_PER_PAGE;
+    const newMeetings = generateMeetings(start, end);
+
+    if (newMeetings.length === 0) {
+      setHasMore(false);
+    } else {
+      setMeetings((prev) => {
+        const uniqueMeetings = [
+          ...new Set([...prev, ...newMeetings].map((meeting) => meeting.id)),
+        ].map(
+          (id) =>
+            [...prev, ...newMeetings].find((meeting) => meeting.id === id)!
+        );
+        return uniqueMeetings;
+      });
+      setPage((prev) => prev + 1);
+    }
+
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    loadMoreMeetings();
+  }, []);
+
+  useEffect(() => {
+    if (inView) {
+      loadMoreMeetings();
+    }
+  }, [inView]);
 
   const handleSearch = (keyword: string) => {
     setSearchKeyword(keyword);
-    setCurrentPage(1);
+    setMeetings([]);
+    setPage(1);
+    setHasMore(true);
   };
 
   const handleFilterChange = (filterType: string, value: string) => {
@@ -210,12 +324,9 @@ export default function MeetingsPage() {
       ...prev,
       [filterType]: value,
     }));
-    setCurrentPage(1);
-  };
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setMeetings([]);
+    setPage(1);
+    setHasMore(true);
   };
 
   const handleCardClick = () => {
@@ -223,29 +334,29 @@ export default function MeetingsPage() {
   };
 
   // 실제 앱에서는 검색어와 필터에 따라 필터링 로직 추가 필요
-  const filteredRooms = meetingRooms.filter((room) => {
+  const filteredMeetings = meetings.filter((meeting) => {
     // 검색어 필터링
     if (
       searchKeyword &&
-      !room.title.toLowerCase().includes(searchKeyword.toLowerCase())
+      !meeting.title.toLowerCase().includes(searchKeyword.toLowerCase())
     ) {
       return false;
     }
 
     // 지역 필터링
-    if (activeFilters.region && room.location !== activeFilters.region) {
+    if (activeFilters.region && meeting.location !== activeFilters.region) {
       return false;
     }
 
     // 날짜 필터링 (간단한 예시)
-    if (activeFilters.date && !room.date.includes(activeFilters.date)) {
+    if (activeFilters.date && !meeting.date.includes(activeFilters.date)) {
       return false;
     }
 
     // 인원 필터링 (간단한 예시)
     if (
       activeFilters.members &&
-      !room.participants.includes(activeFilters.members)
+      !meeting.participants.includes(activeFilters.members)
     ) {
       return false;
     }
@@ -264,16 +375,16 @@ export default function MeetingsPage() {
         />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredRooms.map((room) => (
+          {filteredMeetings.map((meeting) => (
             <MeetingCard
-              key={room.id}
-              room={room}
+              key={meeting.id}
+              room={meeting}
               onClick={() => handleCardClick()}
             />
           ))}
         </div>
 
-        {filteredRooms.length === 0 && (
+        {filteredMeetings.length === 0 && !loading && (
           <div className="text-center py-12">
             <h3 className="text-lg font-medium text-gray-900">
               검색 결과가 없습니다
@@ -284,11 +395,15 @@ export default function MeetingsPage() {
           </div>
         )}
 
-        <Pagination
-          currentPage={currentPage}
-          totalPages={3}
-          onPageChange={handlePageChange}
-        />
+        {/* 로딩 인디케이터 */}
+        <div ref={ref} className="flex justify-center py-8">
+          {loading && (
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
+          )}
+          {!hasMore && (
+            <p className="text-gray-500">더 이상 표시할 모임이 없습니다.</p>
+          )}
+        </div>
       </div>
     </main>
   );
