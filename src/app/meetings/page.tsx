@@ -7,6 +7,7 @@ import { MeetingCard } from "@/components/MeetingCard";
 import { ThemeSearch } from "@/components/ThemeSearch";
 import { EscapeRoom } from "@/types/EscapeRoom";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 // 더미 데이터 생성 함수
 const generateMeetings = (start: number, end: number): EscapeRoom[] => {
@@ -259,6 +260,7 @@ const generateMeetings = (start: number, end: number): EscapeRoom[] => {
 };
 
 export default function MeetingsPage() {
+  const router = useRouter();
   const [searchKeyword, setSearchKeyword] = useState("");
   const [activeFilters, setActiveFilters] = useState({
     region: "",
@@ -330,8 +332,8 @@ export default function MeetingsPage() {
     setHasMore(true);
   };
 
-  const handleCardClick = () => {
-    alert("준비 중입니다.");
+  const handleCardClick = (room: EscapeRoom) => {
+    router.push(`/meetings/${room.id}`);
   };
 
   // 실제 앱에서는 검색어와 필터에 따라 필터링 로직 추가 필요
@@ -377,7 +379,7 @@ export default function MeetingsPage() {
             <MeetingCard
               key={meeting.id}
               room={meeting}
-              onClick={() => handleCardClick()}
+              onClick={handleCardClick}
             />
           ))}
         </div>
