@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import { useInView } from "react-intersection-observer";
 import { Navigation } from "@/components/Navigation";
 import { MeetingCard } from "@/components/MeetingCard";
-import { MeetingSearch } from "@/components/MeetingSearch";
+import { ThemeSearch } from "@/components/ThemeSearch";
 import { EscapeRoom } from "@/types/EscapeRoom";
+import Link from "next/link";
 
 // 더미 데이터 생성 함수
 const generateMeetings = (start: number, end: number): EscapeRoom[] => {
@@ -369,10 +370,7 @@ export default function MeetingsPage() {
       <Navigation activePage="meetings" />
 
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-8">
-        <MeetingSearch
-          onSearch={handleSearch}
-          onFilterChange={handleFilterChange}
-        />
+        <ThemeSearch showCreateButton={true} />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredMeetings.map((meeting) => (

@@ -2,9 +2,14 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { ThemeFilterModal } from "./ThemeFilterModal";
 
-export function ThemeSearch() {
+interface ThemeSearchProps {
+  showCreateButton?: boolean;
+}
+
+export function ThemeSearch({ showCreateButton = false }: ThemeSearchProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
@@ -72,9 +77,14 @@ export function ThemeSearch() {
             </svg>
             검색필터
           </button>
-          <button className="px-4 py-2 bg-black text-white text-sm rounded-lg hover:bg-gray-800">
-            모임 등록
-          </button>
+          {showCreateButton && (
+            <Link
+              href="/meetings/create"
+              className="px-4 py-2 bg-black text-white text-sm rounded-lg hover:bg-gray-800"
+            >
+              모임 등록
+            </Link>
+          )}
         </div>
       </div>
 
