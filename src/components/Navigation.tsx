@@ -2,37 +2,34 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
 
 export function Navigation({ activePage }: { activePage?: string }) {
-  const handleActivityClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    alert("준비 중입니다.");
-  };
+  // TODO: 실제 로그인 상태 관리로 대체 필요
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   return (
-    <nav className="bg-white shadow-sm">
+    <nav className="bg-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex">
-            <div className="flex-shrink-0 flex items-center">
-              <Link href="/">
-                <Image
-                  className="h-8 w-auto"
-                  src="/logo.svg"
-                  alt="도망"
-                  width={32}
-                  height={32}
-                />
-              </Link>
-            </div>
-            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+        <div className="flex justify-between h-12">
+          <div className="flex items-center space-x-6">
+            <Link href="/" className="flex items-center">
+              <Image
+                src="/logo.svg"
+                alt="도망"
+                width={78}
+                height={33}
+                priority
+              />
+            </Link>
+            <div className="flex space-x-6">
               <Link
                 href="/themes"
                 className={`${
                   activePage === "themes"
-                    ? "border-b-2 border-yellow-500 text-gray-900"
-                    : "border-transparent border-b-2 text-gray-500 hover:text-gray-700 hover:border-yellow-500"
-                } inline-flex items-center px-1 pt-1 text-sm font-medium`}
+                    ? "text-[#FFD896]"
+                    : "text-gray-300 hover:text-[#FFD896]"
+                } text-sm font-medium`}
               >
                 방탈출 테마
               </Link>
@@ -40,31 +37,69 @@ export function Navigation({ activePage }: { activePage?: string }) {
                 href="/meetings"
                 className={`${
                   activePage === "meetings"
-                    ? "border-b-2 border-yellow-500 text-gray-900"
-                    : "border-transparent border-b-2 text-gray-500 hover:text-gray-700 hover:border-yellow-500"
-                } inline-flex items-center px-1 pt-1 text-sm font-medium`}
+                    ? "text-[#FFD896]"
+                    : "text-gray-300 hover:text-[#FFD896]"
+                } text-sm font-medium`}
               >
                 모임 탐색
               </Link>
-              <a
-                href="#"
-                onClick={handleActivityClick}
+              <Link
+                href="/activity"
                 className={`${
                   activePage === "activity"
-                    ? "border-b-2 border-yellow-500 text-gray-900"
-                    : "border-transparent border-b-2 text-gray-500 hover:text-gray-700 hover:border-yellow-500"
-                } inline-flex items-center px-1 pt-1 text-sm font-medium`}
+                    ? "text-[#FFD896]"
+                    : "text-gray-300 hover:text-[#FFD896]"
+                } text-sm font-medium`}
               >
-                나의 활동일지
-              </a>
+                나의 탈출일지
+              </Link>
             </div>
           </div>
-          <div className="flex items-center">
-            <Link href="/login">
-              <button className="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-md text-sm font-medium">
+          <div className="flex items-center space-x-4">
+            {isLoggedIn ? (
+              <>
+                <Link
+                  href="/notifications"
+                  className="text-gray-300 hover:text-[#FFD896]"
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                    />
+                  </svg>
+                </Link>
+                <Link
+                  href="/profile"
+                  className="flex items-center space-x-2 hover:opacity-80"
+                >
+                  <div className="w-8 h-8 rounded-full overflow-hidden relative">
+                    <Image
+                      src="/profile_man.jpg"
+                      alt="프로필"
+                      fill
+                      className="object-cover"
+                      sizes="32px"
+                    />
+                  </div>
+                  <span className="text-gray-300 text-sm">김도망</span>
+                </Link>
+              </>
+            ) : (
+              <Link
+                href="/login"
+                className="px-4 py-2 bg-[#FFB230] text-white rounded-lg text-sm font-medium hover:opacity-80 transition-opacity"
+              >
                 로그인
-              </button>
-            </Link>
+              </Link>
+            )}
           </div>
         </div>
       </div>

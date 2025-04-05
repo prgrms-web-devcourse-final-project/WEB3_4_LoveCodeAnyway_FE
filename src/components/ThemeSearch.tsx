@@ -1,91 +1,88 @@
+"use client";
+
 import { useState } from "react";
+import Image from "next/image";
+import { ThemeFilterModal } from "./ThemeFilterModal";
 
 export function ThemeSearch() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    // TODO: 검색 로직 구현
+    console.log("Searching for:", searchTerm);
+  };
+
+  const handleFilterApply = (filters: any) => {
+    console.log("Applied filters:", filters);
+    // TODO: 필터 적용 로직 구현
+  };
 
   return (
     <div className="w-full mb-6">
-      <div className="flex flex-col lg:flex-row gap-4">
-        <div className="relative flex-grow">
-          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-            <svg
-              className="w-4 h-4 text-gray-500"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 20 20"
-            >
-              <path
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
+      <div className="flex justify-between items-center gap-3">
+        <div className="w-[420px]">
+          <form onSubmit={handleSearch} className="relative">
+            <div className="absolute left-4 top-[14px] pointer-events-none">
+              <Image
+                src="/placeholder_search.svg"
+                alt="검색"
+                width={16}
+                height={16}
+                className="text-gray-400"
               />
-            </svg>
-          </div>
-          <input
-            type="search"
-            className="w-full p-3 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-white focus:ring-yellow-500 focus:border-yellow-500"
-            placeholder="테마 또는 매장명으로 검색"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+            </div>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="모임명으로 검색"
+              className="w-full pl-9 pr-4 py-2.5 border border-black rounded-lg focus:outline-none focus:border-black placeholder:text-gray-400"
+            />
+          </form>
         </div>
         <div className="flex gap-2">
-          <button className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 flex items-center">
-            인원 선택
+          <button
+            onClick={() => setIsFilterModalOpen(true)}
+            className="px-4 py-2 bg-black text-white text-sm rounded-lg hover:bg-gray-800 flex items-center gap-1.5"
+          >
             <svg
-              className="w-4 h-4 ml-1.5"
+              width="16"
+              height="16"
+              viewBox="0 0 20 20"
               fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
               xmlns="http://www.w3.org/2000/svg"
+              className="text-white"
             >
               <path
+                d="M9 15C12.3137 15 15 12.3137 15 9C15 5.68629 12.3137 3 9 3C5.68629 3 3 5.68629 3 9C3 12.3137 5.68629 15 9 15Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 9l-7 7-7-7"
-              ></path>
+              />
+              <path
+                d="M13 13L18 18"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
+            검색필터
           </button>
-          <button className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 flex items-center">
-            지역 선택
-            <svg
-              className="w-4 h-4 ml-1.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 9l-7 7-7-7"
-              ></path>
-            </svg>
-          </button>
-          <button className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 flex items-center">
-            장르 선택
-            <svg
-              className="w-4 h-4 ml-1.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 9l-7 7-7-7"
-              ></path>
-            </svg>
+          <button className="px-4 py-2 bg-black text-white text-sm rounded-lg hover:bg-gray-800">
+            모임 등록
           </button>
         </div>
       </div>
+
+      <ThemeFilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        onApply={handleFilterApply}
+      />
     </div>
   );
 }
