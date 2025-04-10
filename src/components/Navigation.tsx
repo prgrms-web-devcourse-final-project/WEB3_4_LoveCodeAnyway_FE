@@ -3,10 +3,12 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
+import { useContext } from "react";
+import { LoginMemberContext } from "@/stores/auth/loginMember";
 
 export function Navigation({ activePage }: { activePage?: string }) {
-  // TODO: 실제 로그인 상태 관리로 대체 필요
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  // 컨텍스트에서 로그인 상태 가져오기
+  const { isLogin, loginMember } = useContext(LoginMemberContext);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
   const toggleProfileMenu = () => {
@@ -61,7 +63,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            {isLoggedIn ? (
+            {isLogin ? (
               <>
                 <Link
                   href="/notifications"
@@ -87,56 +89,66 @@ export function Navigation({ activePage }: { activePage?: string }) {
                     className="flex items-center space-x-2 hover:opacity-80"
                   >
                     <div className="w-8 h-8 rounded-full overflow-hidden relative bg-gray-700 flex items-center justify-center">
-                      <svg
-                        className="w-6 h-6 text-gray-300"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      {loginMember?.profilePictureUrl ? (
+                        <img
+                          src={loginMember.profilePictureUrl}
+                          alt="프로필"
+                          className="w-full h-full object-cover"
                         />
-                      </svg>
+                      ) : (
+                        <svg
+                          className="w-6 h-6 text-gray-300"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                          />
+                        </svg>
+                      )}
                     </div>
-                    <span className="text-gray-300 text-sm">김도망</span>
+                    <span className="text-gray-300 text-sm">
+                      {loginMember?.nickname || "사용자"}
+                    </span>
                   </button>
 
                   {isProfileMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-50">
+                    <div className="absolute right-0 top-0 transform -translate-y-full w-48 bg-[#FFE7B9] rounded-lg shadow-lg py-1 z-50">
                       <Link
                         href="/my"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="block px-4 py-3 text-base font-medium text-gray-800 hover:bg-[#FFD896]"
                       >
                         마이페이지
                       </Link>
                       <Link
                         href="/my/diary"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="block px-4 py-3 text-base font-medium text-gray-800 hover:bg-[#FFD896]"
                       >
                         탈출일지
                       </Link>
                       <Link
                         href="/my/history"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="block px-4 py-3 text-base font-medium text-gray-800 hover:bg-[#FFD896]"
                       >
                         모임 히스토리
                       </Link>
                       <Link
                         href="/my/inquiry"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="block px-4 py-3 text-base font-medium text-gray-800 hover:bg-[#FFD896]"
                       >
                         1:1 문의
                       </Link>
-                      <div className="border-t border-gray-100">
-                        <button
-                          onClick={() => setIsLoggedIn(false)}
-                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      <div className="border-t border-[#FFD896]">
+                        <a
+                          href="/api/v1/auth/logout"
+                          className="block w-full text-left px-4 py-3 text-base font-medium text-gray-800 hover:bg-[#FFD896]"
                         >
                           로그아웃
-                        </button>
+                        </a>
                       </div>
                     </div>
                   )}
