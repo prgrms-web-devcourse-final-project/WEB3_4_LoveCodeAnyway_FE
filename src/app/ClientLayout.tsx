@@ -58,8 +58,13 @@ export function ClientLayout({
 
   if (isLoginMemberPending) {
     return (
-      <div className="flex-1 flex justify-center items-center text-muted-foreground">
-        로딩중...
+      <div className="fixed inset-0 flex justify-center items-center bg-white bg-opacity-80 z-50">
+        <div className="relative">
+          <div className="h-16 w-16 rounded-full border-t-4 border-b-4 border-[#FFB230] animate-spin"></div>
+          <div className="mt-4 text-center text-[#FFB230] font-medium">
+            로딩중
+          </div>
+        </div>
       </div>
     );
   }
