@@ -4,6 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 
 export default function LoginPage() {
+  const socialLoginForKakaoUrl = `http://localhost:8080/oauth2/authorization/kakao`;
+  const redirectUrlAfterSocialLogin = "http://localhost:3000";
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
       <div className="w-full max-w-md space-y-6 p-8 bg-white rounded-xl border border-gray-200 shadow-sm">
@@ -15,11 +18,13 @@ export default function LoginPage() {
         </div>
 
         <div className="space-y-2">
-          <button className="w-full flex items-center justify-center gap-2 bg-[#FEE500] hover:bg-[#FDD800] text-[#191919] px-4 py-3 rounded-lg">
+          <a
+            className="w-full flex items-center justify-center gap-2 bg-[#FEE500] hover:bg-[#FDD800] text-[#191919] px-4 py-3 rounded-lg"
+            href={`${socialLoginForKakaoUrl}?redirectUrl=${redirectUrlAfterSocialLogin}`}
+          >
             <Image src="/kakao.svg" alt="카카오 로고" width={20} height={20} />
             카카오 1초 안에 시작하기
-          </button>
-
+          </a>
           <Link
             href="/"
             className="w-full flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-lg transition-colors"
