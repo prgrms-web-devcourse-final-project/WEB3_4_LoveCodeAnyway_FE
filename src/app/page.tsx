@@ -11,18 +11,28 @@ export default function HomePage() {
   const [activeTag, setActiveTag] = useState("#전체");
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-white pt-12">
       <Navigation activePage="home" />
-
       {/* Section 1: 메인 배너 */}
-      <section className="w-full h-[400px] relative bg-black">
-        <Image
-          src="/images/grand-opening.jpg"
-          alt="Grand Opening"
-          fill
-          className="object-cover"
-          priority
-        />
+      <section className="w-full h-[400px] relative bg-gray-800">
+        <div className="max-w-7xl mx-auto h-full relative flex flex-col items-center justify-center">
+          <Image
+            src="/logo.svg"
+            alt="또방 로고"
+            width={250}
+            height={100}
+            priority
+            className="mb-6"
+          />
+          <h1 className="text-white text-3xl font-bold">
+            방탈출 메이트 찾기, 또방
+          </h1>
+          <p className="text-gray-300 mt-4 text-center max-w-2xl">
+            방탈출 테마 정보부터 모임 참여까지
+            <br />
+            다양한 방탈출 커뮤니티를 경험해보세요
+          </p>
+        </div>
       </section>
 
       {/* Section 2: 소셜링 */}
@@ -43,14 +53,23 @@ export default function HomePage() {
               key={item}
               className="bg-gray-50 rounded-lg p-4 flex gap-4 hover:bg-gray-100 transition-colors"
             >
-              <div className="w-24 h-24 bg-gray-200 rounded-lg flex-shrink-0">
-                <Image
-                  src={`/images/meeting-${item}.jpg`}
-                  alt="Meeting thumbnail"
-                  width={96}
-                  height={96}
-                  className="rounded-lg object-cover"
-                />
+              <div className="w-24 h-24 bg-gray-200 rounded-lg flex-shrink-0 flex items-center justify-center">
+                {/* SVG 대체 이미지 */}
+                <svg
+                  width="36"
+                  height="36"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#FFB230"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="group-image"
+                >
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
@@ -102,14 +121,23 @@ export default function HomePage() {
                 key={rank}
                 className="relative group"
               >
-                <div className="aspect-[3/4] bg-gray-200 rounded-lg overflow-hidden">
-                  <Image
-                    src={`/images/theme-${rank}.jpg`}
-                    alt={`Rank ${rank}`}
-                    width={400}
-                    height={533}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                  />
+                <div className="aspect-[3/4] bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
+                  <svg
+                    width="64"
+                    height="64"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#FFB230"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="theme-image"
+                  >
+                    <path d="M14.5 3H6a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8.5L14.5 3Z"></path>
+                    <polyline points="14 3 14 9 20 9"></polyline>
+                    <circle cx="10" cy="13" r="2"></circle>
+                    <path d="m20 17-1.5-1.5a2 2 0 0 0-3 0L10 22"></path>
+                  </svg>
                 </div>
                 <div className="absolute top-4 left-4">
                   <span className="bg-orange-500 text-white px-3 py-1 rounded-lg text-sm font-bold">
@@ -160,14 +188,24 @@ export default function HomePage() {
                 key={rank}
                 className="relative group"
               >
-                <div className="aspect-[3/4] bg-gray-200 rounded-lg overflow-hidden">
-                  <Image
-                    src={`/images/new-theme-${rank}.jpg`}
-                    alt={`New theme ${rank}`}
-                    width={400}
-                    height={533}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                  />
+                <div className="aspect-[3/4] bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
+                  <svg
+                    width="64"
+                    height="64"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#FFB230"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="theme-image"
+                  >
+                    <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                    <path d="M3 9h18"></path>
+                    <path d="M9 21V9"></path>
+                    <path d="m12 6 1.5-1.5"></path>
+                    <path d="M12 6 10.5 4.5"></path>
+                  </svg>
                 </div>
                 <div className="absolute top-4 right-4">
                   <span className="bg-blue-500 text-white px-3 py-1 rounded-lg text-sm font-bold">

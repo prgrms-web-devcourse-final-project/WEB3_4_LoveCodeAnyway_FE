@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "또방",
-  description: "또방 - 방탈출 커뮤니티",
+  title: "도망: 방탈출 커뮤니티",
+  description: "도망: 방탈출 커뮤니티",
 };
 
 export default function RootLayout({
