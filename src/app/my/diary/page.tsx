@@ -6,6 +6,7 @@ import { DiaryCard } from "@/components/DiaryCard";
 import { DiarySearch } from "@/components/DiarySearch";
 import { Diary } from "@/types/Diary";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 // 더미 데이터 생성 함수
 const generateDiaries = (start: number, end: number): Diary[] => {
@@ -212,12 +213,12 @@ export default function MyEscapePage() {
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold text-gray-900">나의 탈출일지</h1>
-          <button
-            onClick={handleCreateDiary}
-            className="px-4 py-2 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFB130]/90"
+          <Link
+            href="/my/diary/new"
+            className="px-4 py-2 bg-black text-white rounded-lg"
           >
             일지 작성
-          </button>
+          </Link>
         </div>
 
         <DiarySearch
