@@ -26,8 +26,8 @@ export const LoginMemberContext = createContext<{
 function createEmptyMember(): Member {
   return {
     id: 0,
-    createDate: "",
-    modifyDate: "",
+    createdAt: "",
+    modifiedAt: "",
     nickname: "",
   };
 }

@@ -37,11 +37,7 @@ const mockInquiry: InquiryDetail = {
   },
 };
 
-export default function InquiryDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default function Page({ params }: any) {
   return (
     <main className="min-h-screen bg-gray-50">
       <Navigation activePage="my" />

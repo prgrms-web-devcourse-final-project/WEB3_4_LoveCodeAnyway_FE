@@ -19,10 +19,7 @@ interface Diary {
 export default function DiaryPage() {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [activeFilters, setActiveFilters] = useState<{
-    success: boolean | null;
-    dateRange: { start: string; end: string } | null;
-  }>({
+  const [activeFilters, setActiveFilters] = useState<any>({
     success: null,
     dateRange: null,
   });
@@ -285,14 +282,11 @@ export default function DiaryPage() {
     loadMoreDiaries();
   };
 
-  const handleFilterApply = (filters: {
-    success: boolean | null;
-    dateRange: { start: string; end: string } | null;
-  }) => {
+  const handleFilterApply = (filters: any) => {
     setActiveFilters(filters);
-    setDiaries([]);
+    setIsFilterOpen(false);
     setPage(1);
-    setHasMore(true);
+    setDiaries([]);
     loadMoreDiaries();
   };
 
@@ -304,7 +298,10 @@ export default function DiaryPage() {
       activeFilters.success === null || diary.success === activeFilters.success;
     const matchesDateRange =
       !activeFilters.dateRange ||
-      (diary.date >= activeFilters.dateRange.start &&
+      (typeof activeFilters.dateRange === "object" &&
+        activeFilters.dateRange.start &&
+        activeFilters.dateRange.end &&
+        diary.date >= activeFilters.dateRange.start &&
         diary.date <= activeFilters.dateRange.end);
 
     return matchesSearch && matchesSuccess && matchesDateRange;
@@ -319,6 +316,7 @@ export default function DiaryPage() {
           <DiarySearch
             onSearch={handleSearch}
             onFilterClick={() => setIsFilterOpen(true)}
+            {...({} as any)}
           />
         </div>
 

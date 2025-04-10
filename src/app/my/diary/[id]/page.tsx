@@ -1,12 +1,7 @@
 import { Navigation } from "@/components/Navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { DiaryDetail } from "@/types/Diary";
-
-type Props = {
-  params: { id: string };
-  searchParams: { [key: string]: string | string[] | undefined };
-};
+import { Metadata } from "next";
 
 // 더미 데이터
 const dummyDiaryDetail: DiaryDetail = {
@@ -68,7 +63,7 @@ const mockInquiry: InquiryDetail = {
   },
 };
 
-export default function Page({ params, searchParams }: Props) {
+export default function Page({ params }: any) {
   // TODO: API로 데이터 가져오기
   const diary = dummyDiaryDetail;
 
