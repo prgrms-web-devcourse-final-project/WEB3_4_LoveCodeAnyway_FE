@@ -8,6 +8,12 @@ import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import Link from "next/link";
 
+interface PageProps {
+  params: {
+    id: string;
+  };
+}
+
 // 더미 데이터
 const dummyDiaryDetail: DiaryDetail = {
   id: "1",
@@ -34,13 +40,6 @@ const dummyDiaryDetail: DiaryDetail = {
   comment:
     "정말 재미있는 방탈출이었습니다. 소품들도 분위기에 적절한 난이도로 구성되어 있어서 즐겁게 플레이했습니다. 특히 마지막 퍼즐은 팀원들과 협력이 잘 되어서 클리어할 수 있었습니다. 다음에도 이 매장의 다른 테마도 도전해보고 싶네요!",
 };
-
-interface PageProps {
-  params: {
-    id: string;
-  };
-  searchParams: { [key: string]: string | string[] | undefined };
-}
 
 interface InquiryDetail {
   id: string;
@@ -75,10 +74,7 @@ const mockInquiry: InquiryDetail = {
   },
 };
 
-export default async function DiaryDetailPage({
-  params,
-  searchParams,
-}: PageProps) {
+export default function DiaryDetailPage({ params }: PageProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const diary = dummyDiaryDetail; // 실제로는 API로 데이터를 가져와야 함
 
