@@ -6,6 +6,7 @@ import Image from "next/image";
 import { DiaryDetail } from "@/types/Diary";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
+import Link from "next/link";
 
 // 더미 데이터
 const dummyDiaryDetail: DiaryDetail = {
@@ -34,11 +35,50 @@ const dummyDiaryDetail: DiaryDetail = {
     "정말 재미있는 방탈출이었습니다. 소품들도 분위기에 적절한 난이도로 구성되어 있어서 즐겁게 플레이했습니다. 특히 마지막 퍼즐은 팀원들과 협력이 잘 되어서 클리어할 수 있었습니다. 다음에도 이 매장의 다른 테마도 도전해보고 싶네요!",
 };
 
-export default function DiaryDetailPage({
+interface PageProps {
+  params: {
+    id: string;
+  };
+  searchParams: { [key: string]: string | string[] | undefined };
+}
+
+interface InquiryDetail {
+  id: string;
+  type: string;
+  content: string;
+  createdAt: string;
+  nickname: string;
+  attachments: string[];
+  status: "답변 완료" | "답변 대기";
+  answer?: {
+    content: string;
+    createdAt: string;
+    nickname: string;
+  };
+}
+
+// TODO: API로 데이터 가져오기
+const mockInquiry: InquiryDetail = {
+  id: "1",
+  type: "홍대 연극 테마 요청",
+  content:
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Nisl tincidunt eget nullam non. Quis hendrerit dolor magna eget est lorem ipsum dolor sit",
+  createdAt: "2024-02-18 14:30",
+  nickname: "USER1",
+  attachments: ["Lor.png"],
+  status: "답변 완료",
+  answer: {
+    content:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Nisl tincidunt eget nullam non. Quis hendrerit dolor magna eget est lorem ipsum dolor sit",
+    createdAt: "2024-02-18 15:30",
+    nickname: "관리자",
+  },
+};
+
+export default async function DiaryDetailPage({
   params,
-}: {
-  params: { id: string };
-}) {
+  searchParams,
+}: PageProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const diary = dummyDiaryDetail; // 실제로는 API로 데이터를 가져와야 함
 
@@ -99,14 +139,106 @@ export default function DiaryDetailPage({
   };
 
   return (
-    <main className="bg-gray-50 min-h-screen pb-12">
-      <Navigation activePage="my-escape" />
+    <main className="min-h-screen bg-gray-50">
+      <Navigation activePage="my" />
 
-      {/* Section 1: 테마 정보 */}
-      <div className="relative h-[400px] bg-gray-800">
-        <div className="absolute inset-0 flex items-center justify-center">
+      <div className="max-w-3xl mx-auto px-4 py-8">
+        {/* 문의 내용 */}
+        <div className="bg-white rounded-lg shadow-sm mb-6">
+          <div className="p-8">
+            <div className="flex justify-between items-start mb-6">
+              <h1 className="text-2xl font-bold">{mockInquiry.type}</h1>
+              <span className="px-3 py-1 text-sm bg-green-100 text-green-800 rounded-full">
+                답변 완료
+              </span>
+            </div>
+
+            <div className="space-y-6">
+              <div className="flex justify-between text-sm text-gray-600">
+                <div>
+                  <span className="font-medium">닉네임</span>
+                  <span className="ml-2">{mockInquiry.nickname}</span>
+                </div>
+                <div>
+                  <span className="font-medium">작성시간</span>
+                  <span className="ml-2">{mockInquiry.createdAt}</span>
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-sm font-medium mb-2">내용</h2>
+                <p className="text-gray-700 whitespace-pre-wrap">
+                  {mockInquiry.content}
+                </p>
+              </div>
+
+              {mockInquiry.attachments.length > 0 && (
+                <div>
+                  <h2 className="text-sm font-medium mb-2">증빙 첨부 파일</h2>
+                  <div className="flex gap-2">
+                    {mockInquiry.attachments.map((file) => (
+                      <div
+                        key={file}
+                        className="flex items-center gap-1 text-sm text-gray-600"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                        <span>{file}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* 답변 내용 */}
+        {mockInquiry.answer && (
+          <div className="bg-white rounded-lg shadow-sm mb-6">
+            <div className="p-8">
+              <h2 className="text-xl font-bold mb-6">답변 내용</h2>
+              <div className="space-y-6">
+                <div className="flex justify-between text-sm text-gray-600">
+                  <div>
+                    <span className="font-medium">닉네임</span>
+                    <span className="ml-2">{mockInquiry.answer.nickname}</span>
+                  </div>
+                  <div>
+                    <span className="font-medium">작성시간</span>
+                    <span className="ml-2">{mockInquiry.answer.createdAt}</span>
+                  </div>
+                </div>
+
+                <div>
+                  <h2 className="text-sm font-medium mb-2">내용</h2>
+                  <p className="text-gray-700 whitespace-pre-wrap">
+                    {mockInquiry.answer.content}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 목록으로 버튼 */}
+        <Link
+          href="/my/inquiry"
+          className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
+        >
           <svg
-            className="w-48 h-48 text-gray-600"
+            className="w-4 h-4 mr-1"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -115,163 +247,12 @@ export default function DiaryDetailPage({
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth="2"
-              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+              d="M10 19l-7-7m0 0l7-7m-7 7h18"
             />
           </svg>
-        </div>
-        <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end">
-          <div className="container mx-auto px-6 py-8 text-white">
-            <h1 className="text-4xl font-bold mb-2">{diary.themeName}</h1>
-            <p className="text-xl">{diary.storeName}</p>
-          </div>
-        </div>
+          목록으로 돌아가기
+        </Link>
       </div>
-
-      <div className="container mx-auto px-6 space-y-12 mt-12">
-        {/* Section 2: 탈출 사진 */}
-        {diary.escapeImages && diary.escapeImages.length > 0 && (
-          <section>
-            <h2 className="text-2xl font-bold mb-6">탈출 사진</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {diary.escapeImages.map((image, index) => (
-                <div
-                  key={index}
-                  className="relative aspect-square cursor-pointer hover:opacity-90 bg-gray-100 flex items-center justify-center"
-                  onClick={() => setSelectedImage(image)}
-                >
-                  <svg
-                    className="w-16 h-16 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Section 3: 테마 평가 */}
-        <section>
-          <h2 className="text-2xl font-bold mb-6">테마 평가</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">인테리어</span>
-                {renderStars(diary.ratings.interior)}
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">문제 구성</span>
-                {renderStars(diary.ratings.composition)}
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">스토리</span>
-                {renderStars(diary.ratings.story)}
-              </div>
-            </div>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">연출</span>
-                {renderStars(diary.ratings.production)}
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">만족도</span>
-                {renderStars(diary.ratings.satisfaction)}
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">장치 비중</span>
-                <div className="w-32 bg-gray-200 rounded-full h-2.5">
-                  <div
-                    className="bg-[#FFB130] h-2.5 rounded-full"
-                    style={{ width: `${diary.ratings.deviceRatio}%` }}
-                  ></div>
-                </div>
-              </div>
-            </div>
-            <div className="flex justify-between space-x-4">
-              {renderDonutChart(diary.ratings.difficulty, 5, "난이도")}
-              {renderDonutChart(diary.ratings.horror, 5, "공포도")}
-              {renderDonutChart(diary.ratings.activity, 5, "활동성")}
-            </div>
-          </div>
-        </section>
-
-        {/* Section 4: 탈출 기록 */}
-        <section className="bg-white rounded-xl p-8 shadow-sm border border-gray-100">
-          <h2 className="text-2xl font-bold mb-6">탈출 기록</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="text-lg text-gray-600 mb-2">진행 날짜</div>
-              <div className="text-xl font-semibold">
-                {formatDate(diary.playDate)}
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg text-gray-600 mb-2">탈출 결과</div>
-              <div
-                className={`text-xl font-semibold ${
-                  diary.isSuccess ? "text-green-600" : "text-red-600"
-                }`}
-              >
-                {diary.isSuccess ? "탈출 성공" : "탈출 실패"}
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg text-gray-600 mb-2">탈출 시간</div>
-              <div className="text-xl font-semibold">{diary.escapeTime}</div>
-            </div>
-            {diary.participants && (
-              <div className="md:col-span-3">
-                <div className="text-lg text-gray-600 mb-2">함께한 사람</div>
-                <div className="text-xl">{diary.participants}</div>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* Section 5: 소감 */}
-        {diary.comment && (
-          <section>
-            <h2 className="text-2xl font-bold mb-6">소감</h2>
-            <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-100">
-              <p className="text-gray-700 whitespace-pre-line">
-                {diary.comment}
-              </p>
-            </div>
-          </section>
-        )}
-      </div>
-
-      {/* Lightbox */}
-      {selectedImage && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50"
-          onClick={() => setSelectedImage(null)}
-        >
-          <div className="relative w-96 h-96 flex items-center justify-center">
-            <svg
-              className="w-48 h-48 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-          </div>
-        </div>
-      )}
     </main>
   );
 }
