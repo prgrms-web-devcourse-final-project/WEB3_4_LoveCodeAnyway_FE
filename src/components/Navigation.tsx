@@ -44,9 +44,9 @@ export function Navigation({ activePage }: { activePage?: string }) {
                 모임 탐색
               </Link>
               <Link
-                href="/my-escape"
+                href="/my/diary"
                 className={`${
-                  activePage === "my-escape"
+                  activePage === "my-diary"
                     ? "text-[#FFD896]"
                     : "text-gray-300 hover:text-[#FFD896]"
                 } text-sm font-medium`}
@@ -80,14 +80,20 @@ export function Navigation({ activePage }: { activePage?: string }) {
                   href="/profile"
                   className="flex items-center space-x-2 hover:opacity-80"
                 >
-                  <div className="w-8 h-8 rounded-full overflow-hidden relative">
-                    <Image
-                      src="/profile_man.jpg"
-                      alt="프로필"
-                      fill
-                      className="object-cover"
-                      sizes="32px"
-                    />
+                  <div className="w-8 h-8 rounded-full overflow-hidden relative bg-gray-700 flex items-center justify-center">
+                    <svg
+                      className="w-6 h-6 text-gray-300"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      />
+                    </svg>
                   </div>
                   <span className="text-gray-300 text-sm">김도망</span>
                 </Link>
