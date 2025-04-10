@@ -3,11 +3,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { DiaryDetail } from "@/types/Diary";
 
-interface PageProps {
-  params: {
-    id: string;
-  };
-}
+type Props = {
+  params: { id: string };
+  searchParams: { [key: string]: string | string[] | undefined };
+};
 
 // 더미 데이터
 const dummyDiaryDetail: DiaryDetail = {
@@ -69,7 +68,7 @@ const mockInquiry: InquiryDetail = {
   },
 };
 
-export default async function DiaryDetailPage({ params }: PageProps) {
+export default function Page({ params, searchParams }: Props) {
   // TODO: API로 데이터 가져오기
   const diary = dummyDiaryDetail;
 
