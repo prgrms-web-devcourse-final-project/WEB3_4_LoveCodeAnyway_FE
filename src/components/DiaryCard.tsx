@@ -1,12 +1,22 @@
 import { Diary } from "@/types/Diary";
+import { useRouter } from "next/navigation";
 
 interface DiaryCardProps {
   diary: Diary;
 }
 
 export function DiaryCard({ diary }: DiaryCardProps) {
+  const router = useRouter();
+
+  const handleClick = () => {
+    router.push(`/my/diary/${diary.id}`);
+  };
+
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+    <div
+      className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+      onClick={handleClick}
+    >
       <div className="relative h-48 bg-gray-100 flex items-center justify-center">
         <svg
           className="w-24 h-24 text-gray-400"
