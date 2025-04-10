@@ -11,10 +11,10 @@ export default function HomePage() {
   const [activeTag, setActiveTag] = useState("#전체");
 
   return (
-    <main className="min-h-screen bg-white pt-12">
-      <Navigation activePage="home" />
+    <main className="min-h-screen bg-white">
       {/* Section 1: 메인 배너 */}
       <section className="w-full h-[400px] relative bg-gray-800">
+        <Navigation activePage="home" />
         <div className="max-w-7xl mx-auto h-full relative flex flex-col items-center justify-center">
           <Image
             src="/logo.svg"
