@@ -7,21 +7,38 @@ import { ThemeFilterModal } from "./ThemeFilterModal";
 
 interface ThemeSearchProps {
   showCreateButton?: boolean;
+  onSearch?: (keyword: string) => void;
+  onFilterApply?: (filters: any) => void;
+  onFilterChange?: (filterType: string, value: string) => void;
 }
 
-export function ThemeSearch({ showCreateButton = false }: ThemeSearchProps) {
+export function ThemeSearch({
+  showCreateButton = false,
+  onSearch,
+  onFilterApply,
+  onFilterChange,
+}: ThemeSearchProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: 검색 로직 구현
-    console.log("Searching for:", searchTerm);
+    if (onSearch) {
+      onSearch(searchTerm);
+    }
   };
 
   const handleFilterApply = (filters: any) => {
-    console.log("Applied filters:", filters);
-    // TODO: 필터 적용 로직 구현
+    if (onFilterApply) {
+      onFilterApply(filters);
+    }
+
+    // 이전 버전과의 호환성을 위해 onFilterChange도 호출
+    if (onFilterChange && filters.regions && filters.regions.length > 0) {
+      onFilterChange("region", filters.regions[0]);
+    }
+
+    setIsFilterModalOpen(false);
   };
 
   return (
@@ -42,7 +59,7 @@ export function ThemeSearch({ showCreateButton = false }: ThemeSearchProps) {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="모임명으로 검색"
+              placeholder="테마 이름으로 검색"
               className="w-full pl-9 pr-4 py-2.5 border border-black rounded-lg focus:outline-none focus:border-black placeholder:text-gray-400"
             />
           </form>
@@ -79,7 +96,7 @@ export function ThemeSearch({ showCreateButton = false }: ThemeSearchProps) {
           </button>
           {showCreateButton && (
             <Link
-              href="/meetings/create"
+              href="/parties/create"
               className="px-4 py-2 bg-black text-white text-sm rounded-lg hover:bg-gray-800"
             >
               모임 등록

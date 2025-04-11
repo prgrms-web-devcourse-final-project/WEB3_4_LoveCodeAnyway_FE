@@ -1,4 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+interface Tag {
+  id: number;
+  name: string;
+}
 
 interface ThemeFilterModalProps {
   isOpen: boolean;
@@ -12,9 +17,42 @@ export function ThemeFilterModal({
   onApply,
 }: ThemeFilterModalProps) {
   const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
-  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
+  const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
   const [selectedParticipant, setSelectedParticipant] = useState<string>("");
   const [activeRegion, setActiveRegion] = useState("서울");
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchTags();
+    }
+  }, [isOpen]);
+
+  const fetchTags = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `${
+          process.env.NODE_ENV === "development"
+            ? "http://localhost:8080"
+            : "https://api.ddobang.site"
+        }/api/v1/themes/tags`,
+        {
+          credentials: "include",
+        }
+      );
+      const data = await response.json();
+
+      if (data && data.data) {
+        setTags(data.data);
+      }
+    } catch (error) {
+      console.error("태그 목록을 불러오는 중 오류가 발생했습니다:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const regions = [
     {
@@ -92,24 +130,6 @@ export function ThemeFilterModal({
     },
   ];
 
-  const genres = [
-    { id: "스릴러", name: "스릴러" },
-    { id: "판타지", name: "판타지" },
-    { id: "추리", name: "추리" },
-    { id: "호러/공포", name: "호러/공포" },
-    { id: "감동", name: "감동" },
-    { id: "코미디", name: "코미디" },
-    { id: "모험/힐링", name: "모험/힐링" },
-    { id: "미스터리", name: "미스터리" },
-    { id: "SF", name: "SF" },
-    { id: "액션", name: "액션" },
-    { id: "역사", name: "역사" },
-    { id: "타임어택", name: "타임어택" },
-    { id: "19금", name: "19금" },
-    { id: "아웃도어", name: "아웃도어" },
-    { id: "로맨스", name: "로맨스" },
-  ];
-
   const participants = [
     { id: "1명", name: "1명" },
     { id: "2명", name: "2명" },
@@ -129,9 +149,9 @@ export function ThemeFilterModal({
     );
   };
 
-  const handleGenreToggle = (genre: string) => {
+  const handleGenreToggle = (tagId: number) => {
     setSelectedGenres((prev) =>
-      prev.includes(genre) ? prev.filter((g) => g !== genre) : [...prev, genre]
+      prev.includes(tagId) ? prev.filter((g) => g !== tagId) : [...prev, tagId]
     );
   };
 
@@ -155,7 +175,7 @@ export function ThemeFilterModal({
   const handleApply = () => {
     onApply({
       regions: selectedRegions,
-      genres: selectedGenres,
+      tagIds: selectedGenres,
       participant: selectedParticipant,
     });
     onClose();
@@ -164,8 +184,18 @@ export function ThemeFilterModal({
   const getSelectedFiltersText = () => {
     const regionText =
       selectedRegions.length > 0 ? `지역: ${selectedRegions.join(", ")}` : "";
+
     const genreText =
-      selectedGenres.length > 0 ? `장르: ${selectedGenres.join(", ")}` : "";
+      selectedGenres.length > 0
+        ? `장르: ${selectedGenres
+            .map((tagId) => {
+              const tag = tags.find((t) => t.id === tagId);
+              return tag ? tag.name : "";
+            })
+            .filter(Boolean)
+            .join(", ")}`
+        : "";
+
     const participantText = selectedParticipant
       ? `인원: ${selectedParticipant}`
       : "";
@@ -300,37 +330,43 @@ export function ThemeFilterModal({
 
           <div className="flex-1">
             <div className="bg-white rounded-2xl p-6 border border-[#E1E2E7] h-[480px]">
-              <h3 className="text-lg font-medium mb-4 text-center">장르</h3>
-              <div className="grid grid-cols-3 gap-3 h-[calc(100%-40px)] content-start">
-                {genres.map((genre) => (
-                  <button
-                    key={genre.id}
-                    onClick={() => handleGenreToggle(genre.id)}
-                    className={`h-11 rounded-xl bg-gray-50 flex items-center justify-center ${
-                      selectedGenres.includes(genre.id)
-                        ? "border-2 border-[#FFB230] text-[#FFB230]"
-                        : "border border-[#E1E2E7] text-gray-900 hover:border-gray-200"
-                    }`}
-                  >
-                    {genre.name}
-                  </button>
-                ))}
+              <h3 className="text-lg font-medium mb-4 text-center">장르별</h3>
+              <div className="grid grid-cols-3 gap-3 h-[calc(100%-40px)] overflow-y-auto">
+                {loading ? (
+                  <div className="col-span-3 flex justify-center items-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
+                  </div>
+                ) : (
+                  tags.map((tag) => (
+                    <button
+                      key={tag.id}
+                      onClick={() => handleGenreToggle(tag.id)}
+                      className={`text-sm rounded-lg border px-3 py-2 transition-colors ${
+                        selectedGenres.includes(tag.id)
+                          ? "bg-[#FFB230] text-white border-[#FFB230]"
+                          : "border-[#E1E2E7] hover:bg-gray-50"
+                      }`}
+                    >
+                      {tag.name}
+                    </button>
+                  ))
+                )}
               </div>
             </div>
           </div>
 
           <div className="flex-1">
             <div className="bg-white rounded-2xl p-6 border border-[#E1E2E7] h-[480px]">
-              <h3 className="text-lg font-medium mb-4 text-center">인원</h3>
-              <div className="grid grid-cols-2 gap-2 h-[calc(100%-40px)]">
+              <h3 className="text-lg font-medium mb-4 text-center">인원별</h3>
+              <div className="grid grid-cols-3 gap-3">
                 {participants.map((participant) => (
                   <button
                     key={participant.id}
                     onClick={() => handleParticipantToggle(participant.id)}
-                    className={`px-4 py-2 rounded-xl bg-gray-50 ${
+                    className={`text-sm rounded-lg border px-3 py-2 transition-colors ${
                       selectedParticipant === participant.id
-                        ? "border-2 border-[#FFB230] text-[#FFB230]"
-                        : "border border-[#E1E2E7] text-gray-900 hover:border-gray-200"
+                        ? "bg-[#FFB230] text-white border-[#FFB230]"
+                        : "border-[#E1E2E7] hover:bg-gray-50"
                     }`}
                   >
                     {participant.name}
@@ -341,12 +377,18 @@ export function ThemeFilterModal({
           </div>
         </div>
 
-        <div className="flex justify-center mt-8">
+        <div className="flex justify-end mt-8 gap-4">
+          <button
+            onClick={onClose}
+            className="px-6 py-3 border border-[#E1E2E7] rounded-lg hover:bg-gray-50"
+          >
+            취소
+          </button>
           <button
             onClick={handleApply}
-            className="px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800"
+            className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800"
           >
-            필터 적용
+            적용하기
           </button>
         </div>
       </div>

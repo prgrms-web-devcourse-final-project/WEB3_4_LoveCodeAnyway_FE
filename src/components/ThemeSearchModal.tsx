@@ -1,12 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
+import axios from "axios";
 
 interface ThemeSearchModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelect: (theme: string) => void;
+  onSelect: (theme: string, themeId: number) => void;
+}
+
+interface ThemeForPartyResponse {
+  id?: number;
+  name: string;
+  storeId?: number;
+  storeName?: string;
+  themeTagMappingResponses?: {
+    themeId?: number;
+    themeTagId?: number;
+    tagName?: string;
+  }[];
+}
+
+interface SuccessResponseListThemeForPartyResponse {
+  message?: string;
+  data?: ThemeForPartyResponse[];
 }
 
 export function ThemeSearchModal({
@@ -15,23 +33,96 @@ export function ThemeSearchModal({
   onSelect,
 }: ThemeSearchModalProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedTheme, setSelectedTheme] = useState("");
+  const [themes, setThemes] = useState<ThemeForPartyResponse[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // 더미 테마 데이터
-  const themes = [
-    { id: 1, name: "호러 테마" },
-    { id: 2, name: "미스터리 테마" },
-    { id: 3, name: "액션 테마" },
-    { id: 4, name: "판타지 테마" },
-  ];
+  // 기본 베이스 URL 설정
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL
+    ? process.env.NEXT_PUBLIC_API_URL
+    : process.env.NODE_ENV === "development"
+    ? "http://localhost:8080"
+    : "https://api.ddobang.site";
 
-  const filteredThemes = themes.filter((theme) =>
-    theme.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  useEffect(() => {
+    if (!isOpen) return;
 
-  const handleThemeSelect = (theme: string) => {
-    setSelectedTheme(theme);
-    onSelect(theme);
+    // 모달이 열릴 때 테마 목록 초기화
+    const fetchThemes = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response =
+          await axios.get<SuccessResponseListThemeForPartyResponse>(
+            `${baseUrl}/api/v1/themes/search-for-party`,
+            {
+              params: {
+                keyword: searchTerm,
+              },
+            }
+          );
+
+        if (response.data.data && response.data.data.length > 0) {
+          // 중복된 ID가 있는지 확인하고 고유한 theme 목록만 설정
+          const uniqueThemes = response.data.data.filter(
+            (theme, index, self) =>
+              index === self.findIndex((t) => t.id === theme.id)
+          );
+          setThemes(uniqueThemes);
+        } else {
+          setThemes([]);
+        }
+      } catch (err) {
+        console.error("테마 검색 중 오류:", err);
+        setError("테마 목록을 불러오는데 실패했습니다.");
+        setThemes([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchThemes();
+  }, [isOpen, searchTerm, baseUrl]);
+
+  // 테마 객체에서 ID를 추출하는 함수
+  const getThemeId = (theme: any): number | undefined => {
+    // 테마 ID를 조회하려는 가능한 필드 이름 목록
+    const possibleIdFields = [
+      "id",
+      "themeId",
+      "theme_id",
+      "ID",
+      "Id",
+      "themeCode",
+      "code",
+    ];
+
+    // 가능한 모든 필드 검사
+    for (const field of possibleIdFields) {
+      if (theme[field] !== undefined) {
+        const id = Number(theme[field]);
+        if (!isNaN(id) && id > 0) {
+          return id;
+        }
+      }
+    }
+
+    return undefined;
+  };
+
+  const handleThemeSelect = (theme: ThemeForPartyResponse) => {
+    // 테마 ID 추출
+    const themeId = getThemeId(theme);
+
+    // 테마 ID가 존재하고 유효한지 확인
+    if (themeId === undefined) {
+      setError("유효하지 않은 테마입니다. 다른 테마를 선택해주세요.");
+      return;
+    }
+
+    // 테마 ID가 유효한 경우에만 선택 처리
+    onSelect(theme.name, themeId);
     onClose();
   };
 
@@ -83,16 +174,39 @@ export function ThemeSearchModal({
           />
         </div>
 
+        {loading && (
+          <div className="flex justify-center my-4">
+            <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-black"></div>
+          </div>
+        )}
+
+        {error && <div className="text-red-500 text-center my-4">{error}</div>}
+
+        {!loading && themes.length === 0 && (
+          <div className="text-gray-500 text-center my-4">
+            검색 결과가 없습니다
+          </div>
+        )}
+
         <div className="space-y-2 max-h-60 overflow-y-auto">
-          {filteredThemes.map((theme) => (
-            <button
-              key={theme.id}
-              onClick={() => handleThemeSelect(theme.name)}
-              className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg"
-            >
-              {theme.name}
-            </button>
-          ))}
+          {themes.map((theme, index) => {
+            const themeId = getThemeId(theme);
+            const themeName = theme.name || "이름 없음";
+            const storeInfo = theme.storeName || "";
+
+            return (
+              <button
+                key={`theme-${index}`}
+                onClick={() => handleThemeSelect(theme)}
+                className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg"
+              >
+                <div className="font-medium">{themeName}</div>
+                {storeInfo && (
+                  <div className="text-sm text-gray-600">{storeInfo}</div>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

@@ -6,49 +6,86 @@ import { useState, useContext, useEffect } from "react";
 import { LoginMemberContext } from "@/stores/auth/loginMember";
 import client from "@/lib/backend/client";
 import { useRouter } from "next/navigation";
-
-// 임시 알림 데이터
-const mockNotifications = [
-  {
-    id: 1,
-    type: "Orders",
-    title: "New Order #30854",
-    content:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus finibus vestibulum hendrerit. Nulla est diam, efficitur eu ullamcorper quis, ultrices nec nisl.",
-    time: "1 min ago",
-    read: false,
-  },
-  {
-    id: 2,
-    type: "Orders",
-    title: "Order #30851 Has Been Shiped",
-    content:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus finibus vestibulum hendrerit. Nulla est diam, efficitur eu ullamcorper quis, ultrices nec nisl.",
-    time: "2 hour ago",
-    read: true,
-  },
-  {
-    id: 3,
-    type: "Stock",
-    title: 'Your Product "Imac 2021" Out of Stock',
-    content:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus finibus vestibulum hendrerit. Nulla est diam, efficitur eu ullamcorper quis, ultrices nec nisl.",
-    time: "1 day ago",
-    read: true,
-  },
-];
+import { GetAlarmsResponse, Alarm } from "@/lib/backend/apiV1/schema";
 
 export function Navigation({ activePage }: { activePage?: string }) {
   const router = useRouter();
   const { isLogin, loginMember, logout } = useContext(LoginMemberContext);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [notifications, setNotifications] = useState(mockNotifications);
+  const [notifications, setNotifications] = useState<Alarm[]>([]);
   const [mounted, setMounted] = useState(false);
+  const [eventSource, setEventSource] = useState<EventSource | null>(null);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    if (isLogin) {
+      fetchNotifications();
+      subscribeToNotifications();
+    }
+    return () => {
+      if (eventSource) {
+        eventSource.close();
+      }
+    };
+  }, [isLogin]);
+
+  const fetchNotifications = async () => {
+    try {
+      const response = await client.GET("/alarms");
+      if (response.data?.data) {
+        setNotifications(response.data.data.items || []);
+      }
+    } catch (error) {
+      console.error("알림 목록 조회 실패:", error);
+    }
+  };
+
+  const subscribeToNotifications = () => {
+    const sse = new EventSource(
+      `${process.env.NEXT_PUBLIC_API_URL}/alarms/subscribe`,
+      {
+        withCredentials: true,
+      }
+    );
+
+    sse.onmessage = (event) => {
+      const newNotification = JSON.parse(event.data);
+      setNotifications((prev) => [newNotification, ...prev]);
+    };
+
+    sse.onerror = () => {
+      sse.close();
+    };
+
+    setEventSource(sse);
+  };
+
+  const markAsRead = async (id: number) => {
+    try {
+      await client.PATCH(`/alarms/${id}/read`);
+      setNotifications((prev) =>
+        prev.map((notification) =>
+          notification.id === id
+            ? { ...notification, readStatus: true }
+            : notification
+        )
+      );
+    } catch (error) {
+      console.error("알림 읽음 처리 실패:", error);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      await client.PATCH("/alarms/read-all");
+      setNotifications((prev) =>
+        prev.map((notification) => ({ ...notification, readStatus: true }))
+      );
+    } catch (error) {
+      console.error("전체 알림 읽음 처리 실패:", error);
+    }
+  };
 
   const toggleProfileMenu = () => {
     setIsProfileMenuOpen(!isProfileMenuOpen);
@@ -58,20 +95,6 @@ export function Navigation({ activePage }: { activePage?: string }) {
   const toggleNotification = () => {
     setIsNotificationOpen(!isNotificationOpen);
     if (isProfileMenuOpen) setIsProfileMenuOpen(false);
-  };
-
-  const markAsRead = (id: number) => {
-    setNotifications((prev) =>
-      prev.map((notification) =>
-        notification.id === id ? { ...notification, read: true } : notification
-      )
-    );
-  };
-
-  const markAllAsRead = () => {
-    setNotifications((prev) =>
-      prev.map((notification) => ({ ...notification, read: true }))
-    );
   };
 
   const handleLogout = async (e: React.MouseEvent) => {
@@ -115,9 +138,9 @@ export function Navigation({ activePage }: { activePage?: string }) {
                 방탈출 테마
               </Link>
               <Link
-                href="/meetings"
+                href="/parties"
                 className={`${
-                  activePage === "meetings"
+                  activePage === "parties"
                     ? "text-[#FFD896]"
                     : "text-gray-300 hover:text-[#FFD896]"
                 } text-sm font-medium`}
@@ -159,7 +182,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
                         d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
                       />
                     </svg>
-                    {notifications.some((n) => !n.read) && (
+                    {notifications.some((n) => !n.readStatus) && (
                       <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
                     )}
                   </button>
@@ -184,7 +207,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
                             <div
                               key={notification.id}
                               className={`px-4 py-3 border-b border-gray-100 ${
-                                !notification.read ? "bg-[#FFFCF7]" : ""
+                                !notification.readStatus ? "bg-[#FFFCF7]" : ""
                               }`}
                             >
                               <div className="flex items-start">
@@ -192,15 +215,31 @@ export function Navigation({ activePage }: { activePage?: string }) {
                                   <div className="flex items-center">
                                     <span
                                       className={`text-xs px-2 py-1 rounded-full ${
-                                        notification.type === "Orders"
+                                        notification.alarmType === "SYSTEM"
                                           ? "bg-orange-100 text-orange-600"
-                                          : "bg-blue-100 text-blue-600"
+                                          : notification.alarmType === "MESSAGE"
+                                          ? "bg-blue-100 text-blue-600"
+                                          : "bg-green-100 text-green-600"
                                       }`}
                                     >
-                                      {notification.type}
+                                      {notification.alarmType === "SYSTEM"
+                                        ? "시스템"
+                                        : notification.alarmType === "MESSAGE"
+                                        ? "메시지"
+                                        : notification.alarmType === "SUBSCRIBE"
+                                        ? "구독"
+                                        : "기타"}
                                     </span>
                                     <span className="ml-auto text-xs text-gray-400">
-                                      {notification.time}
+                                      {new Date(
+                                        notification.createdAt
+                                      ).toLocaleDateString("ko-KR", {
+                                        year: "numeric",
+                                        month: "long",
+                                        day: "numeric",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      })}
                                     </span>
                                   </div>
                                   <h4 className="font-medium mt-1">
@@ -210,7 +249,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
                                     {notification.content}
                                   </p>
 
-                                  {!notification.read && (
+                                  {!notification.readStatus && (
                                     <div className="flex justify-end mt-1">
                                       <button
                                         onClick={() =>
@@ -272,26 +311,15 @@ export function Navigation({ activePage }: { activePage?: string }) {
                     className="flex items-center space-x-2 hover:opacity-80"
                   >
                     <div className="w-8 h-8 rounded-full overflow-hidden relative bg-gray-700 flex items-center justify-center">
-                      {loginMember?.profilePictureUrl ? (
+                      {loginMember && (
                         <img
-                          src={loginMember.profilePictureUrl}
-                          alt="프로필"
+                          src={
+                            loginMember.pofilePictureUrl ||
+                            "/images/default-profile.png"
+                          }
+                          alt={loginMember.nickname || "프로필"}
                           className="w-full h-full object-cover"
                         />
-                      ) : (
-                        <svg
-                          className="w-6 h-6 text-gray-300"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                          />
-                        </svg>
                       )}
                     </div>
                     <span className="text-gray-300 text-sm">

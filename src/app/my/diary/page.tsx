@@ -1,292 +1,201 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Navigation } from "@/components/Navigation";
-import { DiaryCard } from "@/components/DiaryCard";
-import { DiarySearch } from "@/components/DiarySearch";
-import { Diary } from "@/types/Diary";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Navigation } from "@/components/Navigation";
+import { useRouter } from "next/navigation";
+import axios from "axios";
 
-// 더미 데이터 생성 함수
-const generateDiaries = (start: number, end: number): Diary[] => {
-  const baseDiaries = [
-    {
-      id: "1",
-      themeName: "공포의 저택",
-      storeName: "이스케이프 홍대점",
-      isSuccess: true,
-      playDate: "2024.03.15 19:00",
-      escapeTime: "45:30",
-      hintCount: 2,
-    },
-    {
-      id: "2",
-      themeName: "셜록홈즈",
-      storeName: "이스케이프 강남점",
-      isSuccess: false,
-      playDate: "2024.03.16 15:00",
-      escapeTime: "60:00",
-      hintCount: 5,
-    },
-    {
-      id: "3",
-      themeName: "우주정거장",
-      storeName: "이스케이프 신대방점",
-      isSuccess: true,
-      playDate: "2024.03.17 14:00",
-      escapeTime: "38:45",
-      hintCount: 1,
-    },
-    {
-      id: "4",
-      themeName: "미스터리 하우스",
-      storeName: "이스케이프 건대점",
-      isSuccess: true,
-      playDate: "2024.03.18 16:00",
-      escapeTime: "42:15",
-      hintCount: 3,
-    },
-    {
-      id: "5",
-      themeName: "좀비 아포칼립스",
-      storeName: "이스케이프 신촌점",
-      isSuccess: false,
-      playDate: "2024.03.19 20:00",
-      escapeTime: "55:20",
-      hintCount: 4,
-    },
-    {
-      id: "6",
-      themeName: "마법사의 탑",
-      storeName: "이스케이프 강서점",
-      isSuccess: true,
-      playDate: "2024.03.20 13:00",
-      escapeTime: "39:45",
-      hintCount: 2,
-    },
-    {
-      id: "7",
-      themeName: "추리 게임",
-      storeName: "이스케이프 종로점",
-      isSuccess: true,
-      playDate: "2024.03.21 15:00",
-      escapeTime: "41:30",
-      hintCount: 1,
-    },
-    {
-      id: "8",
-      themeName: "호러 스토리",
-      storeName: "이스케이프 마포점",
-      isSuccess: false,
-      playDate: "2024.03.22 19:00",
-      escapeTime: "58:15",
-      hintCount: 5,
-    },
-    {
-      id: "9",
-      themeName: "SF 어드벤처",
-      storeName: "이스케이프 서초점",
-      isSuccess: true,
-      playDate: "2024.03.23 14:00",
-      escapeTime: "43:20",
-      hintCount: 2,
-    },
-    {
-      id: "10",
-      themeName: "미스터리 박물관",
-      storeName: "이스케이프 용산점",
-      isSuccess: true,
-      playDate: "2024.03.24 16:00",
-      escapeTime: "40:10",
-      hintCount: 1,
-    },
-    {
-      id: "11",
-      themeName: "좀비 서바이벌",
-      storeName: "이스케이프 강북점",
-      isSuccess: false,
-      playDate: "2024.03.25 20:00",
-      escapeTime: "56:45",
-      hintCount: 4,
-    },
-    {
-      id: "12",
-      themeName: "마법의 숲",
-      storeName: "이스케이프 중구점",
-      isSuccess: true,
-      playDate: "2024.03.26 13:00",
-      escapeTime: "38:20",
-      hintCount: 2,
-    },
-  ];
+// API 기본 URL
+const API_BASE_URL = "http://localhost:8080";
 
-  // start부터 end까지의 데이터를 반환
-  return baseDiaries.slice(start, end);
+// 일지 타입 정의
+type Diary = {
+  id: number;
+  themeId: number;
+  themeName: string;
+  storeName: string;
+  escapeDate: string;
+  escapeResult: boolean;
+  ratingAvg: number;
 };
 
-export default function MyEscapePage() {
-  const router = useRouter();
-  const [searchKeyword, setSearchKeyword] = useState("");
-  const [activeFilters, setActiveFilters] = useState({
-    region: "",
-    genre: "",
-    dateRange: "",
-    isSuccess: "",
-    noHint: false,
-  });
+export default function DiaryPage() {
+  // 상태 관리
   const [diaries, setDiaries] = useState<Diary[]>([]);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const itemsPerPage = 12;
+  const [loading, setLoading] = useState(true);
 
-  const loadDiaries = async (pageNum: number) => {
-    setLoading(true);
-    try {
-      const startIndex = (pageNum - 1) * itemsPerPage;
-      const endIndex = startIndex + itemsPerPage;
-      const newDiaries = generateDiaries(startIndex, endIndex);
-      setDiaries(newDiaries);
-      setPage(pageNum);
-      setHasMore(newDiaries.length === itemsPerPage);
-    } catch (error) {
-      console.error("Error loading diaries:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const router = useRouter();
 
+  // 일지 목록 조회
   useEffect(() => {
-    loadDiaries(1);
+    const fetchDiaries = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.post(
+          `${API_BASE_URL}/api/v1/diaries/list`,
+          {},
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            withCredentials: true,
+          }
+        );
+
+        // API 응답 구조 확인 (배열 또는 페이지네이션 객체)
+        let diaryData: Diary[] = [];
+        if (Array.isArray(response.data.data)) {
+          diaryData = response.data.data;
+        } else if (
+          response.data.data &&
+          Array.isArray(response.data.data.content)
+        ) {
+          diaryData = response.data.data.content;
+        }
+
+        setDiaries(diaryData);
+      } catch (error) {
+        console.error("일지 목록을 불러오는데 실패했습니다.", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDiaries();
   }, []);
 
-  const handleSearch = (keyword: string) => {
-    setSearchKeyword(keyword);
-    loadDiaries(1);
-  };
+  // 일지 삭제 핸들러
+  const handleDeleteDiary = async (id: number) => {
+    if (!confirm("정말로 이 일지를 삭제하시겠습니까?")) return;
 
-  const handleFilterChange = (filters: any) => {
-    setActiveFilters(filters);
-    loadDiaries(1);
-  };
+    try {
+      await axios.delete(`${API_BASE_URL}/api/v1/diaries/${id}`, {
+        withCredentials: true,
+      });
 
-  const handlePageChange = (newPage: number) => {
-    loadDiaries(newPage);
-  };
-
-  const handleCreateDiary = () => {
-    router.push("/diary/new");
-  };
-
-  // 실제 앱에서는 검색어와 필터에 따라 필터링 로직 추가 필요
-  const filteredDiaries = diaries.filter((diary) => {
-    // 검색어 필터링
-    if (
-      searchKeyword &&
-      !diary.themeName.toLowerCase().includes(searchKeyword.toLowerCase()) &&
-      !diary.storeName.toLowerCase().includes(searchKeyword.toLowerCase())
-    ) {
-      return false;
+      // 삭제 후 목록 업데이트
+      setDiaries((prev) => prev.filter((diary) => diary.id !== id));
+      alert("일지가 삭제되었습니다.");
+    } catch (error) {
+      console.error("일지 삭제에 실패했습니다.", error);
+      alert("일지 삭제에 실패했습니다.");
     }
+  };
 
-    // 성공 여부 필터링
-    if (
-      activeFilters.isSuccess &&
-      diary.isSuccess.toString() !== activeFilters.isSuccess
-    ) {
-      return false;
-    }
+  // 별점 렌더링 헬퍼 함수
+  const renderStars = (rating: number) => {
+    return Array.from({ length: 5 }).map((_, index) => (
+      <span
+        key={index}
+        className={`text-lg ${
+          index < Math.round(rating) ? "text-yellow-400" : "text-gray-300"
+        }`}
+      >
+        ★
+      </span>
+    ));
+  };
 
-    // 힌트 사용 여부 필터링
-    if (activeFilters.noHint && diary.hintCount > 0) {
-      return false;
-    }
-
-    return true;
-  });
+  // 날짜 포맷 헬퍼 함수
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("ko-KR", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
 
   return (
-    <main className="bg-gray-50 min-h-screen">
-      <Navigation activePage="my-escape" />
+    <main className="min-h-screen bg-gray-50">
+      <Navigation activePage="my-diary" />
 
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-8">
+      <div className="max-w-3xl mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">나의 탈출일지</h1>
+          <h1 className="text-2xl font-bold">내 탈출일지</h1>
           <Link
             href="/my/diary/new"
-            className="px-4 py-2 bg-black text-white rounded-lg"
+            className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition"
           >
             일지 작성
           </Link>
         </div>
 
-        <DiarySearch
-          onSearch={handleSearch}
-          onFilterChange={handleFilterChange}
-          activeFilters={activeFilters}
-        />
-
-        <div className="mt-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredDiaries.map((diary) => (
-              <DiaryCard key={diary.id} diary={diary} />
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
+          </div>
+        ) : diaries.length === 0 ? (
+          <div className="bg-white p-8 rounded-lg shadow-sm text-center">
+            <p className="text-gray-500 mb-4">
+              아직 작성한 탈출일지가 없습니다.
+            </p>
+            <Link
+              href="/my/diary/new"
+              className="inline-block bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition"
+            >
+              첫 탈출일지 작성하기
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {diaries.map((diary) => (
+              <div
+                key={diary.id}
+                className="bg-white p-4 rounded-lg shadow-sm hover:shadow transition cursor-pointer"
+                onClick={() => router.push(`/my/diary/${diary.id}`)}
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h2 className="font-semibold text-lg">{diary.themeName}</h2>
+                    <p className="text-gray-500 text-sm">{diary.storeName}</p>
+                  </div>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/my/diary/edit/${diary.id}`);
+                      }}
+                      className="text-blue-500 hover:text-blue-700"
+                    >
+                      수정
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteDiary(diary.id);
+                      }}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      삭제
+                    </button>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center mt-2">
+                  <div className="flex items-center">
+                    {renderStars(diary.ratingAvg)}
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-gray-500">
+                      {formatDate(diary.escapeDate)}
+                    </span>
+                    <span
+                      className={`px-2 py-0.5 text-xs rounded-full ${
+                        diary.escapeResult
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {diary.escapeResult ? "성공" : "실패"}
+                    </span>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
-
-          {filteredDiaries.length === 0 && !loading && (
-            <div className="text-center py-12">
-              <h3 className="text-lg font-medium text-gray-900">
-                일치하는 탈출일지가 없습니다
-              </h3>
-              <p className="mt-2 text-sm text-gray-500">
-                다른 검색어나 필터를 사용해보세요.
-              </p>
-            </div>
-          )}
-
-          {/* 로딩 인디케이터 */}
-          {loading && (
-            <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
-            </div>
-          )}
-
-          {/* 페이지네이션 */}
-          {!loading && filteredDiaries.length > 0 && (
-            <div className="flex justify-center mt-8">
-              <nav className="flex items-center space-x-2">
-                <button
-                  onClick={() => handlePageChange(page - 1)}
-                  disabled={page === 1}
-                  className="px-3 py-1 rounded-md border border-gray-300 text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  &lt;
-                </button>
-                {[1, 2, 3].map((num) => (
-                  <button
-                    key={num}
-                    onClick={() => handlePageChange(num)}
-                    className={`px-3 py-1 rounded-md ${
-                      page === num
-                        ? "bg-[#FFB130] text-white"
-                        : "border border-gray-300 text-gray-500 hover:bg-gray-50"
-                    }`}
-                  >
-                    {num}
-                  </button>
-                ))}
-                <button
-                  onClick={() => handlePageChange(page + 1)}
-                  disabled={!hasMore}
-                  className="px-3 py-1 rounded-md border border-gray-300 text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  &gt;
-                </button>
-              </nav>
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </main>
   );

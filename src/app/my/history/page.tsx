@@ -4,35 +4,35 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Navigation } from "@/components/Navigation";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 // 모임 타입 정의
-type Meeting = {
+type PartyType = {
   id: number;
   title: string;
-  dateTime: string;
-  location: string;
+  themeThumbnailUrl: string;
+  themeTitle: string;
+  role: "HOST" | "MEMBER";
   participantsNeeded: number;
   totalParticipants: number;
-  themeThumbnailUrl?: string;
-  role: "HOST" | "MEMBER";
-  reviewStatus: "WRITABLE" | "COMPLETED" | "NOT_AVAILABLE";
+  dateTime: string;
+  location: string;
+  reviewStatus: "WRITABLE" | "COMPLETED" | "NOT_WRITABLE";
 };
 
 export default function HistoryPage() {
   const router = useRouter();
   // 상태 관리
-  const [activeTab, setActiveTab] = useState<"all" | "upcoming" | "past">(
-    "all"
-  );
-  const [reviewFilter, setReviewFilter] = useState<
-    "all" | "writable" | "completed"
-  >("all");
-  const [roleFilter, setRoleFilter] = useState<"all" | "host" | "member">(
-    "all"
+  const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming");
+  const [statusFilter, setStatusFilter] = useState<
+    "ALL" | "WRITABLE" | "COMPLETED" | "NOT_WRITABLE"
+  >("ALL");
+  const [roleFilter, setRoleFilter] = useState<"ALL" | "HOST" | "MEMBER">(
+    "ALL"
   );
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [meetings, setMeetings] = useState<Meeting[]>([]);
+  const [parties, setParties] = useState<PartyType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,7 +44,7 @@ export default function HistoryPage() {
     // API 요청을 시뮬레이션 (실제로는 fetch 사용)
     setTimeout(() => {
       // 목업 데이터
-      const mockData: Meeting[] = [
+      const mockData: PartyType[] = [
         {
           id: 1,
           title: "좀비 연구소 모집합니다",
@@ -53,6 +53,7 @@ export default function HistoryPage() {
           participantsNeeded: 5,
           totalParticipants: 6,
           themeThumbnailUrl: "/images/theme-1.jpg",
+          themeTitle: "좀비 연구소",
           role: "HOST" as const,
           reviewStatus: "WRITABLE" as const,
         },
@@ -64,6 +65,7 @@ export default function HistoryPage() {
           participantsNeeded: 4,
           totalParticipants: 4,
           themeThumbnailUrl: "/images/theme-2.jpg",
+          themeTitle: "심야 병동",
           role: "MEMBER" as const,
           reviewStatus: "COMPLETED" as const,
         },
@@ -75,8 +77,9 @@ export default function HistoryPage() {
           participantsNeeded: 3,
           totalParticipants: 6,
           themeThumbnailUrl: "/images/theme-3.jpg",
+          themeTitle: "타임루프",
           role: "MEMBER" as const,
-          reviewStatus: "NOT_AVAILABLE" as const,
+          reviewStatus: "NOT_WRITABLE" as const,
         },
         {
           id: 4,
@@ -86,6 +89,7 @@ export default function HistoryPage() {
           participantsNeeded: 4,
           totalParticipants: 4,
           themeThumbnailUrl: "/images/theme-4.jpg",
+          themeTitle: "마술사의 집",
           role: "HOST" as const,
           reviewStatus: "COMPLETED" as const,
         },
@@ -97,8 +101,9 @@ export default function HistoryPage() {
           participantsNeeded: 4,
           totalParticipants: 6,
           themeThumbnailUrl: "/images/theme-5.jpg",
+          themeTitle: "자살 사건 추리",
           role: "MEMBER" as const,
-          reviewStatus: "NOT_AVAILABLE" as const,
+          reviewStatus: "NOT_WRITABLE" as const,
         },
         {
           id: 6,
@@ -107,6 +112,8 @@ export default function HistoryPage() {
           location: "셜록홈즈 신촌점",
           participantsNeeded: 3,
           totalParticipants: 4,
+          themeThumbnailUrl: "/images/theme-6.jpg",
+          themeTitle: "공포체험",
           role: "HOST" as const,
           reviewStatus: "COMPLETED" as const,
         },
@@ -118,39 +125,39 @@ export default function HistoryPage() {
       // 탭 필터
       if (activeTab === "upcoming") {
         filteredData = filteredData.filter(
-          (meeting) => new Date(meeting.dateTime) > new Date()
+          (party) => new Date(party.dateTime) > new Date()
         );
-      } else if (activeTab === "past") {
+      } else {
         filteredData = filteredData.filter(
-          (meeting) => new Date(meeting.dateTime) <= new Date()
+          (party) => new Date(party.dateTime) <= new Date()
         );
       }
 
       // 리뷰 상태 필터
-      if (reviewFilter !== "all") {
-        const status = reviewFilter === "writable" ? "WRITABLE" : "COMPLETED";
+      if (statusFilter !== "ALL") {
         filteredData = filteredData.filter(
-          (meeting) => meeting.reviewStatus === status
+          (party) => party.reviewStatus === statusFilter
         );
       }
 
       // 역할 필터
-      if (roleFilter !== "all") {
-        const role = roleFilter === "host" ? "HOST" : "MEMBER";
-        filteredData = filteredData.filter((meeting) => meeting.role === role);
+      if (roleFilter !== "ALL") {
+        filteredData = filteredData.filter(
+          (party) => party.role === roleFilter
+        );
       }
 
-      setMeetings(filteredData);
+      setParties(filteredData);
       setTotalPages(Math.ceil(filteredData.length / 6));
       setIsLoading(false);
     }, 500);
-  }, [activeTab, reviewFilter, roleFilter, currentPage]);
+  }, [activeTab, statusFilter, roleFilter, currentPage]);
 
   // 필터 초기화
   const resetFilters = () => {
-    setActiveTab("all");
-    setReviewFilter("all");
-    setRoleFilter("all");
+    setActiveTab("upcoming");
+    setStatusFilter("ALL");
+    setRoleFilter("ALL");
     setCurrentPage(1);
   };
 
@@ -168,32 +175,38 @@ export default function HistoryPage() {
   };
 
   // 리뷰 버튼 표시 여부 및 스타일 결정 함수
-  const getReviewButton = (meeting: Meeting) => {
+  const getReviewButton = (party: PartyType) => {
     const now = new Date();
-    const meetingDate = new Date(meeting.dateTime);
+    const partyDate = new Date(party.dateTime);
 
-    if (meetingDate > now) {
+    if (partyDate > now) {
       // 예정된 모임인 경우 버튼 없음
       return null;
-    } else if (meeting.reviewStatus === "WRITABLE") {
+    } else if (party.reviewStatus === "WRITABLE") {
       // 리뷰 작성 가능한 경우
       return (
         <Link
-          href={`/my/review/write/${meeting.id}`}
-          className="mt-3 bg-[#FFB230] text-white px-4 py-2 text-sm font-medium rounded-md block text-center"
+          href={`/my/review/write/${party.id}`}
+          className="px-3 py-1 bg-[#FFB130] text-white text-xs rounded hover:bg-[#FFA000] transition-colors"
         >
-          모임 리뷰 작성
+          리뷰 작성
         </Link>
       );
-    } else if (meeting.reviewStatus === "COMPLETED") {
+    } else if (party.reviewStatus === "COMPLETED") {
       // 리뷰 작성 완료된 경우
       return (
-        <div className="mt-3 bg-gray-200 text-gray-600 px-4 py-2 text-sm font-medium rounded-md block text-center">
-          리뷰 작성 완료
-        </div>
+        <button className="px-3 py-1 bg-gray-200 text-gray-600 text-xs rounded cursor-default">
+          작성완료
+        </button>
+      );
+    } else {
+      // 리뷰 작성 불가능한 경우
+      return (
+        <button className="px-3 py-1 bg-gray-200 text-gray-600 text-xs rounded cursor-default">
+          작성불가
+        </button>
       );
     }
-    return null;
   };
 
   return (
@@ -216,16 +229,6 @@ export default function HistoryPage() {
 
           {/* 탭 필터 */}
           <div className="flex mb-4 border-b border-gray-200">
-            <button
-              className={`px-4 py-2 text-sm font-medium ${
-                activeTab === "all"
-                  ? "text-[#FFB230] border-b-2 border-[#FFB230]"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-              onClick={() => setActiveTab("all")}
-            >
-              전체
-            </button>
             <button
               className={`px-4 py-2 text-sm font-medium ${
                 activeTab === "upcoming"
@@ -257,12 +260,13 @@ export default function HistoryPage() {
                 </label>
                 <select
                   className="rounded-md border-gray-300 shadow-sm px-3 py-1.5 text-sm"
-                  value={reviewFilter}
-                  onChange={(e) => setReviewFilter(e.target.value as any)}
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as any)}
                 >
-                  <option value="all">전체</option>
-                  <option value="writable">작성 가능</option>
-                  <option value="completed">작성 완료</option>
+                  <option value="ALL">전체</option>
+                  <option value="WRITABLE">작성 가능</option>
+                  <option value="COMPLETED">작성 완료</option>
+                  <option value="NOT_WRITABLE">작성 불가</option>
                 </select>
               </div>
               <div className="flex items-center space-x-2">
@@ -274,9 +278,9 @@ export default function HistoryPage() {
                   value={roleFilter}
                   onChange={(e) => setRoleFilter(e.target.value as any)}
                 >
-                  <option value="all">전체</option>
-                  <option value="host">모임장</option>
-                  <option value="member">모임원</option>
+                  <option value="ALL">전체</option>
+                  <option value="HOST">모임장</option>
+                  <option value="MEMBER">모임원</option>
                 </select>
               </div>
             </div>
@@ -296,62 +300,58 @@ export default function HistoryPage() {
           </div>
         ) : error ? (
           <div className="bg-red-50 text-red-600 p-4 rounded-md">{error}</div>
-        ) : meetings.length === 0 ? (
+        ) : parties.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
             <p>조건에 맞는 모임이 없습니다.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {meetings.map((meeting) => (
+          <div className="grid grid-cols-1 gap-4">
+            {parties.map((party) => (
               <div
-                key={meeting.id}
-                className="bg-white rounded-lg shadow-md overflow-hidden"
+                key={party.id}
+                className="bg-white rounded-lg border border-gray-200 p-4"
               >
-                {/* 역할 뱃지 */}
-                <div className="relative">
-                  <div
-                    className={`absolute top-2 left-2 px-2 py-1 text-xs font-medium rounded
-                      ${
-                        meeting.role === "HOST"
-                          ? "bg-[#FFB230] text-white"
-                          : "bg-gray-200 text-gray-700"
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`px-2 py-0.5 text-xs rounded-full ${
+                        party.role === "HOST"
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-gray-100 text-gray-800"
                       }`}
-                  >
-                    {meeting.role === "HOST" ? "모임장" : "모임원"}
+                    >
+                      {party.role === "HOST" ? "모임장" : "모임원"}
+                    </span>
                   </div>
-
-                  {/* 썸네일 이미지 */}
-                  <div className="h-48 bg-gray-200 flex items-center justify-center">
-                    {meeting.themeThumbnailUrl ? (
-                      <img
-                        src={meeting.themeThumbnailUrl}
-                        alt={meeting.title}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="text-gray-400">NO IMAGE</div>
-                    )}
-                  </div>
+                  <div>{getReviewButton(party)}</div>
                 </div>
-
-                {/* 모임 정보 */}
-                <div className="p-4">
-                  <h3 className="text-lg font-medium text-gray-900 truncate">
-                    {meeting.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {formatDate(meeting.dateTime)}
-                  </p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    장소: {meeting.location}
-                  </p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    인원: {meeting.participantsNeeded} /{" "}
-                    {meeting.totalParticipants}명
-                  </p>
-
-                  {/* 리뷰 버튼 */}
-                  {getReviewButton(meeting)}
+                <div className="flex mt-3 gap-4">
+                  {party.themeThumbnailUrl ? (
+                    <div className="w-24 h-24 bg-gray-100 rounded overflow-hidden relative flex-shrink-0">
+                      <Image
+                        src={party.themeThumbnailUrl}
+                        alt={party.title}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-24 h-24 bg-gray-100 rounded flex-shrink-0 flex items-center justify-center">
+                      <svg>...</svg>
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <h3 className="font-bold mb-1">{party.title}</h3>
+                    <div className="space-y-1 text-sm text-gray-600">
+                      <p>{formatDate(party.dateTime)}</p>
+                      <p>테마: {party.themeTitle}</p>
+                      <p>장소: {party.location}</p>
+                      <p>
+                        인원: {party.participantsNeeded} /{" "}
+                        {party.totalParticipants}명
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}

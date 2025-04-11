@@ -20,18 +20,25 @@ ChartJS.register(
   Legend
 );
 
-interface RadarChartProps {
-  data: number[];
-  labels: string[];
+interface RadarItem {
+  label: string;
+  value: number;
 }
 
-export function RadarChart({ data, labels }: RadarChartProps) {
+interface RadarChartProps {
+  data: RadarItem[];
+}
+
+export function RadarChart({ data }: RadarChartProps) {
+  const labels = data.map((item) => item.label);
+  const values = data.map((item) => item.value);
+
   const chartData = {
     labels,
     datasets: [
       {
         label: "플레이 특성",
-        data: data,
+        data: values,
         backgroundColor: "rgba(0, 0, 0, 0.2)",
         borderColor: "rgba(0, 0, 0, 1)",
         borderWidth: 1,

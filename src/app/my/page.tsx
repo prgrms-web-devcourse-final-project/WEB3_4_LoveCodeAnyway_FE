@@ -1,39 +1,146 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Calendar } from "@/components/Calendar";
+import axios from "axios";
 
-// 임시 데이터
-const userProfile = {
-  nickname: "방탈러",
-  profileImage: "/images/profile.jpg",
-  gender: "male",
-  mannerScore: 4.5,
-  tags: ["#공포매니아", "#추리고수", "#액션러버", "#초보환영", "#친절한"],
+// API 기본 URL 설정
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
+  ? process.env.NEXT_PUBLIC_API_URL
+  : process.env.NODE_ENV === "development"
+  ? "http://localhost:8080"
+  : "https://api.ddobang.site";
+
+// 타입 정의
+type UserProfile = {
+  nickname: string;
+  profileImage: string;
+  gender: string;
+  mannerScore: number;
+  tags: string[];
   stats: {
-    successRate: 75,
-    averageClear: 45,
-    totalRooms: 30,
-  },
+    successRate: number;
+    averageClear: number;
+    totalRooms: number;
+  };
 };
 
-const wishThemes = [
-  {
-    id: 1,
-    title: "비밀의 방",
-    storeName: "이스케이프 홍대점",
-    genre: "추리",
-    playTime: "60분",
-    thumbnail: "/images/theme-1.jpg",
-  },
-  // ... 더 많은 테마
-];
+type WishTheme = {
+  id: number;
+  title: string;
+  storeName: string;
+  genre: string;
+  playTime: string;
+  thumbnailUrl: string;
+};
+
+type CalendarDiary = {
+  id: number;
+  date: string;
+  title: string;
+  themeName: string;
+  isSuccess: boolean;
+};
 
 export default function MyPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [wishThemes, setWishThemes] = useState<WishTheme[]>([]);
+  const [calendarDiaries, setCalendarDiaries] = useState<CalendarDiary[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // 프로필 정보 가져오기
+  const fetchUserProfile = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/v1/users/me`, {
+        withCredentials: true,
+      });
+      setUserProfile(response.data.data);
+    } catch (error) {
+      console.error("프로필 로딩 에러:", error);
+      setError("프로필을 불러오는데 실패했습니다.");
+    }
+  };
+
+  // 희망 테마 가져오기
+  const fetchWishThemes = async () => {
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}/api/v1/users/me/wish-themes`,
+        {
+          withCredentials: true,
+        }
+      );
+      setWishThemes(response.data.data);
+    } catch (error) {
+      console.error("희망 테마 로딩 에러:", error);
+      setError("희망 테마를 불러오는데 실패했습니다.");
+    }
+  };
+
+  // 달력 데이터 가져오기
+  const fetchCalendarDiaries = async () => {
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}/api/v1/diaries/calendar`,
+        {
+          withCredentials: true,
+        }
+      );
+      setCalendarDiaries(response.data.data);
+    } catch (error) {
+      console.error("달력 데이터 로딩 에러:", error);
+      setError("달력 데이터를 불러오는데 실패했습니다.");
+    }
+  };
+
+  // 컴포넌트 마운트 시 데이터 로딩
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        await Promise.all([
+          fetchUserProfile(),
+          fetchWishThemes(),
+          fetchCalendarDiaries(),
+        ]);
+      } catch (error) {
+        console.error("데이터 로딩 에러:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-red-500">{error}</div>
+      </div>
+    );
+  }
+
+  if (!userProfile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-gray-500">프로필을 찾을 수 없습니다.</div>
+      </div>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -46,7 +153,7 @@ export default function MyPage() {
             <div className="flex gap-6">
               <div className="relative">
                 <Image
-                  src={userProfile.profileImage}
+                  src={userProfile.profileImage || "/images/profile.jpg"}
                   alt="프로필 이미지"
                   width={100}
                   height={100}
@@ -98,9 +205,12 @@ export default function MyPage() {
                 </div>
               </div>
             </div>
-            <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+            <Link
+              href="/my/profile/edit"
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            >
               프로필 수정
-            </button>
+            </Link>
           </div>
           <div className="grid grid-cols-3 gap-4">
             <div className="bg-gray-50 rounded-lg p-4">
@@ -130,9 +240,12 @@ export default function MyPage() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold">모임 희망 테마</h2>
-            <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+            <Link
+              href="/themes"
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            >
               테마 추가
-            </button>
+            </Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {wishThemes.map((theme) => (
@@ -143,7 +256,7 @@ export default function MyPage() {
               >
                 <div className="aspect-[3/4] relative">
                   <Image
-                    src={theme.thumbnail}
+                    src={theme.thumbnailUrl || "/images/theme-placeholder.jpg"}
                     alt={theme.title}
                     fill
                     className="object-cover"
@@ -183,11 +296,9 @@ export default function MyPage() {
               <Calendar
                 selectedDate={selectedDate}
                 onChange={setSelectedDate}
-                markedDates={[
-                  new Date(),
-                  new Date(2024, 2, 15),
-                  new Date(2024, 2, 20),
-                ]}
+                markedDates={calendarDiaries.map(
+                  (diary) => new Date(diary.date)
+                )}
               />
             </div>
             <div className="bg-gray-50 rounded-lg p-6">
@@ -198,34 +309,39 @@ export default function MyPage() {
                       year: "numeric",
                       month: "long",
                       day: "numeric",
-                      weekday: "long",
                     })}
                   </div>
-                  {/* 선택된 날짜의 탈출일지 목록 */}
-                  <div className="bg-white rounded-lg p-4">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-medium mb-1">비밀의 방</h3>
-                        <p className="text-sm text-gray-600 mb-2">
-                          이스케이프 홍대점
+                  {calendarDiaries
+                    .filter(
+                      (diary) =>
+                        new Date(diary.date).toDateString() ===
+                        selectedDate.toDateString()
+                    )
+                    .map((diary) => (
+                      <Link
+                        key={diary.id}
+                        href={`/my/diary/${diary.id}`}
+                        className="block bg-white p-4 rounded-lg hover:shadow-md transition-shadow"
+                      >
+                        <h3 className="font-medium mb-2">{diary.title}</h3>
+                        <p className="text-sm text-gray-600">
+                          {diary.themeName}
                         </p>
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                          <span>4인 참여</span>
-                          <span>•</span>
-                          <span>60분</span>
-                          <span>•</span>
-                          <span className="text-green-500">성공</span>
-                        </div>
-                      </div>
-                      <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm">
-                        힌트 2회
-                      </span>
-                    </div>
-                  </div>
+                        <span
+                          className={`inline-block mt-2 px-2 py-1 text-sm rounded ${
+                            diary.isSuccess
+                              ? "bg-green-100 text-green-600"
+                              : "bg-red-100 text-red-600"
+                          }`}
+                        >
+                          {diary.isSuccess ? "성공" : "실패"}
+                        </span>
+                      </Link>
+                    ))}
                 </div>
               ) : (
-                <div className="text-center text-gray-500 py-12">
-                  날짜를 선택하면 탈출일지를 확인할 수 있습니다
+                <div className="text-center text-gray-500">
+                  날짜를 선택하면 해당 날짜의 탈출일지를 볼 수 있습니다.
                 </div>
               )}
             </div>
@@ -239,7 +355,7 @@ export default function MyPage() {
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold">나의 모임 히스토리</h2>
             <Link
-              href="/my/meetings"
+              href="/my/parties"
               className="text-blue-500 hover:text-blue-600 transition-colors"
             >
               전체보기
@@ -254,13 +370,16 @@ export default function MyPage() {
                 <div className="p-6">
                   <div className="flex gap-4">
                     <div className="w-24 h-24 bg-gray-200 rounded-lg flex-shrink-0">
-                      <Image
-                        src={`/images/meeting-${item}.jpg`}
-                        alt="Meeting thumbnail"
-                        width={96}
-                        height={96}
-                        className="rounded-lg object-cover"
-                      />
+                      <div key={item} className="space-y-2">
+                        <div className="aspect-video relative rounded-lg overflow-hidden">
+                          <Image
+                            src={`/images/meeting-${item}.jpg`}
+                            alt="Party thumbnail"
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      </div>
                     </div>
                     <div className="flex-1">
                       <h3 className="font-medium mb-1">

@@ -1,93 +1,160 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Navigation } from "@/components/Navigation";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { StarRating } from "@/components/StarRating";
 import { RadarChart } from "@/components/RadarChart";
 import { KakaoMap } from "@/components/KakaoMap";
 import Image from "next/image";
 
-interface ThemeDetail {
-  id: string;
-  title: string;
-  category: string;
-  image: string;
-  themeTypes: string[];
-  noHintEscapeRate: number;
-  userEscapeRate: number;
-  difficulty: number;
-  price: number;
-  playTime: number;
-  recommendedPlayers: string;
-  description: string;
-  address: string;
-  phoneNumber: string;
-  ratings: {
-    content: number;
-    satisfaction: number;
-    production: number;
-    story: number;
-    interior: number;
+// API 응답 타입과 일치하는 인터페이스
+interface ThemeDetailResponse {
+  name?: string;
+  description?: string;
+  runtime?: number;
+  officialDifficulty?: number;
+  price?: number;
+  recommendedParticipants?: string;
+  thumbnailUrl?: string;
+  reservationUrl?: string;
+  tags?: string[];
+  storeInfo?: {
+    name?: string;
+    phoneNumber?: string;
+    address?: string;
   };
-  playCharacteristics: {
-    difficulty: number;
-    horror: number;
-    activity: number;
-    puzzles: number;
-    devices: number;
-  };
-  statistics: {
-    noHintEscapeRate: number;
-    averageEscapeTime: number;
+  diaryBasedThemeStat?: {
+    difficulty?: number;
+    fear?: number;
+    activity?: number;
+    satisfaction?: number;
+    production?: number;
+    story?: number;
+    question?: number;
+    interior?: number;
+    deviceRatio?: number;
+    noHintEscapeRate?: number;
+    escapeResult?: number;
+    escapeTimeAvg?: number;
   };
 }
 
 export default function ThemeDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const themeId = params.id;
 
-  // 평점 관련 상태
+  const [themeDetail, setThemeDetail] = useState<ThemeDetailResponse | null>(
+    null
+  );
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [liked, setLiked] = useState(false);
 
-  // 실제 API 연동 시 themeId를 이용하여 데이터를 가져오도록 수정
-  // 현재는 하드코딩된 데미 데이터 사용
-  const themeDetail: ThemeDetail = {
-    id: themeId as string,
-    title: "미스터리 하우스",
-    category: "미스터리 룸 강남점",
-    image: "/images/mystery-room.jpg",
-    themeTypes: ["미스터리", "추리", "공포"],
-    noHintEscapeRate: 45,
-    userEscapeRate: 78,
-    difficulty: 4,
-    price: 25000,
-    playTime: 60,
-    recommendedPlayers: "2-4",
-    description:
-      "어느 날 갑자기 사라진 탐정의 흔적을 찾아 미스터리를 해결하세요. 다양한 퍼즐과 장치들이 여러분을 기다립니다.",
-    address: "서울특별시 강남구 테헤란로 123",
-    phoneNumber: "02-1234-5678",
-    ratings: {
-      content: 4.5,
-      satisfaction: 4.8,
-      production: 4.2,
-      story: 4.6,
-      interior: 4.3,
-    },
-    playCharacteristics: {
-      difficulty: 4.2,
-      horror: 2.5,
-      activity: 3.8,
-      puzzles: 4.5,
-      devices: 3.9,
-    },
-    statistics: {
-      noHintEscapeRate: 45,
-      averageEscapeTime: 52,
-    },
-  };
+  useEffect(() => {
+    const fetchThemeDetail = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(
+          `${
+            process.env.NODE_ENV === "development"
+              ? "http://localhost:8080"
+              : "https://api.ddobang.site"
+          }/api/v1/themes/${themeId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("테마 정보를 불러오는데 실패했습니다.");
+        }
+
+        const data = await response.json();
+        if (data && data.data) {
+          setThemeDetail(data.data);
+        } else {
+          throw new Error("응답 데이터가 올바르지 않습니다.");
+        }
+      } catch (err) {
+        console.error("테마 상세 정보 가져오기 오류:", err);
+        setError(
+          err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (themeId) {
+      fetchThemeDetail();
+    }
+  }, [themeId]);
+
+  if (loading) {
+    return (
+      <main className="bg-gray-50 min-h-screen">
+        <Navigation activePage="themes" />
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-8 flex justify-center items-center min-h-[70vh]">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-gray-900"></div>
+        </div>
+      </main>
+    );
+  }
+
+  if (error || !themeDetail) {
+    return (
+      <main className="bg-gray-50 min-h-screen">
+        <Navigation activePage="themes" />
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-8">
+          <div className="bg-white rounded-2xl p-8 shadow-sm text-center">
+            <h1 className="text-2xl font-bold mb-4">오류 발생</h1>
+            <p className="text-gray-600 mb-6">
+              {error || "테마 정보를 불러올 수 없습니다."}
+            </p>
+            <button
+              onClick={() => router.back()}
+              className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
+            >
+              이전 페이지로 돌아가기
+            </button>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // 레이더 차트 데이터
+  const radarData = themeDetail.diaryBasedThemeStat
+    ? [
+        {
+          label: "난이도",
+          value: themeDetail.diaryBasedThemeStat.difficulty || 0,
+        },
+        {
+          label: "공포도",
+          value: themeDetail.diaryBasedThemeStat.fear || 0,
+        },
+        {
+          label: "활동성",
+          value: themeDetail.diaryBasedThemeStat.activity || 0,
+        },
+        {
+          label: "만족도",
+          value: themeDetail.diaryBasedThemeStat.satisfaction || 0,
+        },
+        {
+          label: "연출",
+          value: themeDetail.diaryBasedThemeStat.production || 0,
+        },
+      ]
+    : [];
 
   return (
     <main className="bg-gray-50 min-h-screen">
@@ -97,8 +164,8 @@ export default function ThemeDetailPage() {
         {/* 섹션 1: 테마 정보 */}
         <div className="mb-8">
           <div className="mb-2">
-            <h1 className="text-2xl font-bold mb-1">{themeDetail.title}</h1>
-            <span className="text-gray-500">{themeDetail.category}</span>
+            <h1 className="text-2xl font-bold mb-1">{themeDetail.name}</h1>
+            <span className="text-gray-500">{themeDetail.storeInfo?.name}</span>
           </div>
           <div className="flex items-center gap-4 text-sm text-gray-500 mb-2">
             <div className="flex items-center gap-2">
@@ -115,7 +182,7 @@ export default function ThemeDetailPage() {
                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <span>{themeDetail.playTime}분</span>
+              <span>{themeDetail.runtime || 0}분</span>
             </div>
             <div className="flex items-center gap-2">
               <svg
@@ -131,11 +198,11 @@ export default function ThemeDetailPage() {
                   d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
                 />
               </svg>
-              <span>{themeDetail.recommendedPlayers}인</span>
+              <span>{themeDetail.recommendedParticipants || "2-4인"}</span>
             </div>
           </div>
           <div className="flex gap-2 mb-4">
-            {themeDetail.themeTypes.map((type, index) => {
+            {(themeDetail.tags || []).map((tag, index) => {
               // 태그별 색상 매핑
               const getTagStyle = (type: string) => {
                 switch (type.toLowerCase()) {
@@ -164,240 +231,268 @@ export default function ThemeDetailPage() {
                 <span
                   key={index}
                   className={`inline-block px-3 py-1 text-sm rounded-full ${getTagStyle(
-                    type
+                    tag
                   )}`}
                 >
-                  #{type}
+                  #{tag}
                 </span>
               );
             })}
           </div>
           <div className="relative w-full h-[400px] bg-gray-100 rounded-2xl overflow-hidden mb-4">
-            <Image
-              src={themeDetail.image}
-              alt={themeDetail.title}
-              fill
-              style={{ objectFit: "cover" }}
-              className="rounded-2xl"
-            />
+            {themeDetail.thumbnailUrl ? (
+              <Image
+                src={themeDetail.thumbnailUrl}
+                alt={themeDetail.name || "테마 이미지"}
+                fill
+                style={{ objectFit: "cover" }}
+                className="rounded-2xl"
+                unoptimized={!themeDetail.thumbnailUrl.startsWith("/")}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = "/images/mystery-room.jpg";
+                }}
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Image
+                  src="/images/mystery-room.jpg"
+                  alt="기본 이미지"
+                  fill
+                  style={{ objectFit: "cover" }}
+                  className="rounded-2xl"
+                />
+              </div>
+            )}
           </div>
           <div className="flex justify-between items-center">
             <div className="flex gap-6">
-              <div className="flex items-center gap-2">
-                <span className="text-gray-600">유저 탈출률</span>
-                <span className="font-bold text-xl">
-                  {themeDetail.userEscapeRate}%
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-gray-600">노힌트 탈출률</span>
-                <span className="font-bold text-xl">
-                  {themeDetail.noHintEscapeRate}%
-                </span>
-              </div>
+              {themeDetail.diaryBasedThemeStat && (
+                <>
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-600">유저 탈출률</span>
+                    <span className="font-bold text-xl">
+                      {themeDetail.diaryBasedThemeStat.escapeResult || 0}%
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-600">노힌트 탈출률</span>
+                    <span className="font-bold text-xl">
+                      {themeDetail.diaryBasedThemeStat.noHintEscapeRate || 0}%
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
             <div className="flex gap-6">
               <div className="flex items-center gap-2">
                 <span className="text-gray-600">난이도</span>
-                <StarRating rating={themeDetail.difficulty} maxRating={5} />
+                <StarRating
+                  rating={themeDetail.officialDifficulty || 0}
+                  maxRating={5}
+                />
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-gray-600">가격</span>
-                <span className="font-medium">
-                  {themeDetail.price.toLocaleString()}원
-                </span>
-              </div>
+              {themeDetail.price && (
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-600">가격</span>
+                  <span className="font-medium">
+                    {themeDetail.price.toLocaleString()}원
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         {/* 섹션 2: 설명 및 위치 */}
         <section className="bg-white rounded-2xl p-8 mb-8 shadow-sm">
-          <div className="flex gap-8">
-            <div className="w-1/2">
+          <div className="flex flex-col md:flex-row gap-8">
+            <div className="w-full md:w-1/2">
               <h2 className="text-2xl font-bold mb-4">테마 설명</h2>
-              <p className="text-gray-600 leading-relaxed">
-                {themeDetail.description}
+              <p className="text-gray-600 leading-relaxed whitespace-pre-line">
+                {themeDetail.description || "테마 설명이 없습니다."}
               </p>
+              {themeDetail.reservationUrl && (
+                <div className="mt-6">
+                  <a
+                    href={themeDetail.reservationUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 inline-block"
+                  >
+                    예약하기
+                  </a>
+                </div>
+              )}
             </div>
-            <div className="w-1/2">
-              <h2 className="text-2xl font-bold mb-4">매장 위치</h2>
-              <div className="h-64 bg-gray-200 rounded-lg mb-4">
-                <KakaoMap address={themeDetail.address} />
+            {themeDetail.storeInfo && (
+              <div className="w-full md:w-1/2">
+                <h2 className="text-2xl font-bold mb-4">매장 위치</h2>
+                <div className="h-64 bg-gray-200 rounded-lg mb-4">
+                  <KakaoMap address={themeDetail.storeInfo.address || ""} />
+                </div>
+                <div className="space-y-2">
+                  <p className="text-gray-600">
+                    {themeDetail.storeInfo.address}
+                  </p>
+                  <p className="text-gray-600">
+                    {themeDetail.storeInfo.phoneNumber}
+                  </p>
+                </div>
               </div>
-              <div className="space-y-2">
-                <p className="text-gray-600">{themeDetail.address}</p>
-                <p className="text-gray-600">{themeDetail.phoneNumber}</p>
-              </div>
-            </div>
+            )}
           </div>
         </section>
 
         {/* 섹션 3: 평가 및 통계 */}
-        <section className="bg-white rounded-2xl p-8 shadow-sm">
-          <div className="grid grid-cols-3 gap-8">
-            {/* 유저 평가 */}
-            <div>
-              <h2 className="text-2xl font-bold mb-6">유저 평가</h2>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">컨텐츠 품질</span>
-                  <StarRating
-                    rating={themeDetail.ratings.content}
-                    maxRating={5}
-                  />
+        {themeDetail.diaryBasedThemeStat && (
+          <section className="bg-white rounded-2xl p-8 shadow-sm">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {/* 유저 평가 */}
+              <div>
+                <h2 className="text-2xl font-bold mb-6">유저 평가</h2>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">만족도</span>
+                    <StarRating
+                      rating={themeDetail.diaryBasedThemeStat.satisfaction || 0}
+                      maxRating={5}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">연출</span>
+                    <StarRating
+                      rating={themeDetail.diaryBasedThemeStat.production || 0}
+                      maxRating={5}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">스토리</span>
+                    <StarRating
+                      rating={themeDetail.diaryBasedThemeStat.story || 0}
+                      maxRating={5}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">기믹/장치</span>
+                    <StarRating
+                      rating={themeDetail.diaryBasedThemeStat.deviceRatio || 0}
+                      maxRating={5}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">인테리어</span>
+                    <StarRating
+                      rating={themeDetail.diaryBasedThemeStat.interior || 0}
+                      maxRating={5}
+                    />
+                  </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">만족도</span>
-                  <StarRating
-                    rating={themeDetail.ratings.satisfaction}
-                    maxRating={5}
-                  />
+              </div>
+
+              {/* 플레이 특성 */}
+              <div>
+                <h2 className="text-2xl font-bold mb-6">플레이 특성</h2>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">난이도</span>
+                    <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-yellow-500 rounded-full"
+                        style={{
+                          width: `${
+                            (themeDetail.diaryBasedThemeStat.difficulty || 0) *
+                            20
+                          }%`,
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">공포도</span>
+                    <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-red-500 rounded-full"
+                        style={{
+                          width: `${
+                            (themeDetail.diaryBasedThemeStat.fear || 0) * 20
+                          }%`,
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">활동성</span>
+                    <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-green-500 rounded-full"
+                        style={{
+                          width: `${
+                            (themeDetail.diaryBasedThemeStat.activity || 0) * 20
+                          }%`,
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">문제 난이도</span>
+                    <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-blue-500 rounded-full"
+                        style={{
+                          width: `${
+                            (themeDetail.diaryBasedThemeStat.question || 0) * 20
+                          }%`,
+                        }}
+                      ></div>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">연출</span>
-                  <StarRating
-                    rating={themeDetail.ratings.production}
-                    maxRating={5}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">스토리</span>
-                  <StarRating
-                    rating={themeDetail.ratings.story}
-                    maxRating={5}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">인테리어</span>
-                  <StarRating
-                    rating={themeDetail.ratings.interior}
-                    maxRating={5}
-                  />
+              </div>
+
+              {/* 방 특성 방사형 차트 */}
+              <div>
+                <h2 className="text-2xl font-bold mb-6">테마 특성</h2>
+                <div className="h-64 flex items-center justify-center">
+                  {radarData.length > 0 ? (
+                    <RadarChart data={radarData} />
+                  ) : (
+                    <p className="text-gray-400">데이터가 없습니다</p>
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* 플레이 특성 */}
-            <div>
-              <h2 className="text-2xl font-bold mb-6">플레이 특성</h2>
-              <div className="h-64">
-                <RadarChart
-                  data={[
-                    themeDetail.playCharacteristics.difficulty,
-                    themeDetail.playCharacteristics.horror,
-                    themeDetail.playCharacteristics.activity,
-                    themeDetail.playCharacteristics.puzzles,
-                    themeDetail.playCharacteristics.devices,
-                  ]}
-                  labels={[
-                    "난이도",
-                    "공포도",
-                    "활동성",
-                    "문제 구성",
-                    "장치 비율",
-                  ]}
-                />
-              </div>
-            </div>
-
-            {/* 탈출 통계 */}
-            <div>
-              <h2 className="text-2xl font-bold mb-6">탈출 통계</h2>
-              <div className="space-y-6">
-                <div>
-                  <p className="text-gray-600 mb-2">노힌트 탈출률</p>
-                  <p className="text-4xl font-bold">
-                    {themeDetail.statistics.noHintEscapeRate}%
-                  </p>
+            {/* 통계 */}
+            <div className="mt-8 pt-8 border-t border-gray-200">
+              <h2 className="text-2xl font-bold mb-6">통계</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div className="bg-gray-50 rounded-lg p-5 text-center">
+                  <div className="text-4xl font-bold mb-2">
+                    {themeDetail.diaryBasedThemeStat.escapeResult || 0}%
+                  </div>
+                  <div className="text-gray-500">유저 탈출률</div>
                 </div>
-                <div>
-                  <p className="text-gray-600 mb-2">평균 탈출 시간</p>
-                  <p className="text-4xl font-bold">
-                    {themeDetail.statistics.averageEscapeTime}분
-                  </p>
+                <div className="bg-gray-50 rounded-lg p-5 text-center">
+                  <div className="text-4xl font-bold mb-2">
+                    {themeDetail.diaryBasedThemeStat.noHintEscapeRate || 0}%
+                  </div>
+                  <div className="text-gray-500">노힌트 탈출률</div>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-5 text-center">
+                  <div className="text-4xl font-bold mb-2">
+                    {themeDetail.diaryBasedThemeStat.escapeTimeAvg || 0}분
+                  </div>
+                  <div className="text-gray-500">평균 탈출 시간</div>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
-        {/* 액션 버튼 */}
-        <div className="flex gap-4 mt-8">
-          <button
-            onClick={() => setLiked(!liked)}
-            className="flex-1 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 flex justify-center items-center text-gray-700"
-          >
-            <svg
-              className={`w-5 h-5 mr-2 ${
-                liked ? "text-red-500" : "text-gray-700"
-              }`}
-              fill={liked ? "currentColor" : "none"}
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-              />
-            </svg>
-            희망테마 등록
-          </button>
-          <Link href="/reservation" className="flex-1">
-            <button className="w-full py-4 bg-black text-white rounded-xl font-medium hover:bg-gray-900 flex justify-center items-center">
-              <svg
-                className="w-5 h-5 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                />
-              </svg>
-              예약하러 가기
-            </button>
-          </Link>
-          <Link href="/meetings/create" className="flex-1">
-            <button className="w-full py-4 bg-white border border-gray-300 rounded-xl font-medium hover:bg-gray-50 flex justify-center items-center text-gray-700">
-              <svg
-                className="w-5 h-5 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-              모임 만들기
-            </button>
-          </Link>
-          <Link href="/meetings" className="flex-1">
-            <button className="w-full py-4 bg-white border border-gray-300 rounded-xl font-medium hover:bg-gray-50 flex justify-center items-center text-gray-700">
-              <svg
-                className="w-5 h-5 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                />
-              </svg>
-              모임 찾기
-            </button>
+        <div className="mt-8">
+          <Link href="/themes" className="text-blue-500 hover:underline">
+            ← 테마 목록으로 돌아가기
           </Link>
         </div>
       </div>

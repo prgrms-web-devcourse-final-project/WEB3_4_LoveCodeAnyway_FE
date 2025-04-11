@@ -1,12 +1,22 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
 import Link from "next/link";
 import Image from "next/image";
+import axios from "axios";
+
+// API 기본 URL 설정
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
+  ? process.env.NEXT_PUBLIC_API_URL
+  : process.env.NODE_ENV === "development"
+  ? "http://localhost:8080"
+  : "https://api.ddobang.site";
 
 interface InquiryDetail {
   id: string;
   type: string;
+  title: string;
   content: string;
   createdAt: string;
   nickname: string;
@@ -19,25 +29,57 @@ interface InquiryDetail {
   };
 }
 
-// TODO: API로 데이터 가져오기
-const mockInquiry: InquiryDetail = {
-  id: "1",
-  type: "홍대 연극 테마 요청",
-  content:
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Nisl tincidunt eget nullam non. Quis hendrerit dolor magna eget est lorem ipsum dolor sit",
-  createdAt: "2024-02-18 14:30",
-  nickname: "USER1",
-  attachments: ["Lor.png"],
-  status: "답변 완료",
-  answer: {
-    content:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Nisl tincidunt eget nullam non. Quis hendrerit dolor magna eget est lorem ipsum dolor sit",
-    createdAt: "2024-02-18 15:30",
-    nickname: "관리자",
-  },
-};
+export default function Page({ params }: { params: { id: string } }) {
+  const [inquiry, setInquiry] = useState<InquiryDetail | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-export default function Page({ params }: any) {
+  useEffect(() => {
+    const fetchInquiryDetail = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axios.get(
+          `${API_BASE_URL}/api/v1/inquiries/${params.id}`,
+          {
+            withCredentials: true,
+          }
+        );
+        setInquiry(response.data.data);
+      } catch (error) {
+        console.error("문의 상세 조회 에러:", error);
+        setError("문의 내용을 불러오는데 실패했습니다.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchInquiryDetail();
+  }, [params.id]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-red-500">{error}</div>
+      </div>
+    );
+  }
+
+  if (!inquiry) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-gray-500">문의를 찾을 수 없습니다.</div>
+      </div>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-gray-50">
       <Navigation activePage="my" />
@@ -47,9 +89,20 @@ export default function Page({ params }: any) {
         <div className="bg-white rounded-lg shadow-sm mb-6">
           <div className="p-8">
             <div className="flex justify-between items-start mb-6">
-              <h1 className="text-2xl font-bold">{mockInquiry.type}</h1>
-              <span className="px-3 py-1 text-sm bg-green-100 text-green-800 rounded-full">
-                답변 완료
+              <div>
+                <span className="text-sm text-gray-600 mb-2 block">
+                  {inquiry.type}
+                </span>
+                <h1 className="text-2xl font-bold">{inquiry.title}</h1>
+              </div>
+              <span
+                className={`px-3 py-1 text-sm rounded-full ${
+                  inquiry.status === "답변 완료"
+                    ? "bg-green-100 text-green-800"
+                    : "bg-yellow-100 text-yellow-800"
+                }`}
+              >
+                {inquiry.status}
               </span>
             </div>
 
@@ -57,45 +110,42 @@ export default function Page({ params }: any) {
               <div className="flex justify-between text-sm text-gray-600">
                 <div>
                   <span className="font-medium">닉네임</span>
-                  <span className="ml-2">{mockInquiry.nickname}</span>
+                  <span className="ml-2">{inquiry.nickname}</span>
                 </div>
                 <div>
                   <span className="font-medium">작성시간</span>
-                  <span className="ml-2">{mockInquiry.createdAt}</span>
+                  <span className="ml-2">{inquiry.createdAt}</span>
                 </div>
               </div>
 
               <div>
                 <h2 className="text-sm font-medium mb-2">내용</h2>
                 <p className="text-gray-700 whitespace-pre-wrap">
-                  {mockInquiry.content}
+                  {inquiry.content}
                 </p>
               </div>
 
-              {mockInquiry.attachments.length > 0 && (
+              {inquiry.attachments.length > 0 && (
                 <div>
-                  <h2 className="text-sm font-medium mb-2">증빙 첨부 파일</h2>
-                  <div className="flex gap-2">
-                    {mockInquiry.attachments.map((file) => (
-                      <div
-                        key={file}
-                        className="flex items-center gap-1 text-sm text-gray-600"
+                  <h2 className="text-sm font-medium mb-2">첨부 파일</h2>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {inquiry.attachments.map((fileUrl, index) => (
+                      <a
+                        key={index}
+                        href={fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block"
                       >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        <div className="aspect-square relative rounded-lg overflow-hidden border">
+                          <Image
+                            src={fileUrl}
+                            alt={`첨부 파일 ${index + 1}`}
+                            fill
+                            className="object-cover"
                           />
-                        </svg>
-                        <span>{file}</span>
-                      </div>
+                        </div>
+                      </a>
                     ))}
                   </div>
                 </div>
@@ -105,7 +155,7 @@ export default function Page({ params }: any) {
         </div>
 
         {/* 답변 내용 */}
-        {mockInquiry.answer && (
+        {inquiry.answer && (
           <div className="bg-white rounded-lg shadow-sm mb-6">
             <div className="p-8">
               <h2 className="text-xl font-bold mb-6">답변 내용</h2>
@@ -113,18 +163,18 @@ export default function Page({ params }: any) {
                 <div className="flex justify-between text-sm text-gray-600">
                   <div>
                     <span className="font-medium">닉네임</span>
-                    <span className="ml-2">{mockInquiry.answer.nickname}</span>
+                    <span className="ml-2">{inquiry.answer.nickname}</span>
                   </div>
                   <div>
                     <span className="font-medium">작성시간</span>
-                    <span className="ml-2">{mockInquiry.answer.createdAt}</span>
+                    <span className="ml-2">{inquiry.answer.createdAt}</span>
                   </div>
                 </div>
 
                 <div>
                   <h2 className="text-sm font-medium mb-2">내용</h2>
                   <p className="text-gray-700 whitespace-pre-wrap">
-                    {mockInquiry.answer.content}
+                    {inquiry.answer.content}
                   </p>
                 </div>
               </div>

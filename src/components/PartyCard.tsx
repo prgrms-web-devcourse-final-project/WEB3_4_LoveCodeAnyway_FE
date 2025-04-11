@@ -3,13 +3,13 @@
 import { EscapeRoom } from "@/types/EscapeRoom";
 import Image from "next/image";
 
-interface MeetingCardProps {
+interface PartyCardProps {
   room: EscapeRoom;
   onClick?: (room: EscapeRoom) => void;
 }
 
 // 모임 카드 컴포넌트
-export function MeetingCard({ room, onClick }: MeetingCardProps) {
+export function PartyCard({ room, onClick }: PartyCardProps) {
   const handleClick = () => {
     if (onClick) {
       onClick(room);
