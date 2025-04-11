@@ -9,7 +9,7 @@ const tags = ["#전체", "#공포", "#추리", "#액션", "#판타지", "#SF"];
 
 export default function HomePage() {
   const [activeTag, setActiveTag] = useState("#전체");
-
+  console.log(process.env.NODE_ENV)
   return (
     <main className="min-h-screen bg-white">
       {/* Section 1: 메인 배너 */}

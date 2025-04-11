@@ -11,5 +11,5 @@ const client = createClient<paths>({
   baseUrl,
   credentials: "include",
 });
-
 export default client;
+

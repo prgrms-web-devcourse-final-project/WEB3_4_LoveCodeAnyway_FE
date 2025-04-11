@@ -77,7 +77,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
   const handleLogout = async (e: React.MouseEvent) => {
     e.preventDefault();
     try {
-      await client.POST("/api/v1/members/logout", {});
+      await client.DELETE("/api/v1/members/logout");
       logout();
       router.push("/");
     } catch (error) {
