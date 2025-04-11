@@ -30,7 +30,7 @@ export function MeetingSearch({
   return (
     <div className="w-full mb-6">
       <div className="flex justify-between items-center gap-3">
-        <div className="w-[420px]">
+        <div className="flex-1">
           <form onSubmit={handleSearch} className="relative">
             <div className="absolute left-4 top-[14px] pointer-events-none">
               <Image

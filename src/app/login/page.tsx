@@ -4,8 +4,14 @@ import Image from "next/image";
 import Link from "next/link";
 
 export default function LoginPage() {
-  const socialLoginForKakaoUrl = `http://localhost:8080/oauth2/authorization/kakao`;
-  const redirectUrlAfterSocialLogin = "http://localhost:3000";
+  const socialLoginForKakaoUrl =
+    process.env.NODE_ENV === "development"
+      ? `http://localhost:8080/oauth2/authorization/kakao`
+      : `https://api.ddobang.site/oauth2/authorization/kakao`;
+  const redirectUrlAfterSocialLogin =
+    process.env.NODE_ENV === "development"
+      ? "http://localhost:3000"
+      : "https://www.ddobang.site";
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">

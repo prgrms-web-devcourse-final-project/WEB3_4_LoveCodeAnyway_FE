@@ -15,8 +15,18 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "또방",
-  description: "또방 - 방탈출 커뮤니티",
+  title: "또방: 방탈출 커뮤니티",
+  description: "방탈출 테마 리뷰와 모임을 만들 수 있는 커뮤니티입니다.",
+  icons: {
+    icon: [
+      {
+        url: "/favicon.svg",
+        type: "image/svg+xml",
+      },
+    ],
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
@@ -29,10 +39,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ClientLayout>
-          <Navigation />
-          <main className="pt-12">{children}</main>
-        </ClientLayout>
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   );
