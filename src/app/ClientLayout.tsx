@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { LoginMemberContext, useLoginMember } from "@/stores/auth/loginMember";
 import client from "@/lib/backend/client";
-import { Navigation } from "@/components/Navigation";
 export function ClientLayout({
   children,
 }: React.ComponentProps<typeof NextThemesProvider>) {
