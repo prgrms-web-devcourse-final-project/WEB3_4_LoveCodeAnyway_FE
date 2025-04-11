@@ -216,25 +216,26 @@ export default function PartiesPage() {
 
       {/* 검색 및 필터 섹션 */}
       <div className="max-w-6xl mx-auto px-4 pt-8 pb-4">
-        <h1 className="text-2xl font-bold mb-6">모임 찾기</h1>
-        <ThemeSearch
-          onSearch={handleSearch}
-          onFilterChange={handleFilterChange}
-        />
+        <div className="flex items-center gap-4">
+          <div className="flex-1 h-[40px]">
+            <ThemeSearch
+              onSearch={handleSearch}
+              onFilterChange={handleFilterChange}
+            />
+          </div>
+          <div className="w-[90px] h-[40px]">
+            <Link
+              href="/parties/create"
+              className="w-full h-full flex items-center justify-center px-3 bg-[#FFB130] text-white text-sm rounded-lg hover:bg-[#F0A420]"
+            >
+              모임 등록
+            </Link>
+          </div>
+        </div>
       </div>
 
       {/* 모임 목록 섹션 */}
       <div className="max-w-6xl mx-auto px-4 pb-16">
-        {/* 모임 추가 버튼 */}
-        <div className="mb-6 flex justify-end">
-          <Link
-            href="/parties/create"
-            className="px-4 py-2 bg-black text-white text-sm rounded-lg hover:bg-gray-800"
-          >
-            모임 등록
-          </Link>
-        </div>
-
         {/* 모임 카드 그리드 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {parties.map((room) => (
@@ -254,8 +255,12 @@ export default function PartiesPage() {
 
         {/* 데이터 없음 메시지 */}
         {parties.length === 0 && !loading && (
-          <div className="text-center py-12">
-            <p className="text-gray-500">검색 결과가 없습니다.</p>
+          <div className="w-full my-12">
+            <div className="bg-gray-50 border border-gray-300 rounded-xl py-24 px-8 text-center">
+              <p className="text-lg font-medium text-gray-700">
+                데이터가 없습니다
+              </p>
+            </div>
           </div>
         )}
       </div>

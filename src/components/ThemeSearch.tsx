@@ -60,14 +60,14 @@ export function ThemeSearch({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="테마 이름으로 검색"
-              className="w-full pl-9 pr-4 py-2.5 border border-black rounded-lg focus:outline-none focus:border-black placeholder:text-gray-400"
+              className="w-full pl-9 pr-4 py-2.5 h-10 border border-black rounded-lg focus:outline-none focus:border-black placeholder:text-gray-400"
             />
           </form>
         </div>
         <div className="flex gap-2">
           <button
             onClick={() => setIsFilterModalOpen(true)}
-            className="px-4 py-2 bg-black text-white text-sm rounded-lg hover:bg-gray-800 flex items-center gap-1.5"
+            className="px-4 h-10 bg-black text-white text-sm rounded-lg hover:bg-gray-800 flex items-center gap-1.5"
           >
             <svg
               width="16"
@@ -97,7 +97,7 @@ export function ThemeSearch({
           {showCreateButton && (
             <Link
               href="/parties/create"
-              className="px-4 py-2 bg-black text-white text-sm rounded-lg hover:bg-gray-800"
+              className="px-4 h-10 flex items-center bg-black text-white text-sm rounded-lg hover:bg-gray-800"
             >
               모임 등록
             </Link>

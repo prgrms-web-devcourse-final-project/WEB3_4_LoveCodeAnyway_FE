@@ -133,7 +133,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
                   activePage === "themes"
                     ? "text-[#FFD896]"
                     : "text-gray-300 hover:text-[#FFD896]"
-                } text-sm font-medium`}
+                } text-base font-bold`}
               >
                 방탈출 테마
               </Link>
@@ -143,7 +143,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
                   activePage === "parties"
                     ? "text-[#FFD896]"
                     : "text-gray-300 hover:text-[#FFD896]"
-                } text-sm font-medium`}
+                } text-base font-bold`}
               >
                 모임 탐색
               </Link>
@@ -154,7 +154,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
                     activePage === "my-diary"
                       ? "text-[#FFD896]"
                       : "text-gray-300 hover:text-[#FFD896]"
-                  } text-sm font-medium`}
+                  } text-base font-bold`}
                 >
                   나의 탈출일지
                 </Link>
@@ -368,7 +368,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
             ) : (
               <Link
                 href="/login"
-                className="px-4 py-2 bg-[#FFB230] text-white rounded-lg text-sm font-medium hover:opacity-80 transition-opacity"
+                className="w-[70px] h-[32px] flex items-center justify-center bg-[#FFB130] text-white text-sm rounded-lg hover:bg-[#F0A420]"
               >
                 로그인
               </Link>
