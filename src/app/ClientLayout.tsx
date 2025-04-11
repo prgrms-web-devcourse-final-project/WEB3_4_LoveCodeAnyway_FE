@@ -1,12 +1,10 @@
 "use client";
 
-import * as React from "react";
-import { useEffect } from "react";
-
+import { useEffect, useState } from "react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
-
 import { LoginMemberContext, useLoginMember } from "@/stores/auth/loginMember";
-
+import client from "@/lib/backend/client";
+import { Navigation } from "@/components/Navigation";
 export function ClientLayout({
   children,
 }: React.ComponentProps<typeof NextThemesProvider>) {
@@ -15,9 +13,9 @@ export function ClientLayout({
     setLoginMember,
     isLoginMemberPending,
     setNoLoginMember,
-    removeLoginMember,
     isLogin,
-    isAdmin,
+    logout,
+    logoutAndHome,
   } = useLoginMember();
 
   const loginMemberContextValue = {
@@ -25,31 +23,27 @@ export function ClientLayout({
     setLoginMember,
     isLoginMemberPending,
     setNoLoginMember,
-    removeLoginMember,
     isLogin,
-    isAdmin,
+    logout,
+    logoutAndHome,
   };
 
   useEffect(() => {
-    // JWT 쿠키 기반으로 사용자 정보 가져오기
-    const fetchMember = async () => {
-      try {
-        const response = await fetch("/api/v1/members/me");
-        if (!response.ok) {
+    const fetchMember = () => {
+      client
+        .GET("/api/v1/members/me", {})
+        .then((res) => {
+          if (res.error) {
+            // 로그인되지 않은 상태로 처리
+            setNoLoginMember();
+            return;
+          }
+          setLoginMember(res.data);
+        })
+        .catch((error) => {
+          // 에러 발생 시 (302 포함) 로그인되지 않은 상태로 처리
           setNoLoginMember();
-          return;
-        }
-
-        const data = await response.json();
-        if (data && data.data) {
-          setLoginMember(data.data);
-        } else {
-          setNoLoginMember();
-        }
-      } catch (error) {
-        console.error("사용자 정보를 가져오는 중 오류 발생:", error);
-        setNoLoginMember();
-      }
+        });
     };
 
     fetchMember();
@@ -76,9 +70,9 @@ export function ClientLayout({
       enableSystem
       disableTransitionOnChange
     >
-      <LoginMemberContext.Provider value={loginMemberContextValue}>
-        {children}
-      </LoginMemberContext.Provider>
+      <LoginMemberContext value={loginMemberContextValue}>
+        <main>{children}</main>
+      </LoginMemberContext>
     </NextThemesProvider>
   );
 }

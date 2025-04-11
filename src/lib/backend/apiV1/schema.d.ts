@@ -659,6 +659,40 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/themes/popular": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 태그별 인기 테마 Top 10 조회 api */
+    get: operations["getPopularThemes"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/themes/newest": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 태그별 최신 테마 Top 10 조회 api */
+    get: operations["getNewestThemes"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/regions": {
     parameters: {
       query?: never;
@@ -684,6 +718,40 @@ export interface paths {
     };
     /** 메인 페이지용 모집 중 모임 12개 조회 */
     get: operations["getMainParties"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/parties/joins/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 참여한 모임 목록 조회 */
+    get: operations["getJoinedParties"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/members/me": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 내 정보 */
+    get: operations["me"];
     put?: never;
     post?: never;
     delete?: never;
@@ -809,6 +877,26 @@ export interface paths {
     post?: never;
     /** 모임 참가 신청 취소 */
     delete: operations["cancelAppliedParty"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/members/logout": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * 로그아웃
+     * @description apiKey, accessToken 토큰을 제거합니다.
+     */
+    delete: operations["logout"];
     options?: never;
     head?: never;
     patch?: never;
@@ -1282,43 +1370,13 @@ export interface components {
       /** Format: int32 */
       data?: number;
     };
-    PageMessageDto: {
-      /** Format: int64 */
-      totalElements?: number;
-      /** Format: int32 */
-      totalPages?: number;
-      first?: boolean;
-      last?: boolean;
-      /** Format: int32 */
-      size?: number;
+    SliceDtoMessageDto: {
       content?: components["schemas"]["MessageDto"][];
-      /** Format: int32 */
-      number?: number;
-      sort?: components["schemas"]["Sortnull"];
-      /** Format: int32 */
-      numberOfElements?: number;
-      pageable?: components["schemas"]["Pageablenull"];
-      empty?: boolean;
+      hasNext?: boolean;
     };
-    Pageablenull: {
-      /** Format: int64 */
-      offset?: number;
-      sort?: components["schemas"]["Sortnull"];
-      unpaged?: boolean;
-      paged?: boolean;
-      /** Format: int32 */
-      pageNumber?: number;
-      /** Format: int32 */
-      pageSize?: number;
-    };
-    Sortnull: {
-      empty?: boolean;
-      unsorted?: boolean;
-      sorted?: boolean;
-    };
-    SuccessResponsePageMessageDto: {
+    SuccessResponseSliceDtoMessageDto: {
       message?: string;
-      data?: components["schemas"]["PageMessageDto"];
+      data?: components["schemas"]["SliceDtoMessageDto"];
     };
     StoreInfo: {
       name?: string;
@@ -1394,6 +1452,10 @@ export interface components {
     SuccessResponseListSimpleThemeResponse: {
       message?: string;
       data?: components["schemas"]["SimpleThemeResponse"][];
+    };
+    SuccessResponseListThemesResponse: {
+      message?: string;
+      data?: components["schemas"]["ThemesResponse"][];
     };
     SubRegionsResponse: {
       /** Format: int64 */
@@ -1529,6 +1591,31 @@ export interface components {
     SuccessResponseListPartyMainResponse: {
       message?: string;
       data?: components["schemas"]["PartyMainResponse"][];
+    };
+    PageDtoPartySummaryResponse: {
+      /** Format: int32 */
+      currentPageNumber?: number;
+      /** Format: int32 */
+      pageSize?: number;
+      /** Format: int64 */
+      totalPages?: number;
+      /** Format: int64 */
+      totalItems?: number;
+      items?: components["schemas"]["PartySummaryResponse"][];
+    };
+    SuccessResponsePageDtoPartySummaryResponse: {
+      message?: string;
+      data?: components["schemas"]["PageDtoPartySummaryResponse"];
+    };
+    MemberDto: {
+      /** Format: int64 */
+      id?: number;
+      /** Format: date-time */
+      createdAt?: string;
+      /** Format: date-time */
+      modifiedAt?: string;
+      nickname?: string;
+      pofilePictureUrl?: string;
     };
     SuccessResponseListDiaryListDto: {
       message?: string;
@@ -2689,7 +2776,7 @@ export interface operations {
   getSentMessages: {
     parameters: {
       query?: {
-        page?: number;
+        cursor?: string;
         size?: number;
       };
       header?: never;
@@ -2704,7 +2791,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["SuccessResponsePageMessageDto"];
+          "application/json": components["schemas"]["SuccessResponseSliceDtoMessageDto"];
         };
       };
     };
@@ -2712,7 +2799,7 @@ export interface operations {
   getReceivedMessages: {
     parameters: {
       query?: {
-        page?: number;
+        cursor?: string;
         size?: number;
       };
       header?: never;
@@ -2727,7 +2814,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["SuccessResponsePageMessageDto"];
+          "application/json": components["schemas"]["SuccessResponseSliceDtoMessageDto"];
         };
       };
     };
@@ -2818,6 +2905,50 @@ export interface operations {
       };
     };
   };
+  getPopularThemes: {
+    parameters: {
+      query: {
+        tagName: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SuccessResponseListThemesResponse"];
+        };
+      };
+    };
+  };
+  getNewestThemes: {
+    parameters: {
+      query: {
+        tagName: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SuccessResponseListThemesResponse"];
+        };
+      };
+    };
+  };
   getSubRegionsByMajorRegion: {
     parameters: {
       query: {
@@ -2856,6 +2987,51 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["SuccessResponseListPartyMainResponse"];
+        };
+      };
+    };
+  };
+  getJoinedParties: {
+    parameters: {
+      query?: {
+        page?: number;
+        size?: number;
+      };
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SuccessResponsePageDtoPartySummaryResponse"];
+        };
+      };
+    };
+  };
+  me: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MemberDto"];
         };
       };
     };
@@ -3015,6 +3191,24 @@ export interface operations {
       path: {
         id: number;
       };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  logout: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
       cookie?: never;
     };
     requestBody?: never;

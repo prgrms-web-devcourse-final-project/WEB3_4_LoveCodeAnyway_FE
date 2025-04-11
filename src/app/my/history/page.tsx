@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { Navigation } from "@/components/Navigation";
+import { useRouter } from "next/navigation";
 
 // 모임 타입 정의
 type Meeting = {
@@ -17,6 +19,7 @@ type Meeting = {
 };
 
 export default function HistoryPage() {
+  const router = useRouter();
   // 상태 관리
   const [activeTab, setActiveTab] = useState<"all" | "upcoming" | "past">(
     "all"
@@ -194,211 +197,214 @@ export default function HistoryPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-      {/* 상단 - 타이틀 + 필터 영역 */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">
-            나의 모임 히스토리
-          </h1>
-          <Link
-            href="/party/create"
-            className="bg-[#FFB230] text-white px-4 py-2 text-sm font-medium rounded-md"
-          >
-            모임 만들기
-          </Link>
-        </div>
-
-        {/* 탭 필터 */}
-        <div className="flex mb-4 border-b border-gray-200">
-          <button
-            className={`px-4 py-2 text-sm font-medium ${
-              activeTab === "all"
-                ? "text-[#FFB230] border-b-2 border-[#FFB230]"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-            onClick={() => setActiveTab("all")}
-          >
-            전체
-          </button>
-          <button
-            className={`px-4 py-2 text-sm font-medium ${
-              activeTab === "upcoming"
-                ? "text-[#FFB230] border-b-2 border-[#FFB230]"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-            onClick={() => setActiveTab("upcoming")}
-          >
-            예정된 모임
-          </button>
-          <button
-            className={`px-4 py-2 text-sm font-medium ${
-              activeTab === "past"
-                ? "text-[#FFB230] border-b-2 border-[#FFB230]"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-            onClick={() => setActiveTab("past")}
-          >
-            지난 모임
-          </button>
-        </div>
-
-        {/* 세부 필터 */}
-        <div className="flex items-center justify-between">
-          <div className="flex space-x-4">
-            <div className="flex items-center space-x-2">
-              <label className="text-sm font-medium text-gray-700">
-                리뷰 상태:
-              </label>
-              <select
-                className="rounded-md border-gray-300 shadow-sm px-3 py-1.5 text-sm"
-                value={reviewFilter}
-                onChange={(e) => setReviewFilter(e.target.value as any)}
-              >
-                <option value="all">전체</option>
-                <option value="writable">작성 가능</option>
-                <option value="completed">작성 완료</option>
-              </select>
-            </div>
-            <div className="flex items-center space-x-2">
-              <label className="text-sm font-medium text-gray-700">
-                내 역할:
-              </label>
-              <select
-                className="rounded-md border-gray-300 shadow-sm px-3 py-1.5 text-sm"
-                value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value as any)}
-              >
-                <option value="all">전체</option>
-                <option value="host">모임장</option>
-                <option value="member">모임원</option>
-              </select>
-            </div>
+    <main className="min-h-screen bg-white">
+      <Navigation activePage="my" />
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* 상단 - 타이틀 + 필터 영역 */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold text-gray-900">
+              나의 모임 히스토리
+            </h1>
+            <Link
+              href="/party/create"
+              className="bg-[#FFB230] text-white px-4 py-2 text-sm font-medium rounded-md"
+            >
+              모임 만들기
+            </Link>
           </div>
-          <button
-            className="text-sm text-gray-600 hover:text-gray-900"
-            onClick={resetFilters}
-          >
-            필터 초기화
-          </button>
-        </div>
-      </div>
 
-      {/* 중단 - 카드 리스트 영역 */}
-      {isLoading ? (
-        <div className="flex justify-center py-12">
-          <p>모임 정보를 불러오는 중...</p>
-        </div>
-      ) : error ? (
-        <div className="bg-red-50 text-red-600 p-4 rounded-md">{error}</div>
-      ) : meetings.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
-          <p>조건에 맞는 모임이 없습니다.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {meetings.map((meeting) => (
-            <div
-              key={meeting.id}
-              className="bg-white rounded-lg shadow-md overflow-hidden"
+          {/* 탭 필터 */}
+          <div className="flex mb-4 border-b border-gray-200">
+            <button
+              className={`px-4 py-2 text-sm font-medium ${
+                activeTab === "all"
+                  ? "text-[#FFB230] border-b-2 border-[#FFB230]"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+              onClick={() => setActiveTab("all")}
             >
-              {/* 역할 뱃지 */}
-              <div className="relative">
-                <div
-                  className={`absolute top-2 left-2 px-2 py-1 text-xs font-medium rounded
-                    ${
-                      meeting.role === "HOST"
-                        ? "bg-[#FFB230] text-white"
-                        : "bg-gray-200 text-gray-700"
-                    }`}
+              전체
+            </button>
+            <button
+              className={`px-4 py-2 text-sm font-medium ${
+                activeTab === "upcoming"
+                  ? "text-[#FFB230] border-b-2 border-[#FFB230]"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+              onClick={() => setActiveTab("upcoming")}
+            >
+              예정된 모임
+            </button>
+            <button
+              className={`px-4 py-2 text-sm font-medium ${
+                activeTab === "past"
+                  ? "text-[#FFB230] border-b-2 border-[#FFB230]"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+              onClick={() => setActiveTab("past")}
+            >
+              지난 모임
+            </button>
+          </div>
+
+          {/* 세부 필터 */}
+          <div className="flex items-center justify-between">
+            <div className="flex space-x-4">
+              <div className="flex items-center space-x-2">
+                <label className="text-sm font-medium text-gray-700">
+                  리뷰 상태:
+                </label>
+                <select
+                  className="rounded-md border-gray-300 shadow-sm px-3 py-1.5 text-sm"
+                  value={reviewFilter}
+                  onChange={(e) => setReviewFilter(e.target.value as any)}
                 >
-                  {meeting.role === "HOST" ? "모임장" : "모임원"}
-                </div>
-
-                {/* 썸네일 이미지 */}
-                <div className="h-48 bg-gray-200 flex items-center justify-center">
-                  {meeting.themeThumbnailUrl ? (
-                    <img
-                      src={meeting.themeThumbnailUrl}
-                      alt={meeting.title}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="text-gray-400">NO IMAGE</div>
-                  )}
-                </div>
+                  <option value="all">전체</option>
+                  <option value="writable">작성 가능</option>
+                  <option value="completed">작성 완료</option>
+                </select>
               </div>
-
-              {/* 모임 정보 */}
-              <div className="p-4">
-                <h3 className="text-lg font-medium text-gray-900 truncate">
-                  {meeting.title}
-                </h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  {formatDate(meeting.dateTime)}
-                </p>
-                <p className="text-sm text-gray-600 mt-1">
-                  장소: {meeting.location}
-                </p>
-                <p className="text-sm text-gray-600 mt-1">
-                  인원: {meeting.participantsNeeded} /{" "}
-                  {meeting.totalParticipants}명
-                </p>
-
-                {/* 리뷰 버튼 */}
-                {getReviewButton(meeting)}
+              <div className="flex items-center space-x-2">
+                <label className="text-sm font-medium text-gray-700">
+                  내 역할:
+                </label>
+                <select
+                  className="rounded-md border-gray-300 shadow-sm px-3 py-1.5 text-sm"
+                  value={roleFilter}
+                  onChange={(e) => setRoleFilter(e.target.value as any)}
+                >
+                  <option value="all">전체</option>
+                  <option value="host">모임장</option>
+                  <option value="member">모임원</option>
+                </select>
               </div>
             </div>
-          ))}
-        </div>
-      )}
-
-      {/* 하단 - 페이지네이션 영역 */}
-      {totalPages > 1 && (
-        <div className="flex justify-center mt-6">
-          <nav className="flex items-center">
             <button
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className={`mx-1 p-2 rounded ${
-                currentPage === 1
-                  ? "text-gray-400 cursor-not-allowed"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
+              className="text-sm text-gray-600 hover:text-gray-900"
+              onClick={resetFilters}
             >
-              &lt; 이전
+              필터 초기화
             </button>
+          </div>
+        </div>
 
-            {Array.from({ length: totalPages }).map((_, index) => (
+        {/* 중단 - 카드 리스트 영역 */}
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <p>모임 정보를 불러오는 중...</p>
+          </div>
+        ) : error ? (
+          <div className="bg-red-50 text-red-600 p-4 rounded-md">{error}</div>
+        ) : meetings.length === 0 ? (
+          <div className="text-center py-12 text-gray-500">
+            <p>조건에 맞는 모임이 없습니다.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {meetings.map((meeting) => (
+              <div
+                key={meeting.id}
+                className="bg-white rounded-lg shadow-md overflow-hidden"
+              >
+                {/* 역할 뱃지 */}
+                <div className="relative">
+                  <div
+                    className={`absolute top-2 left-2 px-2 py-1 text-xs font-medium rounded
+                      ${
+                        meeting.role === "HOST"
+                          ? "bg-[#FFB230] text-white"
+                          : "bg-gray-200 text-gray-700"
+                      }`}
+                  >
+                    {meeting.role === "HOST" ? "모임장" : "모임원"}
+                  </div>
+
+                  {/* 썸네일 이미지 */}
+                  <div className="h-48 bg-gray-200 flex items-center justify-center">
+                    {meeting.themeThumbnailUrl ? (
+                      <img
+                        src={meeting.themeThumbnailUrl}
+                        alt={meeting.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="text-gray-400">NO IMAGE</div>
+                    )}
+                  </div>
+                </div>
+
+                {/* 모임 정보 */}
+                <div className="p-4">
+                  <h3 className="text-lg font-medium text-gray-900 truncate">
+                    {meeting.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {formatDate(meeting.dateTime)}
+                  </p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    장소: {meeting.location}
+                  </p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    인원: {meeting.participantsNeeded} /{" "}
+                    {meeting.totalParticipants}명
+                  </p>
+
+                  {/* 리뷰 버튼 */}
+                  {getReviewButton(meeting)}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 하단 - 페이지네이션 영역 */}
+        {totalPages > 1 && (
+          <div className="flex justify-center mt-6">
+            <nav className="flex items-center">
               <button
-                key={index}
-                onClick={() => setCurrentPage(index + 1)}
-                className={`mx-1 px-3 py-1 rounded ${
-                  currentPage === index + 1
-                    ? "bg-[#FFB230] text-white"
-                    : "text-gray-600 hover:bg-gray-100"
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className={`mx-1 p-2 rounded ${
+                  currentPage === 1
+                    ? "text-gray-400 cursor-not-allowed"
+                    : "text-gray-600 hover:text-gray-900"
                 }`}
               >
-                {index + 1}
+                &lt; 이전
               </button>
-            ))}
 
-            <button
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              disabled={currentPage === totalPages}
-              className={`mx-1 p-2 rounded ${
-                currentPage === totalPages
-                  ? "text-gray-400 cursor-not-allowed"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-            >
-              다음 &gt;
-            </button>
-          </nav>
-        </div>
-      )}
-    </div>
+              {Array.from({ length: totalPages }).map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentPage(index + 1)}
+                  className={`mx-1 px-3 py-1 rounded ${
+                    currentPage === index + 1
+                      ? "bg-[#FFB230] text-white"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  {index + 1}
+                </button>
+              ))}
+
+              <button
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                disabled={currentPage === totalPages}
+                className={`mx-1 p-2 rounded ${
+                  currentPage === totalPages
+                    ? "text-gray-400 cursor-not-allowed"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                다음 &gt;
+              </button>
+            </nav>
+          </div>
+        )}
+      </div>
+    </main>
   );
 }

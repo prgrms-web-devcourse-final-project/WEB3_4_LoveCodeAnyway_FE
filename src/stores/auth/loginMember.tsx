@@ -1,26 +1,29 @@
 "use client";
 
-import { components } from "@/lib/backend/apiV1/schema";
-import { createContext, useState } from "react";
+import { createContext, use, useState } from "react";
 
-type Member = components["schemas"]["Member"];
+import { useRouter } from "next/navigation";
+
+import client from "@/lib/backend/client";
+
+import { components } from "@/lib/backend/apiV1/schema";
+
+type Member = components["schemas"]["MemberDto"];
 
 export const LoginMemberContext = createContext<{
   loginMember: Member;
   setLoginMember: (member: Member) => void;
-  removeLoginMember: () => void;
-  isLogin: boolean;
   isLoginMemberPending: boolean;
-  isAdmin: boolean;
-  setNoLoginMember: () => void;
+  isLogin: boolean;
+  logout: (callback: () => void) => void;
+  logoutAndHome: () => void;
 }>({
   loginMember: createEmptyMember(),
   setLoginMember: () => {},
-  removeLoginMember: () => {},
-  isLogin: false,
   isLoginMemberPending: true,
-  isAdmin: false,
-  setNoLoginMember: () => {},
+  isLogin: false,
+  logout: () => {},
+  logoutAndHome: () => {},
 });
 
 function createEmptyMember(): Member {
@@ -29,10 +32,13 @@ function createEmptyMember(): Member {
     createdAt: "",
     modifiedAt: "",
     nickname: "",
+    pofilePictureUrl: "",
   };
 }
 
 export function useLoginMember() {
+  const router = useRouter();
+
   const [isLoginMemberPending, setLoginMemberPending] = useState(true);
   const [loginMember, _setLoginMember] = useState<Member>(createEmptyMember());
 
@@ -51,15 +57,29 @@ export function useLoginMember() {
   };
 
   const isLogin = loginMember.id !== 0;
-  const isAdmin = loginMember.id === 2;
+
+  const logout = (callback: () => void) => {
+    client.DELETE("/api/v1/members/logout").then(() => {
+      removeLoginMember();
+      callback();
+    });
+  };
+
+  const logoutAndHome = () => {
+    logout(() => router.replace("/"));
+  };
 
   return {
     loginMember,
-    removeLoginMember,
-    isLogin,
-    isLoginMemberPending,
     setLoginMember,
-    isAdmin,
+    isLoginMemberPending,
     setNoLoginMember,
+    isLogin,
+    logout,
+    logoutAndHome,
   };
+}
+
+export function useGlobalLoginMember() {
+  return use(LoginMemberContext);
 }

@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
-import { useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { LoginMemberContext } from "@/stores/auth/loginMember";
+import client from "@/lib/backend/client";
+import { useRouter } from "next/navigation";
 
 // 임시 알림 데이터
 const mockNotifications = [
@@ -38,11 +39,16 @@ const mockNotifications = [
 ];
 
 export function Navigation({ activePage }: { activePage?: string }) {
-  // 컨텍스트에서 로그인 상태 가져오기
-  const { isLogin, loginMember } = useContext(LoginMemberContext);
+  const router = useRouter();
+  const { isLogin, loginMember, logout } = useContext(LoginMemberContext);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [notifications, setNotifications] = useState(mockNotifications);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const toggleProfileMenu = () => {
     setIsProfileMenuOpen(!isProfileMenuOpen);
@@ -68,8 +74,23 @@ export function Navigation({ activePage }: { activePage?: string }) {
     );
   };
 
+  const handleLogout = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    try {
+      await client.POST("/api/v1/members/logout", {});
+      logout();
+      router.push("/");
+    } catch (error) {
+      console.error("로그아웃 실패:", error);
+    }
+  };
+
+  if (!mounted) {
+    return null;
+  }
+
   return (
-    <nav className="bg-black fixed top-0 left-0 right-0 z-50">
+    <nav className="bg-black z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-12">
           <div className="flex items-center space-x-6">
@@ -89,7 +110,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
                   activePage === "themes"
                     ? "text-[#FFD896]"
                     : "text-gray-300 hover:text-[#FFD896]"
-                } text-[15px] font-bold`}
+                } text-sm font-medium`}
               >
                 방탈출 테마
               </Link>
@@ -99,7 +120,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
                   activePage === "meetings"
                     ? "text-[#FFD896]"
                     : "text-gray-300 hover:text-[#FFD896]"
-                } text-[15px] font-bold`}
+                } text-sm font-medium`}
               >
                 모임 탐색
               </Link>
@@ -110,7 +131,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
                     activePage === "my-diary"
                       ? "text-[#FFD896]"
                       : "text-gray-300 hover:text-[#FFD896]"
-                  } text-[15px] font-bold`}
+                  } text-sm font-medium`}
                 >
                   나의 탈출일지
                 </Link>
@@ -163,32 +184,29 @@ export function Navigation({ activePage }: { activePage?: string }) {
                             <div
                               key={notification.id}
                               className={`px-4 py-3 border-b border-gray-100 ${
-                                notification.read
-                                  ? "bg-[#FFF8EC]"
-                                  : "bg-[#FFEFD0]"
+                                !notification.read ? "bg-[#FFFCF7]" : ""
                               }`}
                             >
                               <div className="flex items-start">
-                                <div className="mr-2 mt-1">
-                                  {notification.type === "Orders" ? (
-                                    <span className="text-gray-500">🛒</span>
-                                  ) : (
-                                    <span className="text-gray-500">📦</span>
-                                  )}
-                                </div>
                                 <div className="flex-1">
-                                  <div className="flex justify-between items-start">
-                                    <span className="text-gray-500 text-xs">
+                                  <div className="flex items-center">
+                                    <span
+                                      className={`text-xs px-2 py-1 rounded-full ${
+                                        notification.type === "Orders"
+                                          ? "bg-orange-100 text-orange-600"
+                                          : "bg-blue-100 text-blue-600"
+                                      }`}
+                                    >
                                       {notification.type}
                                     </span>
-                                    <span className="text-gray-500 text-xs">
+                                    <span className="ml-auto text-xs text-gray-400">
                                       {notification.time}
                                     </span>
                                   </div>
-                                  <h4 className="text-sm font-medium">
+                                  <h4 className="font-medium mt-1">
                                     {notification.title}
                                   </h4>
-                                  <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                                  <p className="text-sm text-gray-500 mt-1">
                                     {notification.content}
                                   </p>
 
@@ -282,7 +300,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
                   </button>
 
                   {isProfileMenuOpen && (
-                    <div className="absolute right-0 top-0 transform -translate-y-full w-48 bg-[#FFE7B9] rounded-lg shadow-lg py-1 z-50">
+                    <div className="absolute right-0 mt-2 w-48 bg-[#FFE7B9] rounded-lg shadow-lg py-1 z-50">
                       <Link
                         href="/my"
                         className="block px-4 py-3 text-base font-medium text-gray-800 hover:bg-[#FFD896]"
@@ -308,12 +326,12 @@ export function Navigation({ activePage }: { activePage?: string }) {
                         1:1 문의
                       </Link>
                       <div className="border-t border-[#FFD896]">
-                        <a
-                          href="/api/v1/auth/logout"
+                        <button
+                          onClick={handleLogout}
                           className="block w-full text-left px-4 py-3 text-base font-medium text-gray-800 hover:bg-[#FFD896]"
                         >
                           로그아웃
-                        </a>
+                        </button>
                       </div>
                     </div>
                   )}
@@ -322,7 +340,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
             ) : (
               <Link
                 href="/login"
-                className="px-4 py-1.5 bg-[#FFB230] text-white rounded-lg text-sm font-medium hover:opacity-80 transition-opacity"
+                className="px-4 py-2 bg-[#FFB230] text-white rounded-lg text-sm font-medium hover:opacity-80 transition-opacity"
               >
                 로그인
               </Link>
