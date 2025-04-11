@@ -89,7 +89,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
                   activePage === "themes"
                     ? "text-[#FFD896]"
                     : "text-gray-300 hover:text-[#FFD896]"
-                } text-sm font-medium`}
+                } text-sm font-bold`}
               >
                 방탈출 테마
               </Link>
@@ -99,7 +99,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
                   activePage === "meetings"
                     ? "text-[#FFD896]"
                     : "text-gray-300 hover:text-[#FFD896]"
-                } text-sm font-medium`}
+                } text-sm font-bold`}
               >
                 모임 탐색
               </Link>
@@ -110,7 +110,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
                     activePage === "my-diary"
                       ? "text-[#FFD896]"
                       : "text-gray-300 hover:text-[#FFD896]"
-                  } text-sm font-medium`}
+                  } text-sm font-bold`}
                 >
                   나의 탈출일지
                 </Link>
