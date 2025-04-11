@@ -4,14 +4,14 @@ import Image from "next/image";
 import Link from "next/link";
 
 export default function LoginPage() {
-  const socialLoginForKakaoUrl =
-    process.env.NODE_ENV === "development"
-      ? `http://localhost:8080/oauth2/authorization/kakao`
-      : `https://api.ddobang.site/oauth2/authorization/kakao`;
-  const redirectUrlAfterSocialLogin =
-    process.env.NODE_ENV === "development"
-      ? "http://localhost:3000"
-      : "https://www.ddobang.site";
+  // API URL과 Frontend URL을 환경 변수에서 직접 가져옴
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+  const frontendUrl =
+    process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
+
+  // 카카오 로그인 URL 구성
+  const socialLoginForKakaoUrl = `${apiUrl}/oauth2/authorization/kakao`;
+  const redirectUrlAfterSocialLogin = frontendUrl;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
