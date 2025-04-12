@@ -68,26 +68,15 @@ export default function HomePage() {
   const fetchRankingThemes = async (tag?: string) => {
     setIsLoadingRanking(true);
     try {
-      const response = await axios.post(
-        `${API_BASE_URL}/api/v1/themes/ranking`,
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/themes/ranking`,
         {
-          tagName: tag || "",
-          limit: 3,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
           withCredentials: true,
         }
       );
-
-      if (response.data && response.data.data) {
-        setRankingThemes(response.data.data);
-      }
+      setRankingThemes(response.data.data || []);
     } catch (error) {
-      console.error("랭킹 테마 로딩 에러:", error);
+      console.error("랭킹 테마 조회 실패:", error);
       setRankingThemes([]);
     } finally {
       setIsLoadingRanking(false);
@@ -98,26 +87,15 @@ export default function HomePage() {
   const fetchNewThemes = async (tag?: string) => {
     setIsLoadingNew(true);
     try {
-      const response = await axios.post(
-        `${API_BASE_URL}/api/v1/themes/new`,
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/themes/new`,
         {
-          tagName: tag || "",
-          limit: 3,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
           withCredentials: true,
         }
       );
-
-      if (response.data && response.data.data) {
-        setNewThemes(response.data.data);
-      }
+      setNewThemes(response.data.data || []);
     } catch (error) {
-      console.error("신규 테마 로딩 에러:", error);
+      console.error("신규 테마 조회 실패:", error);
       setNewThemes([]);
     } finally {
       setIsLoadingNew(false);
@@ -128,30 +106,15 @@ export default function HomePage() {
   const fetchParties = async () => {
     setIsLoadingParties(true);
     try {
-      const response = await axios.post(
-        `${API_BASE_URL}/api/v1/parties/main`,
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/parties/main`,
         {
-          limit: 4,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
           withCredentials: true,
         }
       );
-
-      if (response.data && response.data.data) {
-        // 데이터 형식 확인 및 변환
-        const partyData = Array.isArray(response.data.data)
-          ? response.data.data
-          : response.data.data.content || [];
-
-        setParties(partyData);
-      }
+      setParties(response.data.data || []);
     } catch (error) {
-      console.error("실시간 모집 로딩 에러:", error);
+      console.error("모임 조회 실패:", error);
       setParties([]);
     } finally {
       setIsLoadingParties(false);
@@ -199,10 +162,6 @@ export default function HomePage() {
 
       {/* Section 2: 소셜링 */}
       <section className="py-12 px-4 max-w-7xl mx-auto">
-        <div className="flex items-center gap-2 mb-6">
-          <div className="w-2 h-2 bg-red-500 rounded-full" />
-          <h2 className="text-lg font-medium">실시간 모집</h2>
-        </div>
         <h3 className="text-2xl font-bold text-center mb-8">
           함께 방탈출할 메이트를 찾고 계신가요?
           <br />
