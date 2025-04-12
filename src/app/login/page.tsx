@@ -24,6 +24,8 @@ export default function LoginPage() {
         </div>
 
         <div className="space-y-2">
+          {/* 테스트용 */}
+          <>{redirectUrlAfterSocialLogin}</>
           <a
             className="w-full flex items-center justify-center gap-2 bg-[#FEE500] hover:bg-[#FDD800] text-[#191919] px-4 py-3 rounded-lg"
             href={`${socialLoginForKakaoUrl}?redirectUrl=${redirectUrlAfterSocialLogin}`}

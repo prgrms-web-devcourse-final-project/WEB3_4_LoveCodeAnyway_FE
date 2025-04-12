@@ -6,7 +6,6 @@ import { Navigation } from "@/components/Navigation";
 import { ThemeCard } from "@/components/ThemeCard";
 import { ThemeSearch } from "@/components/ThemeSearch";
 import { EscapeRoom } from "@/types/EscapeRoom";
-import client from "@/lib/backend/client";
 
 export default function ThemesPage() {
   const [themes, setThemes] = useState<EscapeRoom[]>([]);

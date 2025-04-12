@@ -328,35 +328,35 @@ export function Navigation({ activePage }: { activePage?: string }) {
                   </button>
 
                   {isProfileMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-[#FFE7B9] rounded-lg shadow-lg py-1 z-50">
+                    <div className="absolute right-0 mt-2 w-48 bg-[#FFF8EC] rounded-lg shadow-lg py-1 z-50">
                       <Link
                         href="/my"
-                        className="block px-4 py-3 text-base font-medium text-gray-800 hover:bg-[#FFD896]"
+                        className="block px-4 py-3 text-base font-medium text-gray-500 hover:bg-[#FFFCF7]"
                       >
                         마이페이지
                       </Link>
                       <Link
                         href="/my/diary"
-                        className="block px-4 py-3 text-base font-medium text-gray-800 hover:bg-[#FFD896]"
+                        className="block px-4 py-3 text-base font-medium text-gray-500 hover:bg-[#FFFCF7]"
                       >
                         탈출일지
                       </Link>
                       <Link
                         href="/my/history"
-                        className="block px-4 py-3 text-base font-medium text-gray-800 hover:bg-[#FFD896]"
+                        className="block px-4 py-3 text-base font-medium text-gray-500 hover:bg-[#FFFCF7]"
                       >
                         모임 히스토리
                       </Link>
                       <Link
                         href="/my/inquiry"
-                        className="block px-4 py-3 text-base font-medium text-gray-800 hover:bg-[#FFD896]"
+                        className="block px-4 py-3 text-base font-medium text-gray-500 hover:bg-[#FFFCF7]"
                       >
                         1:1 문의
                       </Link>
-                      <div className="border-t border-[#FFD896]">
+                      <div className="border-t border-gray-100">
                         <button
                           onClick={handleLogout}
-                          className="block w-full text-left px-4 py-3 text-base font-medium text-gray-800 hover:bg-[#FFD896]"
+                          className="block w-full text-left px-4 py-3 text-base font-medium text-gray-500 hover:bg-[#FFFCF7]"
                         >
                           로그아웃
                         </button>
