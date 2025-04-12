@@ -5,6 +5,16 @@ interface Tag {
   name: string;
 }
 
+interface Region {
+  id: number;
+  subRegion: string;
+}
+
+interface Participant {
+  id: string;
+  name: string;
+}
+
 interface ThemeFilterModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -21,13 +31,62 @@ export function ThemeFilterModal({
   const [selectedParticipant, setSelectedParticipant] = useState<string>("");
   const [activeRegion, setActiveRegion] = useState("서울");
   const [tags, setTags] = useState<Tag[]>([]);
+  const [regions, setRegions] = useState<Region[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingRegions, setLoadingRegions] = useState(false);
+
+  const participants: Participant[] = [
+    { id: "1", name: "1명" },
+    { id: "2", name: "2명" },
+    { id: "3", name: "3명" },
+    { id: "4", name: "4명" },
+    { id: "5", name: "5명" },
+    { id: "6", name: "6명" },
+    { id: "7", name: "7명" },
+    { id: "8", name: "8명 이상" },
+  ];
+
+  const majorRegions = [
+    { id: "서울", name: "서울" },
+    { id: "경기/인천", name: "경기/인천" },
+    { id: "충청", name: "충청" },
+    { id: "경상", name: "경상" },
+    { id: "전라", name: "전라" },
+    { id: "강원", name: "강원" },
+    { id: "제주", name: "제주" },
+  ];
 
   useEffect(() => {
     if (isOpen) {
       fetchTags();
+      fetchRegions();
     }
   }, [isOpen]);
+
+  const fetchRegions = async () => {
+    setLoadingRegions(true);
+    try {
+      const response = await fetch(
+        `${
+          process.env.NODE_ENV === "development"
+            ? "http://localhost:8080"
+            : "https://api.ddobang.site"
+        }/api/v1/regions?majorRegion=서울`,
+        {
+          credentials: "include",
+        }
+      );
+      const data = await response.json();
+
+      if (data && data.data) {
+        setRegions(data.data);
+      }
+    } catch (error) {
+      console.error("지역 목록을 불러오는 중 오류가 발생했습니다:", error);
+    } finally {
+      setLoadingRegions(false);
+    }
+  };
 
   const fetchTags = async () => {
     setLoading(true);
@@ -54,93 +113,6 @@ export function ThemeFilterModal({
     }
   };
 
-  const regions = [
-    {
-      id: "서울",
-      name: "서울",
-      subRegions: [
-        { id: "서울 전체", name: "서울 전체" },
-        { id: "홍대", name: "홍대" },
-        { id: "강남", name: "강남" },
-        { id: "건대", name: "건대" },
-        { id: "대학로", name: "대학로" },
-        { id: "신촌", name: "신촌" },
-        { id: "잠실", name: "잠실" },
-        { id: "신림", name: "신림" },
-        { id: "노원", name: "노원" },
-        { id: "신사", name: "신사" },
-      ],
-    },
-    {
-      id: "경기/인천",
-      name: "경기/인천",
-      subRegions: [
-        { id: "경기 전체", name: "경기 전체" },
-        { id: "인천", name: "인천" },
-        { id: "수원", name: "수원" },
-        { id: "분당", name: "분당" },
-        { id: "일산", name: "일산" },
-        { id: "안양", name: "안양" },
-      ],
-    },
-    {
-      id: "충청",
-      name: "충청",
-      subRegions: [
-        { id: "충청 전체", name: "충청 전체" },
-        { id: "대전", name: "대전" },
-        { id: "천안", name: "천안" },
-      ],
-    },
-    {
-      id: "경상",
-      name: "경상",
-      subRegions: [
-        { id: "경상 전체", name: "경상 전체" },
-        { id: "부산", name: "부산" },
-        { id: "대구", name: "대구" },
-        { id: "울산", name: "울산" },
-      ],
-    },
-    {
-      id: "전라",
-      name: "전라",
-      subRegions: [
-        { id: "전라 전체", name: "전라 전체" },
-        { id: "광주", name: "광주" },
-        { id: "전주", name: "전주" },
-      ],
-    },
-    {
-      id: "강원",
-      name: "강원",
-      subRegions: [
-        { id: "강원 전체", name: "강원 전체" },
-        { id: "강릉", name: "강릉" },
-        { id: "속초", name: "속초" },
-      ],
-    },
-    {
-      id: "제주",
-      name: "제주",
-      subRegions: [
-        { id: "제주 전체", name: "제주 전체" },
-        { id: "서귀포", name: "서귀포" },
-      ],
-    },
-  ];
-
-  const participants = [
-    { id: "1명", name: "1명" },
-    { id: "2명", name: "2명" },
-    { id: "3명", name: "3명" },
-    { id: "4명", name: "4명" },
-    { id: "5명", name: "5명" },
-    { id: "6명", name: "6명" },
-    { id: "7명", name: "7명" },
-    { id: "8명 이상", name: "8명 이상" },
-  ];
-
   const handleRegionToggle = (region: string) => {
     setSelectedRegions((prev) =>
       prev.includes(region)
@@ -161,8 +133,30 @@ export function ThemeFilterModal({
     );
   };
 
-  const handleRegionClick = (regionId: string) => {
-    setActiveRegion(regionId);
+  const handleRegionClick = async (majorRegion: string) => {
+    setActiveRegion(majorRegion);
+    setLoadingRegions(true);
+    try {
+      const response = await fetch(
+        `${
+          process.env.NODE_ENV === "development"
+            ? "http://localhost:8080"
+            : "https://api.ddobang.site"
+        }/api/v1/regions?majorRegion=${majorRegion}`,
+        {
+          credentials: "include",
+        }
+      );
+      const data = await response.json();
+
+      if (data && data.data) {
+        setRegions(data.data);
+      }
+    } catch (error) {
+      console.error("지역 목록을 불러오는 중 오류가 발생했습니다:", error);
+    } finally {
+      setLoadingRegions(false);
+    }
   };
 
   const handleReset = () => {
@@ -173,11 +167,19 @@ export function ThemeFilterModal({
   };
 
   const handleApply = () => {
-    onApply({
-      regions: selectedRegions,
+    const filters = {
+      regionId: selectedRegions
+        .map((region) => {
+          const regionObj = regions.find((r) => r.subRegion === region);
+          return regionObj ? regionObj.id : null;
+        })
+        .filter((id) => id !== null),
       tagIds: selectedGenres,
-      participant: selectedParticipant,
-    });
+      participants: selectedParticipant
+        ? parseInt(selectedParticipant)
+        : undefined,
+    };
+    onApply(filters);
     onClose();
   };
 
@@ -197,7 +199,7 @@ export function ThemeFilterModal({
         : "";
 
     const participantText = selectedParticipant
-      ? `인원: ${selectedParticipant}`
+      ? `인원: ${selectedParticipant}명`
       : "";
 
     const texts = [regionText, genreText, participantText].filter(Boolean);
@@ -207,12 +209,12 @@ export function ThemeFilterModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-start justify-center pt-20 z-50">
+    <div className="fixed inset-0 flex items-start justify-center z-50 overflow-y-auto">
       <div
         className="fixed inset-0 bg-black/30 backdrop-blur-[3px]"
         onClick={onClose}
       ></div>
-      <div className="bg-white rounded-2xl w-[1105px] p-8 mx-4 shadow-lg relative">
+      <div className="bg-white rounded-2xl w-full max-w-[1105px] p-4 md:p-8 mx-4 my-4 shadow-lg relative">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold">검색 필터 - 테마</h2>
           <button
@@ -235,8 +237,8 @@ export function ThemeFilterModal({
           </button>
         </div>
 
-        <div className="flex items-center mb-8">
-          <div className="relative flex-1">
+        <div className="flex flex-col md:flex-row items-center mb-8 gap-2 md:gap-0">
+          <div className="relative flex-1 w-full">
             <input
               type="text"
               placeholder="직접 전 선택한 필터 표시"
@@ -255,37 +257,32 @@ export function ThemeFilterModal({
           </div>
           <button
             onClick={handleReset}
-            className="ml-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
+            className="w-full md:w-auto md:ml-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
           >
             선택 초기화
           </button>
         </div>
 
-        <div className="flex gap-8">
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
           <div className="flex-1">
-            <div className="bg-white rounded-2xl p-6 border border-[#E1E2E7] h-[480px]">
+            <div className="bg-white rounded-2xl p-4 md:p-6 border border-[#E1E2E7] h-[480px] overflow-auto">
               <h3 className="text-lg font-medium mb-4 text-center">지역별</h3>
               <div className="flex h-[calc(100%-40px)]">
-                <div className="w-[140px] bg-gray-50 rounded-xl p-4 border border-[#E1E2E7]">
-                  {regions.map((region) => (
-                    <button
-                      key={region.id}
-                      onClick={() => handleRegionClick(region.id)}
-                      className={`w-full text-left mb-3 text-sm whitespace-nowrap px-3 py-2 rounded-lg transition-colors ${
-                        activeRegion === region.id
-                          ? "bg-[#FFB230] text-white"
-                          : "hover:bg-gray-100"
-                      }`}
-                    >
-                      {region.name}
-                    </button>
-                  ))}
+                <div className="w-[120px] md:w-[140px] bg-gray-50 rounded-xl p-2 md:p-4 border border-[#E1E2E7]">
+                  <button
+                    className={`w-full text-left mb-3 text-sm whitespace-nowrap px-2 md:px-3 py-2 rounded-lg transition-colors bg-[#FFB230] text-white`}
+                  >
+                    서울
+                  </button>
                 </div>
-                <div className="flex-1 pl-4">
+                <div className="flex-1 pl-2 md:pl-4">
                   <div className="grid grid-cols-1 gap-2">
-                    {regions
-                      .find((r) => r.id === activeRegion)
-                      ?.subRegions.map((region) => (
+                    {loadingRegions ? (
+                      <div className="flex justify-center items-center h-full">
+                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
+                      </div>
+                    ) : (
+                      regions.map((region) => (
                         <div
                           key={region.id}
                           className="flex items-center group"
@@ -293,9 +290,13 @@ export function ThemeFilterModal({
                           <div className="relative flex items-center">
                             <input
                               type="checkbox"
-                              id={region.id}
-                              checked={selectedRegions.includes(region.id)}
-                              onChange={() => handleRegionToggle(region.id)}
+                              id={region.subRegion}
+                              checked={selectedRegions.includes(
+                                region.subRegion
+                              )}
+                              onChange={() =>
+                                handleRegionToggle(region.subRegion)
+                              }
                               className="peer w-4 h-4 rounded border border-[#858D9D] text-[#FFB230] focus:ring-[#FFB230] focus:ring-2 focus:ring-offset-2 cursor-pointer appearance-none checked:bg-[#FFB230] checked:border-[#FFB230] transition-colors"
                             />
                             <svg
@@ -310,18 +311,19 @@ export function ThemeFilterModal({
                               />
                             </svg>
                             <label
-                              htmlFor={region.id}
+                              htmlFor={region.subRegion}
                               className={`ml-2 text-sm cursor-pointer select-none ${
-                                selectedRegions.includes(region.id)
+                                selectedRegions.includes(region.subRegion)
                                   ? "text-[#FFB230] font-medium"
                                   : "text-gray-700 group-hover:text-gray-900"
                               }`}
                             >
-                              {region.name}
+                              {region.subRegion}
                             </label>
                           </div>
                         </div>
-                      ))}
+                      ))
+                    )}
                   </div>
                 </div>
               </div>
@@ -329,41 +331,210 @@ export function ThemeFilterModal({
           </div>
 
           <div className="flex-1">
-            <div className="bg-white rounded-2xl p-6 border border-[#E1E2E7] h-[480px]">
+            <div className="bg-white rounded-2xl p-4 md:p-6 border border-[#E1E2E7] h-[480px] overflow-auto">
               <h3 className="text-lg font-medium mb-4 text-center">장르별</h3>
-              <div className="grid grid-cols-3 gap-3 h-[calc(100%-40px)] overflow-y-auto">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {loading ? (
                   <div className="col-span-3 flex justify-center items-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
                   </div>
                 ) : (
-                  tags.map((tag) => (
+                  <>
                     <button
-                      key={tag.id}
-                      onClick={() => handleGenreToggle(tag.id)}
+                      onClick={() => handleGenreToggle(0)}
                       className={`text-sm rounded-lg border px-3 py-2 transition-colors ${
-                        selectedGenres.includes(tag.id)
+                        selectedGenres.includes(0)
                           ? "bg-[#FFB230] text-white border-[#FFB230]"
                           : "border-[#E1E2E7] hover:bg-gray-50"
                       }`}
                     >
-                      {tag.name}
+                      스릴러
                     </button>
-                  ))
+                    <button
+                      onClick={() => handleGenreToggle(1)}
+                      className={`text-sm rounded-lg border px-3 py-2 transition-colors ${
+                        selectedGenres.includes(1)
+                          ? "bg-[#FFB230] text-white border-[#FFB230]"
+                          : "border-[#E1E2E7] hover:bg-gray-50"
+                      }`}
+                    >
+                      판타지
+                    </button>
+                    <button
+                      onClick={() => handleGenreToggle(2)}
+                      className={`text-sm rounded-lg border px-3 py-2 transition-colors ${
+                        selectedGenres.includes(2)
+                          ? "bg-[#FFB230] text-white border-[#FFB230]"
+                          : "border-[#E1E2E7] hover:bg-gray-50"
+                      }`}
+                    >
+                      추리
+                    </button>
+                    <button
+                      onClick={() => handleGenreToggle(3)}
+                      className={`text-sm rounded-lg border px-3 py-2 transition-colors ${
+                        selectedGenres.includes(3)
+                          ? "bg-[#FFB230] text-white border-[#FFB230]"
+                          : "border-[#E1E2E7] hover:bg-gray-50"
+                      }`}
+                    >
+                      호러/공포
+                    </button>
+                    <button
+                      onClick={() => handleGenreToggle(4)}
+                      className={`text-sm rounded-lg border px-3 py-2 transition-colors ${
+                        selectedGenres.includes(4)
+                          ? "bg-[#FFB230] text-white border-[#FFB230]"
+                          : "border-[#E1E2E7] hover:bg-gray-50"
+                      }`}
+                    >
+                      잠입
+                    </button>
+                    <button
+                      onClick={() => handleGenreToggle(5)}
+                      className={`text-sm rounded-lg border px-3 py-2 transition-colors ${
+                        selectedGenres.includes(5)
+                          ? "bg-[#FFB230] text-white border-[#FFB230]"
+                          : "border-[#E1E2E7] hover:bg-gray-50"
+                      }`}
+                    >
+                      코미디
+                    </button>
+                    <button
+                      onClick={() => handleGenreToggle(6)}
+                      className={`text-sm rounded-lg border px-3 py-2 transition-colors ${
+                        selectedGenres.includes(6)
+                          ? "bg-[#FFB230] text-white border-[#FFB230]"
+                          : "border-[#E1E2E7] hover:bg-gray-50"
+                      }`}
+                    >
+                      모험/탈험
+                    </button>
+                    <button
+                      onClick={() => handleGenreToggle(7)}
+                      className={`text-sm rounded-lg border px-3 py-2 transition-colors ${
+                        selectedGenres.includes(7)
+                          ? "bg-[#FFB230] text-white border-[#FFB230]"
+                          : "border-[#E1E2E7] hover:bg-gray-50"
+                      }`}
+                    >
+                      감성
+                    </button>
+                    <button
+                      onClick={() => handleGenreToggle(8)}
+                      className={`text-sm rounded-lg border px-3 py-2 transition-colors ${
+                        selectedGenres.includes(8)
+                          ? "bg-[#FFB230] text-white border-[#FFB230]"
+                          : "border-[#E1E2E7] hover:bg-gray-50"
+                      }`}
+                    >
+                      드라마
+                    </button>
+                    <button
+                      onClick={() => handleGenreToggle(9)}
+                      className={`text-sm rounded-lg border px-3 py-2 transition-colors ${
+                        selectedGenres.includes(9)
+                          ? "bg-[#FFB230] text-white border-[#FFB230]"
+                          : "border-[#E1E2E7] hover:bg-gray-50"
+                      }`}
+                    >
+                      범죄
+                    </button>
+                    <button
+                      onClick={() => handleGenreToggle(10)}
+                      className={`text-sm rounded-lg border px-3 py-2 transition-colors ${
+                        selectedGenres.includes(10)
+                          ? "bg-[#FFB230] text-white border-[#FFB230]"
+                          : "border-[#E1E2E7] hover:bg-gray-50"
+                      }`}
+                    >
+                      미스터리
+                    </button>
+                    <button
+                      onClick={() => handleGenreToggle(11)}
+                      className={`text-sm rounded-lg border px-3 py-2 transition-colors ${
+                        selectedGenres.includes(11)
+                          ? "bg-[#FFB230] text-white border-[#FFB230]"
+                          : "border-[#E1E2E7] hover:bg-gray-50"
+                      }`}
+                    >
+                      SF
+                    </button>
+                    <button
+                      onClick={() => handleGenreToggle(12)}
+                      className={`text-sm rounded-lg border px-3 py-2 transition-colors ${
+                        selectedGenres.includes(12)
+                          ? "bg-[#FFB230] text-white border-[#FFB230]"
+                          : "border-[#E1E2E7] hover:bg-gray-50"
+                      }`}
+                    >
+                      19금
+                    </button>
+                    <button
+                      onClick={() => handleGenreToggle(13)}
+                      className={`text-sm rounded-lg border px-3 py-2 transition-colors ${
+                        selectedGenres.includes(13)
+                          ? "bg-[#FFB230] text-white border-[#FFB230]"
+                          : "border-[#E1E2E7] hover:bg-gray-50"
+                      }`}
+                    >
+                      액션
+                    </button>
+                    <button
+                      onClick={() => handleGenreToggle(14)}
+                      className={`text-sm rounded-lg border px-3 py-2 transition-colors ${
+                        selectedGenres.includes(14)
+                          ? "bg-[#FFB230] text-white border-[#FFB230]"
+                          : "border-[#E1E2E7] hover:bg-gray-50"
+                      }`}
+                    >
+                      역사
+                    </button>
+                    <button
+                      onClick={() => handleGenreToggle(15)}
+                      className={`text-sm rounded-lg border px-3 py-2 transition-colors ${
+                        selectedGenres.includes(15)
+                          ? "bg-[#FFB230] text-white border-[#FFB230]"
+                          : "border-[#E1E2E7] hover:bg-gray-50"
+                      }`}
+                    >
+                      로맨스
+                    </button>
+                    <button
+                      onClick={() => handleGenreToggle(16)}
+                      className={`text-sm rounded-lg border px-3 py-2 transition-colors ${
+                        selectedGenres.includes(16)
+                          ? "bg-[#FFB230] text-white border-[#FFB230]"
+                          : "border-[#E1E2E7] hover:bg-gray-50"
+                      }`}
+                    >
+                      야외
+                    </button>
+                    <button
+                      onClick={() => handleGenreToggle(17)}
+                      className={`text-sm rounded-lg border px-3 py-2 transition-colors ${
+                        selectedGenres.includes(17)
+                          ? "bg-[#FFB230] text-white border-[#FFB230]"
+                          : "border-[#E1E2E7] hover:bg-gray-50"
+                      }`}
+                    >
+                      타임어택
+                    </button>
+                  </>
                 )}
               </div>
             </div>
           </div>
 
           <div className="flex-1">
-            <div className="bg-white rounded-2xl p-6 border border-[#E1E2E7] h-[480px]">
+            <div className="bg-white rounded-2xl p-4 md:p-6 border border-[#E1E2E7] h-[480px] overflow-auto">
               <h3 className="text-lg font-medium mb-4 text-center">인원별</h3>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
                 {participants.map((participant) => (
                   <button
                     key={participant.id}
                     onClick={() => handleParticipantToggle(participant.id)}
-                    className={`text-sm rounded-lg border px-3 py-2 transition-colors ${
+                    className={`text-sm rounded-lg border px-2 md:px-3 py-2 transition-colors ${
                       selectedParticipant === participant.id
                         ? "bg-[#FFB230] text-white border-[#FFB230]"
                         : "border-[#E1E2E7] hover:bg-gray-50"
@@ -380,13 +551,13 @@ export function ThemeFilterModal({
         <div className="flex justify-end mt-8 gap-4">
           <button
             onClick={onClose}
-            className="px-6 py-3 border border-[#E1E2E7] rounded-lg hover:bg-gray-50"
+            className="px-4 md:px-6 py-3 border border-[#E1E2E7] rounded-lg hover:bg-gray-50"
           >
             취소
           </button>
           <button
             onClick={handleApply}
-            className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800"
+            className="px-4 md:px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800"
           >
             적용하기
           </button>

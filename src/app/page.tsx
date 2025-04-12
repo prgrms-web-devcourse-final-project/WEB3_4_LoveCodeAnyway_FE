@@ -258,7 +258,7 @@ export default function HomePage() {
       {/* Section 1: 메인 배너 */}
       <section className="w-full h-[400px] relative bg-gray-800">
         <Navigation activePage="home" />
-        <div className="max-w-7xl mx-auto h-full relative flex flex-col items-center justify-start text-center pt-16">
+        <div className="max-w-7xl mx-auto h-full relative flex flex-col items-center justify-start text-center pt-8">
           <Image
             src="/logo.svg"
             alt="또방 로고"
