@@ -135,7 +135,65 @@ export default function HomePage() {
       setParties(response.data.data || []);
     } catch (error) {
       console.error("모임 조회 실패:", error);
-      setParties([]);
+      // 더미 데이터 추가
+      const dummyParties: Party[] = [
+        {
+          id: 1,
+          themeId: 101,
+          themeName: "마법사의 방",
+          themeThumbnailUrl: "https://example.com/theme1.jpg",
+          storeName: "마법의 방탈출",
+          title: "마법사의 방 함께 하실 분 구합니다!",
+          scheduledAt: "2024-03-20T19:00:00",
+          acceptedParticipantCount: 2,
+          totalParticipants: 4,
+        },
+        {
+          id: 2,
+          themeId: 102,
+          themeName: "추리왕",
+          themeThumbnailUrl: "https://example.com/theme2.jpg",
+          storeName: "추리방탈출",
+          title: "추리왕 테마 함께 하실 분",
+          scheduledAt: "2024-03-21T20:00:00",
+          acceptedParticipantCount: 3,
+          totalParticipants: 6,
+        },
+        {
+          id: 3,
+          themeId: 103,
+          themeName: "좀비 아포칼립스",
+          themeThumbnailUrl: "https://example.com/theme3.jpg",
+          storeName: "호러방탈출",
+          title: "좀비 테마 2명 더 필요합니다!",
+          scheduledAt: "2024-03-22T18:30:00",
+          acceptedParticipantCount: 4,
+          totalParticipants: 6,
+        },
+        {
+          id: 4,
+          themeId: 104,
+          themeName: "타임머신",
+          themeThumbnailUrl: "https://example.com/theme4.jpg",
+          storeName: "SF방탈출",
+          title: "타임머신 테마 모임",
+          scheduledAt: "2024-03-23T19:30:00",
+          acceptedParticipantCount: 1,
+          totalParticipants: 4,
+        },
+        {
+          id: 5,
+          themeId: 105,
+          themeName: "황금열쇠",
+          themeThumbnailUrl: "https://example.com/theme5.jpg",
+          storeName: "모험방탈출",
+          title: "황금열쇠 테마 함께 하실 분",
+          scheduledAt: "2024-03-24T20:00:00",
+          acceptedParticipantCount: 2,
+          totalParticipants: 4,
+        },
+      ];
+      setParties(dummyParties);
     } finally {
       setIsLoadingParties(false);
     }
@@ -143,8 +201,42 @@ export default function HomePage() {
 
   // 로딩 인디케이터 컴포넌트
   const LoadingIndicator = () => (
-    <div className="flex justify-center py-12">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+      {[...Array(4)].map((_, index) => (
+        <div key={index} className="bg-gray-50 rounded-lg overflow-hidden">
+          <div className="p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-4 w-12 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+            <div className="h-32 bg-gray-200 rounded-lg mb-3 animate-pulse"></div>
+            <div className="h-6 w-3/4 bg-gray-200 rounded mb-1 animate-pulse"></div>
+            <div className="h-4 w-1/2 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  // 테마 스켈레톤 UI
+  const ThemeSkeleton = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {[...Array(4)].map((_, index) => (
+        <div key={index} className="relative">
+          <div className="aspect-[3/4] bg-gray-200 rounded-lg animate-pulse">
+            <div className="absolute top-4 left-4 h-6 w-12 bg-gray-300 rounded-lg animate-pulse"></div>
+            <div className="absolute bottom-0 left-0 right-0 p-4">
+              <div className="h-6 w-3/4 bg-gray-300 rounded mb-2 animate-pulse"></div>
+              <div className="h-4 w-1/2 bg-gray-300 rounded mb-2 animate-pulse"></div>
+              <div className="flex gap-2">
+                <div className="h-4 w-16 bg-gray-300 rounded animate-pulse"></div>
+                <div className="h-4 w-16 bg-gray-300 rounded animate-pulse"></div>
+                <div className="h-4 w-16 bg-gray-300 rounded animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 
@@ -181,7 +273,7 @@ export default function HomePage() {
       </section>
 
       {/* Section 2: 소셜링 */}
-      <section className="py-12 px-4 max-w-7xl mx-auto">
+      <section className="py-12 px-4 max-w-7xl mx-auto min-h-[400px]">
         <h3 className="text-2xl font-bold text-center mb-8">
           함께 방탈출할 메이트를 찾고 계신가요?
           <br />
@@ -191,7 +283,7 @@ export default function HomePage() {
         {isLoadingParties ? (
           <LoadingIndicator />
         ) : parties.length === 0 ? (
-          <div className="text-center py-8">
+          <div className="text-center py-8 min-h-[300px] flex items-center justify-center">
             <p className="text-gray-500">현재 모집 중인 파티가 없습니다.</p>
           </div>
         ) : (
@@ -276,7 +368,7 @@ export default function HomePage() {
 
           <div className="min-h-[400px]">
             {isLoadingRanking ? (
-              <LoadingIndicator />
+              <ThemeSkeleton />
             ) : rankingThemes.length === 0 ? (
               <EmptyState />
             ) : (
@@ -405,7 +497,7 @@ export default function HomePage() {
 
           <div className="min-h-[400px]">
             {isLoadingNew ? (
-              <LoadingIndicator />
+              <ThemeSkeleton />
             ) : newThemes.length === 0 ? (
               <EmptyState />
             ) : (
