@@ -12,6 +12,7 @@ export default function ThemesPage() {
   const [themes, setThemes] = useState<EscapeRoom[]>([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [selectedFilters, setSelectedFilters] = useState({
@@ -106,6 +107,7 @@ export default function ThemesPage() {
       setHasMore(false);
     } finally {
       setLoading(false);
+      setInitialLoading(false);
     }
   };
 
@@ -135,6 +137,28 @@ export default function ThemesPage() {
     }
   }, [inView]);
 
+  // 스켈레톤 카드 렌더링 함수
+  const renderSkeletonCards = () => {
+    return Array(8)
+      .fill(0)
+      .map((_, index) => (
+        <div
+          key={`skeleton-${index}`}
+          className="bg-white rounded-lg overflow-hidden shadow-sm"
+        >
+          <div className="aspect-[3/4] bg-gray-200 animate-pulse"></div>
+          <div className="p-4">
+            <div className="h-5 bg-gray-200 rounded animate-pulse mb-2"></div>
+            <div className="h-4 w-3/4 bg-gray-200 rounded animate-pulse mb-2"></div>
+            <div className="flex gap-2 mt-4">
+              <div className="h-6 w-16 bg-gray-200 rounded-full animate-pulse"></div>
+              <div className="h-6 w-16 bg-gray-200 rounded-full animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+      ));
+  };
+
   return (
     <main className="bg-gray-50 min-h-screen">
       <Navigation activePage="themes" />
@@ -145,15 +169,21 @@ export default function ThemesPage() {
           onFilterApply={handleFilterApply}
         />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {themes.map((theme) => (
-            <ThemeCard key={theme.id} room={theme} />
-          ))}
-        </div>
+        {initialLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {renderSkeletonCards()}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {themes.map((theme) => (
+              <ThemeCard key={theme.id} room={theme} />
+            ))}
+          </div>
+        )}
 
         {/* 로딩 인디케이터 */}
         <div ref={ref} className="flex justify-center py-8">
-          {loading && (
+          {loading && !initialLoading && (
             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
           )}
         </div>

@@ -50,6 +50,7 @@ export default function PartiesPage() {
   const [parties, setParties] = useState<EscapeRoom[]>([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [filterRegion, setFilterRegion] = useState("");
@@ -205,6 +206,7 @@ export default function PartiesPage() {
       setHasMore(false);
     } finally {
       setLoading(false);
+      setInitialLoading(false);
     }
   };
 
@@ -237,6 +239,34 @@ export default function PartiesPage() {
     router.push(`/parties/${room.id}`);
   };
 
+  // 스켈레톤 카드 렌더링 함수
+  const renderSkeletonCards = () => {
+    return Array(6)
+      .fill(0)
+      .map((_, index) => (
+        <div
+          key={`skeleton-${index}`}
+          className="bg-white rounded-xl shadow-sm overflow-hidden cursor-pointer h-[450px] flex flex-col"
+        >
+          {/* 이미지 섹션 */}
+          <div className="relative h-[220px] bg-gray-200 animate-pulse"></div>
+
+          {/* 내용 섹션 */}
+          <div className="p-5 flex flex-col h-full">
+            <div className="h-6 bg-gray-200 rounded animate-pulse mb-3"></div>
+            <div className="h-5 w-3/4 bg-gray-200 rounded animate-pulse mb-3"></div>
+            <div className="mt-2">
+              <div className="h-4 w-full bg-gray-200 rounded animate-pulse mb-2"></div>
+              <div className="h-4 w-2/3 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+            <div className="mt-auto">
+              <div className="h-8 bg-gray-200 rounded animate-pulse mt-4"></div>
+            </div>
+          </div>
+        </div>
+      ));
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation />
@@ -264,14 +294,20 @@ export default function PartiesPage() {
       {/* 모임 목록 섹션 */}
       <div className="max-w-6xl mx-auto px-4 pb-16">
         {/* 모임 카드 그리드 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {parties.map((room) => (
-            <PartyCard key={room.id} room={room} onClick={handleCardClick} />
-          ))}
-        </div>
+        {initialLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {renderSkeletonCards()}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {parties.map((room) => (
+              <PartyCard key={room.id} room={room} onClick={handleCardClick} />
+            ))}
+          </div>
+        )}
 
         {/* 로딩 인디케이터 */}
-        {loading && (
+        {loading && !initialLoading && (
           <div className="flex justify-center mt-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
           </div>
@@ -281,7 +317,7 @@ export default function PartiesPage() {
         {hasMore && <div ref={ref} className="h-10" />}
 
         {/* 데이터 없음 메시지 */}
-        {parties.length === 0 && !loading && (
+        {parties.length === 0 && !loading && !initialLoading && (
           <div className="w-full my-12">
             <div className="bg-gray-50 border border-gray-300 rounded-xl py-24 px-8 text-center">
               <p className="text-lg font-medium text-gray-700">

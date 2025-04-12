@@ -21,17 +21,16 @@ type Diary = {
 };
 
 export default function DiaryPage() {
-  // 상태 관리
-  const [diaries, setDiaries] = useState<Diary[]>([]);
-  const [loading, setLoading] = useState(true);
-
   const router = useRouter();
+  const [diaries, setDiaries] = useState<Diary[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   // 일지 목록 조회
   useEffect(() => {
     const fetchDiaries = async () => {
+      setLoading(true);
       try {
-        setLoading(true);
         const response = await axios.post(
           `${API_BASE_URL}/api/v1/diaries/list`,
           {},
@@ -57,9 +56,10 @@ export default function DiaryPage() {
 
         setDiaries(diaryData);
       } catch (error) {
-        console.error("일지 목록을 불러오는데 실패했습니다.", error);
+        console.error("일지 목록을 불러오는 중 오류가 발생했습니다:", error);
       } finally {
         setLoading(false);
+        setInitialLoading(false);
       }
     };
 
@@ -108,6 +108,36 @@ export default function DiaryPage() {
     });
   };
 
+  // 스켈레톤 로딩 UI 렌더링 함수
+  const renderSkeletonItems = () => {
+    return Array(5)
+      .fill(0)
+      .map((_, index) => (
+        <div
+          key={`skeleton-${index}`}
+          className="bg-white rounded-lg p-6 shadow-sm mb-4"
+        >
+          <div className="flex flex-col md:flex-row gap-6">
+            <div className="w-full md:w-1/4">
+              <div className="h-40 md:h-32 bg-gray-200 rounded-lg animate-pulse"></div>
+            </div>
+            <div className="w-full md:w-3/4">
+              <div className="h-6 bg-gray-200 rounded animate-pulse mb-3"></div>
+              <div className="h-5 w-3/4 bg-gray-200 rounded animate-pulse mb-4"></div>
+              <div className="flex flex-wrap gap-2 mb-4">
+                <div className="h-6 w-16 bg-gray-200 rounded-full animate-pulse"></div>
+                <div className="h-6 w-20 bg-gray-200 rounded-full animate-pulse"></div>
+              </div>
+              <div className="flex justify-between items-center">
+                <div className="h-5 w-32 bg-gray-200 rounded animate-pulse"></div>
+                <div className="h-8 w-24 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ));
+  };
+
   return (
     <main className="min-h-screen bg-gray-50">
       <Navigation activePage="my-diary" />
@@ -123,10 +153,8 @@ export default function DiaryPage() {
           </Link>
         </div>
 
-        {loading ? (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
-          </div>
+        {initialLoading ? (
+          <div>{renderSkeletonItems()}</div>
         ) : diaries.length === 0 ? (
           <div className="bg-white p-8 rounded-lg shadow-sm text-center">
             <p className="text-gray-500 mb-4">
@@ -194,6 +222,13 @@ export default function DiaryPage() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* 로딩 인디케이터 */}
+        {loading && !initialLoading && (
+          <div className="flex justify-center my-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
           </div>
         )}
       </div>
