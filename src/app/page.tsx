@@ -313,75 +313,112 @@ export default function HomePage() {
               }}
               className="py-4"
             >
-              {parties.map((party, index) => (
-                <SwiperSlide key={party.id} className="p-1 h-full">
-                  <Link
-                    href={`/parties/${party.id}`}
-                    className={`rounded-lg overflow-hidden shadow-[0_4px_10px_rgba(0,0,0,0.05)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.1)] transition-all h-full flex flex-col bg-white border border-gray-200`}
-                  >
-                    <div className="p-5 flex flex-col h-full">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="text-gray-600 text-sm">
-                          {party.storeName}
-                        </div>
-                        <div className="text-red-500 text-sm font-medium">
-                          {new Date(party.scheduledAt).toDateString() ===
-                          new Date().toDateString()
-                            ? "오늘마감"
-                            : "D-1"}
-                        </div>
-                      </div>
-
-                      <div className="flex justify-center items-center h-32 bg-gray-100 rounded-lg mb-3 flex-shrink-0">
-                        {party.themeThumbnailUrl ? (
-                          <Image
-                            src={party.themeThumbnailUrl}
-                            alt="모임 썸네일"
-                            width={100}
-                            height={100}
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-gray-200 text-gray-400">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-8 w-8"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14"
-                              />
-                            </svg>
+              {isLoadingParties
+                ? // 스켈레톤 UI
+                  [...Array(4)].map((_, index) => (
+                    <SwiperSlide
+                      key={`skeleton-${index}`}
+                      className="p-1 h-full"
+                    >
+                      <div className="rounded-lg overflow-hidden h-full flex flex-col bg-white border border-gray-200">
+                        <div className="p-5 flex flex-col h-full">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
+                            <div className="h-4 w-12 bg-gray-200 rounded animate-pulse"></div>
                           </div>
-                        )}
-                      </div>
 
-                      <h3 className="font-medium text-lg mb-1 line-clamp-2">
-                        {party.title}
-                      </h3>
-                      <p className="text-gray-600 text-sm mb-2">
-                        {party.themeName}
-                      </p>
+                          <div className="h-40 bg-gray-200 rounded-lg mb-3 flex-shrink-0 animate-pulse"></div>
 
-                      <div className="flex items-center text-gray-600 text-sm mt-auto">
-                        <span>
-                          {party.acceptedParticipantCount}/
-                          {party.totalParticipants}명
-                        </span>
-                        <span className="mx-2">•</span>
-                        <span>
-                          {new Date(party.scheduledAt).toLocaleDateString()}
-                        </span>
+                          <div className="h-14">
+                            <div className="h-5 bg-gray-200 rounded animate-pulse mb-2"></div>
+                            <div className="h-5 w-3/4 bg-gray-200 rounded animate-pulse"></div>
+                          </div>
+                          <div className="h-6">
+                            <div className="h-4 w-1/2 bg-gray-200 rounded animate-pulse"></div>
+                          </div>
+
+                          <div className="flex items-center mt-auto">
+                            <div className="h-4 w-16 bg-gray-200 rounded animate-pulse"></div>
+                            <div className="mx-2"></div>
+                            <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </Link>
-                </SwiperSlide>
-              ))}
+                    </SwiperSlide>
+                  ))
+                : parties.map((party, index) => (
+                    <SwiperSlide key={party.id} className="p-1 h-full">
+                      <Link
+                        href={`/parties/${party.id}`}
+                        className={`rounded-lg overflow-hidden transition-all h-full flex flex-col bg-white border border-gray-200`}
+                      >
+                        <div className="p-5 flex flex-col h-full">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="text-gray-600 text-sm">
+                              {party.storeName}
+                            </div>
+                            <div className="text-red-500 text-sm font-medium">
+                              {new Date(party.scheduledAt).toDateString() ===
+                              new Date().toDateString()
+                                ? "오늘마감"
+                                : "D-1"}
+                            </div>
+                          </div>
+
+                          <div className="flex justify-center items-center h-40 bg-gray-100 rounded-lg mb-3 flex-shrink-0">
+                            {party.themeThumbnailUrl ? (
+                              <Image
+                                src={party.themeThumbnailUrl}
+                                alt="모임 썸네일"
+                                width={120}
+                                height={120}
+                                className="object-cover"
+                              />
+                            ) : (
+                              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-gray-200 text-gray-400">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-8 w-8"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14"
+                                  />
+                                </svg>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="h-14">
+                            <h3 className="font-medium text-lg line-clamp-2 h-full">
+                              {party.title}
+                            </h3>
+                          </div>
+                          <div className="h-6">
+                            <p className="text-gray-600 text-sm line-clamp-1">
+                              {party.themeName}
+                            </p>
+                          </div>
+
+                          <div className="flex items-center text-gray-600 text-sm mt-auto">
+                            <span>
+                              {party.acceptedParticipantCount}/
+                              {party.totalParticipants}명
+                            </span>
+                            <span className="mx-2">•</span>
+                            <span>
+                              {new Date(party.scheduledAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    </SwiperSlide>
+                  ))}
             </Swiper>
 
             {/* 커스텀 네비게이션 버튼 */}
