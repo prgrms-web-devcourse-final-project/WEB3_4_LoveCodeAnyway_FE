@@ -1,10 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Navigation } from "@/components/Navigation";
 import Image from "next/image";
 import Link from "next/link";
 import axios from "axios";
+import { Swiper, SwiperSlide } from "swiper/react";
+import {
+  Autoplay,
+  Navigation as SwiperNavigation,
+  Pagination,
+} from "swiper/modules";
+
+// Import Swiper styles
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 
 // API 기본 URL
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
@@ -25,6 +36,9 @@ type Theme = {
   tags?: string[];
   rating?: number;
   region?: string;
+  playTime?: string;
+  recommendedPlayers?: string;
+  genre?: string;
 };
 
 // 모임 타입 정의
@@ -42,7 +56,8 @@ type Party = {
 
 export default function HomePage() {
   // 상태 관리
-  const [activeTag, setActiveTag] = useState("#전체");
+  const [popularActiveTag, setPopularActiveTag] = useState("#전체");
+  const [newActiveTag, setNewActiveTag] = useState("#전체");
   const [rankingThemes, setRankingThemes] = useState<Theme[]>([]);
   const [newThemes, setNewThemes] = useState<Theme[]>([]);
   const [parties, setParties] = useState<Party[]>([]);
@@ -57,20 +72,27 @@ export default function HomePage() {
     fetchParties();
   }, []);
 
-  // 태그 선택 시 API 호출
+  // 인기 테마 태그 선택 시 API 호출
   useEffect(() => {
-    const selectedTag = activeTag === "#전체" ? "" : activeTag.substring(1); // '#' 제거
-    fetchRankingThemes(selectedTag);
-    fetchNewThemes(selectedTag);
-  }, [activeTag]);
+    fetchRankingThemes(popularActiveTag);
+  }, [popularActiveTag]);
+
+  // 신규 테마 태그 선택 시 API 호출
+  useEffect(() => {
+    fetchNewThemes(newActiveTag);
+  }, [newActiveTag]);
 
   // 랭킹 테마 가져오기
   const fetchRankingThemes = async (tag?: string) => {
     setIsLoadingRanking(true);
     try {
+      const tagName = tag === "#전체" ? "" : tag ? tag.substring(1) : "";
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/themes/ranking`,
+        `${API_BASE_URL}/api/v1/themes/popular`,
         {
+          params: {
+            tagName,
+          },
           withCredentials: true,
         }
       );
@@ -87,12 +109,13 @@ export default function HomePage() {
   const fetchNewThemes = async (tag?: string) => {
     setIsLoadingNew(true);
     try {
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/themes/new`,
-        {
-          withCredentials: true,
-        }
-      );
+      const tagName = tag === "#전체" ? "" : tag ? tag.substring(1) : "";
+      const response = await axios.get(`${API_BASE_URL}/api/v1/themes/newest`, {
+        params: {
+          tagName,
+        },
+        withCredentials: true,
+      });
       setNewThemes(response.data.data || []);
     } catch (error) {
       console.error("신규 테마 조회 실패:", error);
@@ -106,12 +129,9 @@ export default function HomePage() {
   const fetchParties = async () => {
     setIsLoadingParties(true);
     try {
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/parties/main`,
-        {
-          withCredentials: true,
-        }
-      );
+      const response = await axios.get(`${API_BASE_URL}/api/v1/parties/main`, {
+        withCredentials: true,
+      });
       setParties(response.data.data || []);
     } catch (error) {
       console.error("모임 조회 실패:", error);
@@ -130,7 +150,7 @@ export default function HomePage() {
 
   // 테마 없음 컴포넌트
   const EmptyState = () => (
-    <div className="text-center py-12">
+    <div className="text-center py-12 min-h-[400px] flex items-center justify-center">
       <p className="text-gray-500">해당 태그의 테마가 없습니다.</p>
     </div>
   );
@@ -173,12 +193,6 @@ export default function HomePage() {
         ) : parties.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-gray-500">현재 모집 중인 파티가 없습니다.</p>
-            <Link
-              href="/parties/create"
-              className="inline-block mt-4 px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition"
-            >
-              모임 만들기
-            </Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
@@ -243,151 +257,264 @@ export default function HomePage() {
       {/* Section 3: 랭킹 */}
       <section className="py-12 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-2xl font-bold text-center mb-8">RANKING</h2>
+          <h2 className="text-2xl font-bold text-center mb-8">인기 테마</h2>
           <div className="flex justify-center gap-4 mb-8 flex-wrap">
             {tags.map((tag) => (
               <button
                 key={tag}
                 className={`px-4 py-2 rounded-full text-sm ${
-                  activeTag === tag
-                    ? "bg-black text-white"
-                    : "bg-white text-gray-600 hover:bg-gray-100"
+                  popularActiveTag === tag
+                    ? "bg-orange-500 text-white"
+                    : "bg-white text-gray-600 hover:bg-orange-100"
                 }`}
-                onClick={() => setActiveTag(tag)}
+                onClick={() => setPopularActiveTag(tag)}
               >
                 {tag}
               </button>
             ))}
           </div>
 
-          {isLoadingRanking ? (
-            <LoadingIndicator />
-          ) : rankingThemes.length === 0 ? (
-            <EmptyState />
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {rankingThemes.map((theme, index) => (
-                <Link
-                  href={`/themes/${theme.id}`}
-                  key={theme.id}
-                  className="relative group"
+          <div className="min-h-[400px]">
+            {isLoadingRanking ? (
+              <LoadingIndicator />
+            ) : rankingThemes.length === 0 ? (
+              <EmptyState />
+            ) : (
+              <div className="relative">
+                <Swiper
+                  modules={[Autoplay, SwiperNavigation]}
+                  spaceBetween={20}
+                  slidesPerView={1}
+                  centeredSlides={false}
+                  autoplay={{
+                    delay: 3000,
+                    disableOnInteraction: false,
+                    pauseOnMouseEnter: true,
+                  }}
+                  navigation
+                  breakpoints={{
+                    640: {
+                      slidesPerView: 2,
+                    },
+                    768: {
+                      slidesPerView: 3,
+                    },
+                    1024: {
+                      slidesPerView: 4,
+                    },
+                  }}
+                  className="py-4"
                 >
-                  <div className="aspect-[3/4] bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
-                    {theme.thumbnailUrl ? (
-                      <Image
-                        src={theme.thumbnailUrl}
-                        alt={theme.name}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <svg
-                        width="64"
-                        height="64"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="#FFB230"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="theme-image"
+                  {rankingThemes.map((theme, index) => (
+                    <SwiperSlide key={theme.id}>
+                      <Link
+                        href={`/themes/${theme.id}`}
+                        className="relative block group h-full"
                       >
-                        <path d="M14.5 3H6a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8.5L14.5 3Z"></path>
-                        <polyline points="14 3 14 9 20 9"></polyline>
-                        <circle cx="10" cy="13" r="2"></circle>
-                        <path d="m20 17-1.5-1.5a2 2 0 0 0-3 0L10 22"></path>
-                      </svg>
-                    )}
-                  </div>
-                  <div className="absolute top-4 left-4">
-                    <span className="bg-orange-500 text-white px-3 py-1 rounded-lg text-sm font-bold">
-                      {index + 1}위
-                    </span>
-                  </div>
-                  <div className="mt-4">
-                    <h3 className="font-medium mb-1">{theme.name}</h3>
-                    <p className="text-sm text-gray-600">{theme.storeName}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
+                        <div className="aspect-[3/4] bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center relative">
+                          {theme.thumbnailUrl ? (
+                            <Image
+                              src={theme.thumbnailUrl}
+                              alt={theme.name}
+                              fill
+                              className="object-cover"
+                            />
+                          ) : (
+                            <svg
+                              width="64"
+                              height="64"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="#FFB230"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="theme-image"
+                            >
+                              <path d="M14.5 3H6a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8.5L14.5 3Z"></path>
+                              <polyline points="14 3 14 9 20 9"></polyline>
+                              <circle cx="10" cy="13" r="2"></circle>
+                              <path d="m20 17-1.5-1.5a2 2 0 0 0-3 0L10 22"></path>
+                            </svg>
+                          )}
+
+                          {/* 랭킹 뱃지 */}
+                          <div className="absolute top-4 left-4">
+                            <span className="bg-orange-500 text-white px-3 py-1 rounded-lg text-sm font-bold">
+                              {index + 1}위
+                            </span>
+                          </div>
+
+                          {/* 오버레이 정보 */}
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 text-white">
+                            <h3 className="font-medium mb-1 text-lg">
+                              {theme.name}
+                            </h3>
+                            <p className="text-sm">{theme.storeName}</p>
+                            <div className="flex items-center mt-2 text-xs">
+                              <span>{theme.playTime || "60분"}</span>
+                              <span className="mx-2">•</span>
+                              <span>{theme.recommendedPlayers || "2-4인"}</span>
+                              <span className="mx-2">•</span>
+                              <span>
+                                {theme.genre ||
+                                  popularActiveTag.replace("#", "")}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
+
+                {/* 더보기 버튼 */}
+                <div className="flex justify-center mt-8">
+                  <Link
+                    href="/themes"
+                    className="px-6 py-2 border border-gray-300 rounded-full hover:bg-gray-100 transition-colors"
+                  >
+                    더보기
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
       {/* Section 4: 신규 테마 */}
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-2xl font-bold text-center mb-8">NEW THEMES</h2>
+          <h2 className="text-2xl font-bold text-center mb-8">최신 테마</h2>
           <div className="flex justify-center gap-4 mb-8 flex-wrap">
             {tags.map((tag) => (
               <button
                 key={tag}
                 className={`px-4 py-2 rounded-full text-sm ${
-                  activeTag === tag
-                    ? "bg-black text-white"
-                    : "bg-white text-gray-600 hover:bg-gray-100"
+                  newActiveTag === tag
+                    ? "bg-blue-500 text-white"
+                    : "bg-white text-gray-600 hover:bg-blue-100"
                 }`}
-                onClick={() => setActiveTag(tag)}
+                onClick={() => setNewActiveTag(tag)}
               >
                 {tag}
               </button>
             ))}
           </div>
 
-          {isLoadingNew ? (
-            <LoadingIndicator />
-          ) : newThemes.length === 0 ? (
-            <EmptyState />
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {newThemes.map((theme) => (
-                <Link
-                  href={`/themes/${theme.id}`}
-                  key={theme.id}
-                  className="relative group"
+          <div className="min-h-[400px]">
+            {isLoadingNew ? (
+              <LoadingIndicator />
+            ) : newThemes.length === 0 ? (
+              <EmptyState />
+            ) : (
+              <div className="relative">
+                <Swiper
+                  modules={[Autoplay, SwiperNavigation]}
+                  spaceBetween={20}
+                  slidesPerView={1}
+                  centeredSlides={false}
+                  autoplay={{
+                    delay: 3000,
+                    disableOnInteraction: false,
+                    pauseOnMouseEnter: true,
+                  }}
+                  navigation
+                  breakpoints={{
+                    640: {
+                      slidesPerView: 2,
+                    },
+                    768: {
+                      slidesPerView: 3,
+                    },
+                    1024: {
+                      slidesPerView: 4,
+                    },
+                  }}
+                  className="py-4"
                 >
-                  <div className="aspect-[3/4] bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
-                    {theme.thumbnailUrl ? (
-                      <Image
-                        src={theme.thumbnailUrl}
-                        alt={theme.name}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <svg
-                        width="64"
-                        height="64"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="#FFB230"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="theme-image"
+                  {newThemes.map((theme) => (
+                    <SwiperSlide key={theme.id}>
+                      <Link
+                        href={`/themes/${theme.id}`}
+                        className="relative block group h-full"
                       >
-                        <rect x="3" y="3" width="18" height="18" rx="2"></rect>
-                        <path d="M3 9h18"></path>
-                        <path d="M9 21V9"></path>
-                        <path d="m12 6 1.5-1.5"></path>
-                        <path d="M12 6 10.5 4.5"></path>
-                      </svg>
-                    )}
-                  </div>
-                  <div className="absolute top-4 right-4">
-                    <span className="bg-blue-500 text-white px-3 py-1 rounded-lg text-sm font-bold">
-                      NEW
-                    </span>
-                  </div>
-                  <div className="mt-4">
-                    <h3 className="font-medium mb-1">{theme.name}</h3>
-                    <p className="text-sm text-gray-600">{theme.storeName}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
+                        <div className="aspect-[3/4] bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center relative">
+                          {theme.thumbnailUrl ? (
+                            <Image
+                              src={theme.thumbnailUrl}
+                              alt={theme.name}
+                              fill
+                              className="object-cover"
+                            />
+                          ) : (
+                            <svg
+                              width="64"
+                              height="64"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="#FFB230"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="theme-image"
+                            >
+                              <rect
+                                x="3"
+                                y="3"
+                                width="18"
+                                height="18"
+                                rx="2"
+                              ></rect>
+                              <path d="M3 9h18"></path>
+                              <path d="M9 21V9"></path>
+                              <path d="m12 6 1.5-1.5"></path>
+                              <path d="M12 6 10.5 4.5"></path>
+                            </svg>
+                          )}
+
+                          {/* NEW 뱃지 */}
+                          <div className="absolute top-4 left-4">
+                            <span className="bg-blue-500 text-white px-3 py-1 rounded-lg text-sm font-bold">
+                              NEW
+                            </span>
+                          </div>
+
+                          {/* 오버레이 정보 */}
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 text-white">
+                            <h3 className="font-medium mb-1 text-lg">
+                              {theme.name}
+                            </h3>
+                            <p className="text-sm">{theme.storeName}</p>
+                            <div className="flex items-center mt-2 text-xs">
+                              <span>{theme.playTime || "60분"}</span>
+                              <span className="mx-2">•</span>
+                              <span>{theme.recommendedPlayers || "2-4인"}</span>
+                              <span className="mx-2">•</span>
+                              <span>
+                                {theme.genre || newActiveTag.replace("#", "")}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
+
+                {/* 더보기 버튼 */}
+                <div className="flex justify-center mt-8">
+                  <Link
+                    href="/themes"
+                    className="px-6 py-2 border border-gray-300 rounded-full hover:bg-gray-100 transition-colors"
+                  >
+                    더보기
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </section>
     </main>
