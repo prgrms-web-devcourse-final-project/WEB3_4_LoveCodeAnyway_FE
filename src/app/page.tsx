@@ -132,71 +132,77 @@ export default function HomePage() {
       const response = await axios.get(`${API_BASE_URL}/api/v1/parties/main`, {
         withCredentials: true,
       });
-      setParties(response.data.data || []);
+      // API 응답이 없거나 빈 배열인 경우 더미 데이터 사용
+      setParties(
+        response.data.data?.length ? response.data.data : getDummyParties()
+      );
     } catch (error) {
       console.error("모임 조회 실패:", error);
-      // 더미 데이터 추가
-      const dummyParties: Party[] = [
-        {
-          id: 1,
-          themeId: 101,
-          themeName: "마법사의 방",
-          themeThumbnailUrl: "https://example.com/theme1.jpg",
-          storeName: "마법의 방탈출",
-          title: "마법사의 방 함께 하실 분 구합니다!",
-          scheduledAt: "2024-03-20T19:00:00",
-          acceptedParticipantCount: 2,
-          totalParticipants: 4,
-        },
-        {
-          id: 2,
-          themeId: 102,
-          themeName: "추리왕",
-          themeThumbnailUrl: "https://example.com/theme2.jpg",
-          storeName: "추리방탈출",
-          title: "추리왕 테마 함께 하실 분",
-          scheduledAt: "2024-03-21T20:00:00",
-          acceptedParticipantCount: 3,
-          totalParticipants: 6,
-        },
-        {
-          id: 3,
-          themeId: 103,
-          themeName: "좀비 아포칼립스",
-          themeThumbnailUrl: "https://example.com/theme3.jpg",
-          storeName: "호러방탈출",
-          title: "좀비 테마 2명 더 필요합니다!",
-          scheduledAt: "2024-03-22T18:30:00",
-          acceptedParticipantCount: 4,
-          totalParticipants: 6,
-        },
-        {
-          id: 4,
-          themeId: 104,
-          themeName: "타임머신",
-          themeThumbnailUrl: "https://example.com/theme4.jpg",
-          storeName: "SF방탈출",
-          title: "타임머신 테마 모임",
-          scheduledAt: "2024-03-23T19:30:00",
-          acceptedParticipantCount: 1,
-          totalParticipants: 4,
-        },
-        {
-          id: 5,
-          themeId: 105,
-          themeName: "황금열쇠",
-          themeThumbnailUrl: "https://example.com/theme5.jpg",
-          storeName: "모험방탈출",
-          title: "황금열쇠 테마 함께 하실 분",
-          scheduledAt: "2024-03-24T20:00:00",
-          acceptedParticipantCount: 2,
-          totalParticipants: 4,
-        },
-      ];
-      setParties(dummyParties);
+      setParties(getDummyParties());
     } finally {
       setIsLoadingParties(false);
     }
+  };
+
+  // 더미 파티 데이터 생성 함수
+  const getDummyParties = (): Party[] => {
+    return [
+      {
+        id: 1,
+        themeId: 101,
+        themeName: "마법사의 방",
+        themeThumbnailUrl: "",
+        storeName: "마법의 방탈출",
+        title: "마법사의 방 함께 하실 분 구합니다!",
+        scheduledAt: "2024-03-20T19:00:00",
+        acceptedParticipantCount: 2,
+        totalParticipants: 4,
+      },
+      {
+        id: 2,
+        themeId: 102,
+        themeName: "추리왕",
+        themeThumbnailUrl: "",
+        storeName: "추리방탈출",
+        title: "추리왕 테마 함께 하실 분",
+        scheduledAt: "2024-03-21T20:00:00",
+        acceptedParticipantCount: 3,
+        totalParticipants: 6,
+      },
+      {
+        id: 3,
+        themeId: 103,
+        themeName: "좀비 아포칼립스",
+        themeThumbnailUrl: "",
+        storeName: "호러방탈출",
+        title: "좀비 테마 2명 더 필요합니다!",
+        scheduledAt: "2024-03-22T18:30:00",
+        acceptedParticipantCount: 4,
+        totalParticipants: 6,
+      },
+      {
+        id: 4,
+        themeId: 104,
+        themeName: "타임머신",
+        themeThumbnailUrl: "",
+        storeName: "SF방탈출",
+        title: "타임머신 테마 모임",
+        scheduledAt: "2024-03-23T19:30:00",
+        acceptedParticipantCount: 1,
+        totalParticipants: 4,
+      },
+      {
+        id: 5,
+        themeId: 105,
+        themeName: "황금열쇠",
+        themeThumbnailUrl: "",
+        storeName: "모험방탈출",
+        title: "황금열쇠 테마 함께 하실 분",
+        scheduledAt: "2024-03-24T20:00:00",
+        acceptedParticipantCount: 2,
+        totalParticipants: 4,
+      },
+    ];
   };
 
   // 로딩 인디케이터 컴포넌트
@@ -252,7 +258,7 @@ export default function HomePage() {
       {/* Section 1: 메인 배너 */}
       <section className="w-full h-[400px] relative bg-gray-800">
         <Navigation activePage="home" />
-        <div className="max-w-7xl mx-auto h-full relative flex flex-col items-center justify-center">
+        <div className="max-w-7xl mx-auto h-full relative flex flex-col items-center justify-start text-center pt-16">
           <Image
             src="/logo.svg"
             alt="또방 로고"
@@ -264,86 +270,135 @@ export default function HomePage() {
           <h1 className="text-white text-3xl font-bold">
             방탈출 메이트 찾기, 또방
           </h1>
-          <p className="text-gray-300 mt-4 text-center max-w-2xl">
-            방탈출 테마 정보부터 모임 참여까지
+          <p className="text-gray-300 mt-4 max-w-2xl">
+            함께 방탈출할 메이트를 찾고 계신가요?
             <br />
-            다양한 방탈출 커뮤니티를 경험해보세요
+            또방과 함께 방탈출 크루를 만들어보세요
           </p>
         </div>
       </section>
 
-      {/* Section 2: 소셜링 */}
-      <section className="py-12 px-4 max-w-7xl mx-auto min-h-[400px]">
-        <h3 className="text-2xl font-bold text-center mb-8">
-          함께 방탈출할 메이트를 찾고 계신가요?
-          <br />
-          또방과 함께 방탈출 크루를 만들어보세요
-        </h3>
+      {/* Section 2: 마감 임박 모임 */}
+      <section className="py-12 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <h2 className="text-2xl font-bold text-center mb-8">
+            마감 임박 모임
+          </h2>
 
-        {isLoadingParties ? (
-          <LoadingIndicator />
-        ) : parties.length === 0 ? (
-          <div className="text-center py-8 min-h-[300px] flex items-center justify-center">
-            <p className="text-gray-500">현재 모집 중인 파티가 없습니다.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-            {parties.map((party) => (
-              <Link
-                key={party.id}
-                href={`/parties/${party.id}`}
-                className="bg-gray-50 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
-              >
-                <div className="p-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="text-gray-600 text-sm">홍대입구역</div>
-                    <div className="text-red-500 text-sm font-medium">D-1</div>
-                  </div>
-
-                  <div className="flex justify-center items-center h-32 bg-gray-100 rounded-lg mb-3">
-                    {party.themeThumbnailUrl ? (
-                      <Image
-                        src={party.themeThumbnailUrl}
-                        alt="모임 썸네일"
-                        width={100}
-                        height={100}
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center w-16 h-16 rounded-full bg-gray-200 text-gray-400">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-8 w-8"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14"
-                          />
-                        </svg>
+          <div className="relative">
+            <Swiper
+              modules={[Autoplay, SwiperNavigation]}
+              spaceBetween={20}
+              slidesPerView={1}
+              centeredSlides={false}
+              autoplay={{
+                delay: 5000,
+                disableOnInteraction: false,
+                pauseOnMouseEnter: true,
+              }}
+              navigation={{
+                nextEl: ".swiper-button-next",
+                prevEl: ".swiper-button-prev",
+              }}
+              breakpoints={{
+                640: {
+                  slidesPerView: 2,
+                },
+                768: {
+                  slidesPerView: 3,
+                },
+                1024: {
+                  slidesPerView: 4,
+                },
+              }}
+              className="py-4"
+            >
+              {parties.map((party, index) => (
+                <SwiperSlide key={party.id} className="p-1 h-full">
+                  <Link
+                    href={`/parties/${party.id}`}
+                    className={`rounded-lg overflow-hidden shadow-[0_4px_10px_rgba(0,0,0,0.05)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.1)] transition-all h-full flex flex-col bg-white border border-gray-200`}
+                  >
+                    <div className="p-5 flex flex-col h-full">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="text-gray-600 text-sm">
+                          {party.storeName}
+                        </div>
+                        <div className="text-red-500 text-sm font-medium">
+                          {new Date(party.scheduledAt).toDateString() ===
+                          new Date().toDateString()
+                            ? "오늘마감"
+                            : "D-1"}
+                        </div>
                       </div>
-                    )}
-                  </div>
 
-                  <h3 className="font-medium text-lg mb-1">{party.title}</h3>
+                      <div className="flex justify-center items-center h-32 bg-gray-100 rounded-lg mb-3 flex-shrink-0">
+                        {party.themeThumbnailUrl ? (
+                          <Image
+                            src={party.themeThumbnailUrl}
+                            alt="모임 썸네일"
+                            width={100}
+                            height={100}
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-gray-200 text-gray-400">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-8 w-8"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14"
+                              />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
 
-                  <div className="flex items-center text-gray-600 text-sm">
-                    <span>난이도 4.5</span>
-                    <span className="mx-2">•</span>
-                    <span>
-                      {party.acceptedParticipantCount}/{party.totalParticipants}
-                      명
-                    </span>
-                  </div>
-                </div>
+                      <h3 className="font-medium text-lg mb-1 line-clamp-2">
+                        {party.title}
+                      </h3>
+                      <p className="text-gray-600 text-sm mb-2">
+                        {party.themeName}
+                      </p>
+
+                      <div className="flex items-center text-gray-600 text-sm mt-auto">
+                        <span>
+                          {party.acceptedParticipantCount}/
+                          {party.totalParticipants}명
+                        </span>
+                        <span className="mx-2">•</span>
+                        <span>
+                          {new Date(party.scheduledAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+
+            {/* 커스텀 네비게이션 버튼 */}
+            <div className="swiper-button-next !text-[#FFB130] !right-[-20px] md:!hidden"></div>
+            <div className="swiper-button-prev !text-[#FFB130] !left-[-20px] md:!hidden"></div>
+
+            {/* 더보기 버튼 */}
+            <div className="flex justify-center mt-8">
+              <Link
+                href="/parties"
+                className="px-6 py-2 border border-[#FFB130] text-[#FFB130] rounded-full hover:bg-[#FFB130] hover:text-white transition-colors"
+              >
+                더보기
               </Link>
-            ))}
+            </div>
           </div>
-        )}
+        </div>
       </section>
 
       {/* Section 3: 랭킹 */}
@@ -460,11 +515,11 @@ export default function HomePage() {
                   ))}
                 </Swiper>
 
-                {/* 더보기 버튼 */}
+                {/* 인기 테마 더보기 버튼 */}
                 <div className="flex justify-center mt-8">
                   <Link
                     href="/themes"
-                    className="px-6 py-2 border border-gray-300 rounded-full hover:bg-gray-100 transition-colors"
+                    className="px-6 py-2 border border-orange-500 text-orange-500 rounded-full hover:bg-orange-500 hover:text-white transition-colors"
                   >
                     더보기
                   </Link>
@@ -595,11 +650,11 @@ export default function HomePage() {
                   ))}
                 </Swiper>
 
-                {/* 더보기 버튼 */}
+                {/* 신규 테마 더보기 버튼 */}
                 <div className="flex justify-center mt-8">
                   <Link
                     href="/themes"
-                    className="px-6 py-2 border border-gray-300 rounded-full hover:bg-gray-100 transition-colors"
+                    className="px-6 py-2 border border-blue-500 text-blue-500 rounded-full hover:bg-blue-500 hover:text-white transition-colors"
                   >
                     더보기
                   </Link>
