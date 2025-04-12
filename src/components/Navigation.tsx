@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect, useRef } from "react";
 import { LoginMemberContext } from "@/stores/auth/loginMember";
 import client from "@/lib/backend/client";
 import { useRouter } from "next/navigation";
@@ -17,6 +17,12 @@ export function Navigation({ activePage }: { activePage?: string }) {
   const [mounted, setMounted] = useState(false);
   const [eventSource, setEventSource] = useState<EventSource | null>(null);
 
+  // 드롭다운 요소에 대한 참조 추가
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+  const notificationMenuRef = useRef<HTMLDivElement>(null);
+  const profileButtonRef = useRef<HTMLButtonElement>(null);
+  const notificationButtonRef = useRef<HTMLButtonElement>(null);
+
   useEffect(() => {
     setMounted(true);
     if (isLogin) {
@@ -29,6 +35,41 @@ export function Navigation({ activePage }: { activePage?: string }) {
       }
     };
   }, [isLogin]);
+
+  // 외부 클릭 감지를 위한 이벤트 리스너 추가
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // 프로필 메뉴가 열려있고, 클릭이 프로필 메뉴 외부에서 발생했을 때
+      if (
+        isProfileMenuOpen &&
+        profileMenuRef.current &&
+        profileButtonRef.current &&
+        !profileMenuRef.current.contains(event.target as Node) &&
+        !profileButtonRef.current.contains(event.target as Node)
+      ) {
+        setIsProfileMenuOpen(false);
+      }
+
+      // 알림 메뉴가 열려있고, 클릭이 알림 메뉴 외부에서 발생했을 때
+      if (
+        isNotificationOpen &&
+        notificationMenuRef.current &&
+        notificationButtonRef.current &&
+        !notificationMenuRef.current.contains(event.target as Node) &&
+        !notificationButtonRef.current.contains(event.target as Node)
+      ) {
+        setIsNotificationOpen(false);
+      }
+    };
+
+    // 문서에 클릭 이벤트 리스너 추가
+    document.addEventListener("mousedown", handleClickOutside);
+
+    // 컴포넌트가 언마운트될 때 이벤트 리스너 제거
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isProfileMenuOpen, isNotificationOpen]);
 
   const fetchNotifications = async () => {
     try {
@@ -166,6 +207,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
               <>
                 <div className="relative">
                   <button
+                    ref={notificationButtonRef}
                     onClick={toggleNotification}
                     className="text-gray-300 hover:text-[#FFD896]"
                   >
@@ -188,7 +230,10 @@ export function Navigation({ activePage }: { activePage?: string }) {
                   </button>
 
                   {isNotificationOpen && (
-                    <div className="absolute right-0 mt-2 w-80 bg-[#FFF8EC] rounded-lg shadow-lg py-2 z-50">
+                    <div
+                      ref={notificationMenuRef}
+                      className="absolute right-0 -mt-1 w-80 bg-[#FFF8EC] rounded-lg shadow-lg py-2 z-50"
+                    >
                       <div className="flex items-center px-4 py-2">
                         <div className="flex items-center space-x-2">
                           <span className="text-[#FFB230] text-xl font-bold">
@@ -307,6 +352,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
                 </div>
                 <div className="relative">
                   <button
+                    ref={profileButtonRef}
                     onClick={toggleProfileMenu}
                     className="flex items-center space-x-2 hover:opacity-80"
                   >
@@ -328,7 +374,10 @@ export function Navigation({ activePage }: { activePage?: string }) {
                   </button>
 
                   {isProfileMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-[#FFF8EC] rounded-lg shadow-lg py-1 z-50">
+                    <div
+                      ref={profileMenuRef}
+                      className="absolute right-0 -mt-1 w-48 bg-[#FFF8EC] rounded-lg shadow-lg py-1 z-50"
+                    >
                       <Link
                         href="/my"
                         className="block px-4 py-3 text-base font-medium text-gray-500 hover:bg-[#FFFCF7]"

@@ -8,6 +8,7 @@ import { StarRating } from "@/components/StarRating";
 import { RadarChart } from "@/components/RadarChart";
 import { KakaoMap } from "@/components/KakaoMap";
 import Image from "next/image";
+import { PageLoading } from "@/components/PageLoading";
 
 // API 응답 타입과 일치하는 인터페이스
 interface ThemeDetailResponse {
@@ -101,9 +102,7 @@ export default function ThemeDetailPage() {
     return (
       <main className="bg-gray-50 min-h-screen">
         <Navigation activePage="themes" />
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-8 flex justify-center items-center min-h-[70vh]">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-gray-900"></div>
-        </div>
+        <PageLoading isLoading={loading} />
       </main>
     );
   }

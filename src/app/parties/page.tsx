@@ -9,6 +9,7 @@ import { EscapeRoom } from "@/types/EscapeRoom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { PageLoading } from "@/components/PageLoading";
 
 // API에서 받는 모임 데이터 타입
 interface PartyMainResponse {
@@ -89,7 +90,7 @@ export default function PartiesPage() {
       participants: `${partyData.acceptedParticipantCount || 0}/${
         partyData.totalParticipants || 0
       }명`,
-      image: partyData.themeThumbnailUrl || "",
+      image: partyData.themeThumbnailUrl || "/images/theme-1.jpg",
       host: {
         name: "모임장",
         image: "/profile_man.jpg",
@@ -99,34 +100,8 @@ export default function PartiesPage() {
 
   // 초기 데이터 로드
   useEffect(() => {
-    // 가데이터 생성
-    const mockData: EscapeRoom[] = Array.from({ length: 30 }, (_, i) => ({
-      id: (i + 1).toString(),
-      title: `테마 모임 ${i + 1}`,
-      category: ["미스터리", "추리", "공포", "액션", "SF"][i % 5],
-      date: new Date(Date.now() + i * 86400000)
-        .toLocaleString("ko-KR", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false,
-        })
-        .replace(/\. /g, ".")
-        .replace(",", " "),
-      location: ["홍대점", "강남점", "신촌점", "건대점", "잠실점"][i % 5],
-      participants: `${Math.floor(Math.random() * 3) + 1}/${
-        Math.floor(Math.random() * 3) + 4
-      }명`,
-      image: `/images/theme-${(i % 6) + 1}.jpg`,
-      host: {
-        name: "모임장",
-        image: "/profile_man.jpg",
-      },
-    }));
-    setParties(mockData);
-    setHasMore(false);
+    // 실제 API 호출로 변경
+    loadParties();
   }, []);
 
   // 무한 스크롤
@@ -148,6 +123,9 @@ export default function PartiesPage() {
         {
           keyword: searchKeyword,
           region: filterRegion,
+        },
+        {
+          withCredentials: true,
         }
       );
 
@@ -291,42 +269,41 @@ export default function PartiesPage() {
         </div>
       </div>
 
+      {/* 전체 화면 로딩 인디케이터 */}
+      <PageLoading isLoading={initialLoading} />
+
       {/* 모임 목록 섹션 */}
-      <div className="max-w-6xl mx-auto px-4 pb-16">
-        {/* 모임 카드 그리드 */}
-        {initialLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {renderSkeletonCards()}
-          </div>
-        ) : (
+      {!initialLoading && (
+        <div className="max-w-6xl mx-auto px-4 pb-16">
+          {/* 모임 카드 그리드 */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {parties.map((room) => (
               <PartyCard key={room.id} room={room} onClick={handleCardClick} />
             ))}
           </div>
-        )}
 
-        {/* 로딩 인디케이터 */}
-        {loading && !initialLoading && (
-          <div className="flex justify-center mt-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
-          </div>
-        )}
-
-        {/* 무한 스크롤 감지용 div */}
-        {hasMore && <div ref={ref} className="h-10" />}
-
-        {/* 데이터 없음 메시지 */}
-        {parties.length === 0 && !loading && !initialLoading && (
-          <div className="w-full my-12">
-            <div className="bg-gray-50 border border-gray-300 rounded-xl py-24 px-8 text-center">
-              <p className="text-lg font-medium text-gray-700">
-                데이터가 없습니다
-              </p>
+          {/* 로딩 인디케이터 */}
+          {loading && !initialLoading && (
+            <div className="flex justify-center mt-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+
+          {/* 무한 스크롤 감지용 div */}
+          {hasMore && <div ref={ref} className="h-10" />}
+
+          {/* 데이터 없음 메시지 */}
+          {parties.length === 0 && !loading && !initialLoading && (
+            <div className="w-full my-12">
+              <div className="bg-gray-50 border border-gray-300 rounded-xl py-24 px-8 text-center">
+                <p className="text-lg font-medium text-gray-400">
+                  등록된 모임이 없습니다
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -172,11 +172,19 @@ export default function ThemesPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {renderSkeletonCards()}
           </div>
-        ) : (
+        ) : themes.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {themes.map((theme) => (
               <ThemeCard key={theme.id} room={theme} />
             ))}
+          </div>
+        ) : (
+          <div className="w-full my-12">
+            <div className="bg-gray-50 border border-gray-300 rounded-xl py-24 px-8 text-center">
+              <p className="text-lg font-medium text-gray-400">
+                등록된 테마가 없습니다
+              </p>
+            </div>
           </div>
         )}
 
