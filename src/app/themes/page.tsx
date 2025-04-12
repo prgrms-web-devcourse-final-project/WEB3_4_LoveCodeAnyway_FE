@@ -156,12 +156,6 @@ export default function ThemesPage() {
           {loading && (
             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
           )}
-          {!hasMore && themes.length > 0 && (
-            <p className="text-gray-500">더 이상 표시할 테마가 없습니다.</p>
-          )}
-          {!hasMore && themes.length === 0 && (
-            <p className="text-gray-500">표시할 테마가 없습니다.</p>
-          )}
         </div>
       </div>
     </main>

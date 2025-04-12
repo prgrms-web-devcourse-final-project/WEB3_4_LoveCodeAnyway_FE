@@ -98,7 +98,34 @@ export default function PartiesPage() {
 
   // 초기 데이터 로드
   useEffect(() => {
-    loadParties();
+    // 가데이터 생성
+    const mockData: EscapeRoom[] = Array.from({ length: 30 }, (_, i) => ({
+      id: (i + 1).toString(),
+      title: `테마 모임 ${i + 1}`,
+      category: ["미스터리", "추리", "공포", "액션", "SF"][i % 5],
+      date: new Date(Date.now() + i * 86400000)
+        .toLocaleString("ko-KR", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        })
+        .replace(/\. /g, ".")
+        .replace(",", " "),
+      location: ["홍대점", "강남점", "신촌점", "건대점", "잠실점"][i % 5],
+      participants: `${Math.floor(Math.random() * 3) + 1}/${
+        Math.floor(Math.random() * 3) + 4
+      }명`,
+      image: `/images/theme-${(i % 6) + 1}.jpg`,
+      host: {
+        name: "모임장",
+        image: "/profile_man.jpg",
+      },
+    }));
+    setParties(mockData);
+    setHasMore(false);
   }, []);
 
   // 무한 스크롤

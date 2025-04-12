@@ -307,23 +307,11 @@ export default function ThemeDetailPage() {
         {/* 섹션 2: 설명 및 위치 */}
         <section className="bg-white rounded-2xl p-8 mb-8 shadow-sm">
           <div className="flex flex-col md:flex-row gap-8">
-            <div className="w-full md:w-1/2">
+            <div className="w-full md:w-1/2 border-r border-gray-100 pr-8">
               <h2 className="text-2xl font-bold mb-4">테마 설명</h2>
               <p className="text-gray-600 leading-relaxed whitespace-pre-line">
                 {themeDetail.description || "테마 설명이 없습니다."}
               </p>
-              {themeDetail.reservationUrl && (
-                <div className="mt-6">
-                  <a
-                    href={themeDetail.reservationUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 inline-block"
-                  >
-                    예약하기
-                  </a>
-                </div>
-              )}
             </div>
             {themeDetail.storeInfo && (
               <div className="w-full md:w-1/2">
@@ -490,10 +478,40 @@ export default function ThemeDetailPage() {
           </section>
         )}
 
-        <div className="mt-8">
-          <Link href="/themes" className="text-blue-500 hover:underline">
-            ← 테마 목록으로 돌아가기
-          </Link>
+        <div className="mt-8 flex flex-col gap-8">
+          <div className="flex flex-wrap gap-4 w-full px-4">
+            <Link
+              href="/themes"
+              className="flex-1 flex items-center justify-center gap-2 px-6 py-3 border-2 border-[#FFB130] text-[#FFB130] rounded-lg hover:bg-[#FFB130] hover:text-white transition-colors whitespace-nowrap"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                />
+              </svg>
+              테마 목록으로 돌아가기
+            </Link>
+            <button className="flex-1 px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFA000] transition-colors text-center shadow-sm whitespace-nowrap">
+              희망 테마 설정
+            </button>
+            <button className="flex-1 px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFA000] transition-colors text-center shadow-sm whitespace-nowrap">
+              예약하러 가기
+            </button>
+            <button className="flex-1 px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFA000] transition-colors text-center shadow-sm whitespace-nowrap">
+              모임 만들기
+            </button>
+            <button className="flex-1 px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFA000] transition-colors text-center shadow-sm whitespace-nowrap">
+              모임찾기
+            </button>
+          </div>
         </div>
       </div>
     </main>
