@@ -10,7 +10,8 @@ import { GetAlarmsResponse, Alarm } from "@/lib/backend/apiV1/schema";
 
 export function Navigation({ activePage }: { activePage?: string }) {
   const router = useRouter();
-  const { isLogin, loginMember, logout } = useContext(LoginMemberContext);
+  const { isLogin, loginMember, logout, logoutAndHome } =
+    useContext(LoginMemberContext);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [notifications, setNotifications] = useState<Alarm[]>([]);
@@ -140,13 +141,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
 
   const handleLogout = async (e: React.MouseEvent) => {
     e.preventDefault();
-    try {
-      await client.DELETE("/api/v1/members/logout");
-      logout();
-      router.push("/");
-    } catch (error) {
-      console.error("로그아웃 실패:", error);
-    }
+    logoutAndHome();
   };
 
   if (!mounted) {
