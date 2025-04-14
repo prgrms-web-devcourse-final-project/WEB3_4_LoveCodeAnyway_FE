@@ -104,12 +104,9 @@ export default function PartiesPage() {
     loadParties();
   }, []);
 
-  // 무한 스크롤
   useEffect(() => {
-    if (inView && hasMore && !loading) {
       loadMoreParties();
-    }
-  }, [inView, hasMore, loading]);
+  }, []);
 
   // API에서 모임 데이터 로드
   const loadParties = async () => {
@@ -309,7 +306,7 @@ export default function PartiesPage() {
       <Navigation />
 
       {/* 검색 및 필터 섹션 */}
-      <div className="max-w-6xl mx-auto px-4 pt-8 pb-4">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 pt-8 pb-4">
         <div className="flex items-center gap-4">
           <div className="flex-1 h-[40px]">
             <ThemeSearch
@@ -333,9 +330,9 @@ export default function PartiesPage() {
 
       {/* 모임 목록 섹션 */}
       {!initialLoading && (
-        <div className="max-w-6xl mx-auto px-4 pb-16">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 pb-16">
           {/* 모임 카드 그리드 */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {parties.map((room) => (
               <PartyCard key={room.id} room={room} onClick={handleCardClick} />
             ))}

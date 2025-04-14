@@ -498,18 +498,23 @@ export default function ThemeDetailPage() {
               </svg>
               테마 목록으로 돌아가기
             </Link>
-            <button className="flex-1 px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFA000] transition-colors text-center shadow-sm whitespace-nowrap">
-              희망 테마 설정
-            </button>
-            <button className="flex-1 px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFA000] transition-colors text-center shadow-sm whitespace-nowrap">
+            <Link href={themeDetail.reservationUrl} 
+                  className="flex-1 px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFA000] transition-colors text-center shadow-sm whitespace-nowrap"
+            >
               예약하러 가기
-            </button>
-            <button className="flex-1 px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFA000] transition-colors text-center shadow-sm whitespace-nowrap">
+            </Link>
+            <Link href="/my/" 
+            className="flex-1 px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFA000] transition-colors text-center shadow-sm whitespace-nowrap">
+              희망 테마 설정
+            </Link>
+            <Link href="/par" 
+            className="flex-1 px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFA000] transition-colors text-center shadow-sm whitespace-nowrap">
               모임 만들기
-            </button>
-            <button className="flex-1 px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFA000] transition-colors text-center shadow-sm whitespace-nowrap">
+            </Link>
+            <Link href="/themes" 
+            className="flex-1 px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFA000] transition-colors text-center shadow-sm whitespace-nowrap">
               모임찾기
-            </button>
+            </Link>
           </div>
         </div>
       </div>
