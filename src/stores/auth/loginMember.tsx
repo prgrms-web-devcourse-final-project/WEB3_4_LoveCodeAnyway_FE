@@ -8,7 +8,7 @@ import client from "@/lib/backend/client";
 
 import { components } from "@/lib/backend/apiV1/schema";
 
-type Member = components["schemas"]["MemberDto"];
+type Member = components["schemas"]["Member"];
 
 export const LoginMemberContext = createContext<{
   loginMember: Member;
@@ -32,7 +32,7 @@ function createEmptyMember(): Member {
     createdAt: "",
     modifiedAt: "",
     nickname: "",
-    pofilePictureUrl: "",
+    profilePictureUrl: "",
   };
 }
 
@@ -56,7 +56,8 @@ export function useLoginMember() {
     setLoginMemberPending(false);
   };
 
-  const isLogin = true;
+  console.log(loginMember)
+  const isLogin = loginMember?.id !== 0;
 
   const logout = (callback: () => void) => {
     client.DELETE("/api/v1/members/logout").then(() => {
