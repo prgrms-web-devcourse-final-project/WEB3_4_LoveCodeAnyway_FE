@@ -148,7 +148,7 @@ export const cancelAppliedParty = async (id: number) => {
  * 메인 페이지용 모집 중 모임 12개 조회 API
  */
 export const getMainParties = async () => {
-  const response = await client.GET("/api/v1/parties/main", {});
+  const response = await client.GET("/api/v1/parties/main-parties", {});
   return response.data;
 };
 

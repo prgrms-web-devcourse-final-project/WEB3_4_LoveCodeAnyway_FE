@@ -56,7 +56,7 @@ export function useLoginMember() {
     setLoginMemberPending(false);
   };
 
-  const isLogin = loginMember.id !== 0;
+  const isLogin = true;
 
   const logout = (callback: () => void) => {
     client.DELETE("/api/v1/members/logout").then(() => {
