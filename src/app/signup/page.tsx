@@ -10,15 +10,39 @@ interface Tag {
   name: string;
 }
 
-interface TagsByCategory {
-  personality: Tag[];
-  playstyle: Tag[];
-  preference: Tag[];
-  experience: Tag[];
-}
-
 export default function SignupPage() {
   const router = useRouter();
+  
+  // API 기본 URL
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
+    ? process.env.NEXT_PUBLIC_API_URL
+    : process.env.NODE_ENV === "development"
+    ? "http://localhost:8080"
+    : "https://api.ddobang.site";
+
+  // 로그인 상태 확인 및 리다이렉트
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      try {
+        // API를 통해 로그인 상태 확인
+        const response = await fetch(`${API_BASE_URL}/api/v1/members/me`, {
+          credentials: 'include', // 쿠키를 포함한 요청
+        });
+
+        // 응답이 성공(200)이면 로그인된 상태
+        if (response.ok) {
+          console.log("이미 로그인된 상태입니다. 마이페이지로 이동합니다.");
+          router.replace('/my');
+          return;
+        }
+      } catch (error) {
+        // 에러 발생 시 로그인되지 않은 것으로 간주 (회원가입 페이지 유지)
+        console.error("로그인 상태 확인 중 오류 발생:", error);
+      }
+    };
+
+    checkLoginStatus();
+  }, [router, API_BASE_URL]);
 
   // 프로필 상태 관리
   const [profileImg, setProfileImg] = useState<string>(
@@ -34,8 +58,8 @@ export default function SignupPage() {
   const [nicknameMessage, setNicknameMessage] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  // 태그 목록 상태
-  const [tags, setTags] = useState<TagsByCategory | null>(null);
+  // 태그 목록 상태 (단일 리스트로 변경)
+  const [tags, setTags] = useState<Tag[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,24 +67,51 @@ export default function SignupPage() {
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        const response = await fetch("/api/v1/tags");
-        const data = await response.json();
-
-        if (data.success) {
-          setTags(data.data.tags);
-        } else {
-          setError("태그 로딩 실패: " + data.message);
+        setIsLoading(true);
+        const response = await fetch(`${API_BASE_URL}/api/v1/members/tags`);
+        
+        if (!response.ok) {
+          console.error("태그 API 응답 에러:", response.status, response.statusText);
+          setError("태그 데이터를 불러오는데 실패했습니다");
+          setIsLoading(false);
+          return;
         }
+        
+        const data = await response.json();
+        console.log("태그 데이터 응답:", data);
+        
+        // API 응답 구조에 맞게 처리 (모든 태그를 단일 배열로 변환)
+        if (data && data.data) {
+          // API 응답 구조에 따라 적절히 수정
+          // 모든 카테고리의 태그를 하나의 배열로 합치거나, 
+          // 이미 단일 배열로 제공되는 경우 그대로 사용
+          if (Array.isArray(data.data)) {
+            setTags(data.data);
+          } else if (typeof data.data === 'object') {
+            // 객체 형태로 카테고리별로 제공되는 경우 하나의 배열로 합치기
+            const allTags: Tag[] = [];
+            Object.values(data.data).forEach((categoryTags: any) => {
+              if (Array.isArray(categoryTags)) {
+                allTags.push(...categoryTags);
+              }
+            });
+            setTags(allTags);
+          } else {
+            setTags([]);
+          }
+        } else {
+          setTags([]);
+        }
+        setIsLoading(false);
       } catch (err) {
-        setError("태그 로딩 중 오류 발생");
         console.error("태그 로딩 중 오류:", err);
-      } finally {
+        setError("태그 로딩 중 오류가 발생했습니다. 다시 시도해 주세요.");
         setIsLoading(false);
       }
     };
 
     fetchTags();
-  }, []);
+  }, [API_BASE_URL]);
 
   // 프로필 이미지 변경 핸들러
   const handleProfileImgChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -84,7 +135,10 @@ export default function SignupPage() {
 
     try {
       const response = await fetch(
-        `/api/v1/members/nick-name?nickname=${encodeURIComponent(nickname)}`
+        `${API_BASE_URL}/api/v1/members/check-nickname?nickname=${encodeURIComponent(nickname)}`,
+        {
+          credentials: "include"
+        }
       );
       
       // API 호출 성공 시
@@ -166,16 +220,22 @@ export default function SignupPage() {
         const formData = new FormData();
         formData.append("file", file);
         
+        // 임의의 diaryId 생성 (현재 시간 기준)
+        const randomDiaryId = Date.now().toString();
+        
         // 이미지 업로드 API 호출
-        const uploadResponse = await fetch("/api/v1/upload/image", {
+        const uploadResponse = await fetch(`${API_BASE_URL}/api/v1/upload/image/${randomDiaryId}`, {
           method: "POST",
-          body: formData
+          body: formData,
+          credentials: "include"
         });
         
-        const uploadData = await uploadResponse.json();
-        if (uploadData.success) {
-          profileImageUrl = uploadData.data.imageUrl;
+        if (!uploadResponse.ok) {
+          throw new Error("이미지 업로드에 실패했습니다");
         }
+        
+        const uploadData = await uploadResponse.json();
+        profileImageUrl = uploadData.data.imageUrl;
       }
 
       // API 요청 데이터
@@ -183,57 +243,40 @@ export default function SignupPage() {
         nickname,
         gender,
         introduction,
-        tagIds: selectedTags,
-        profileImg: profileImageUrl
+        tags: selectedTags,
+        profilePictureUrl: profileImageUrl
       };
 
-      const response = await fetch("/api/v1/auth/signup", {
+      const response = await fetch(`${API_BASE_URL}/api/v1/auth/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(signupData),
+        credentials: "include"
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "회원가입에 실패했습니다");
+      }
 
       const data = await response.json();
 
-      if (data.success) {
-        // 회원가입 성공 시 브라우저 기록 삭제 및 홈페이지로 리다이렉트
-        window.history.replaceState(null, "", "/");
-        router.replace("/");
-      } else {
-        alert(data.message || "회원가입 중 오류가 발생했습니다");
-      }
+      // 회원가입 성공 시 브라우저 기록 삭제 및 홈페이지로 리다이렉트
+      window.history.replaceState(null, "", "/");
+      
+      // 페이지 리로드를 통해 네비게이션 바의 로그인 상태 갱신
+      window.location.href = "/";
+      return;
     } catch (err) {
-      alert("회원가입 중 오류가 발생했습니다");
+      const errorMessage = err instanceof Error ? err.message : "회원가입 중 오류가 발생했습니다";
+      alert(errorMessage);
       console.error("회원가입 중 오류:", err);
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  // 태그 카테고리별 렌더링 함수
-  const renderTagCategory = (categoryName: string, categoryTags: Tag[]) => (
-    <div className="mb-6">
-      <h3 className="text-lg font-semibold mb-2 text-gray-800">{categoryName}</h3>
-      <div className="flex flex-wrap gap-2">
-        {categoryTags.map((tag) => (
-          <button
-            key={tag.id}
-            type="button"
-            onClick={() => handleTagToggle(tag.id)}
-            className={`py-1.5 px-4 rounded-full text-sm font-medium transition-all duration-200 ${
-              selectedTags.includes(tag.id)
-                ? "bg-[#FFB130] text-white shadow-md"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
-          >
-            #{tag.name}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
 
   if (isLoading) {
     return (
@@ -435,14 +478,31 @@ export default function SignupPage() {
                 </span>
               </div>
 
-              {tags && (
-                <>
-                  {renderTagCategory("성격", tags.personality)}
-                  {renderTagCategory("플레이 스타일", tags.playstyle)}
-                  {renderTagCategory("선호 테마", tags.preference)}
-                  {renderTagCategory("경험 수준", tags.experience)}
-                </>
+              {/* 태그 목록을 단일 리스트로 렌더링 */}
+              <div className="flex flex-wrap gap-2 mb-3">
+                {tags.map((tag) => (
+                  <button
+                    key={tag.id}
+                    type="button"
+                    onClick={() => handleTagToggle(tag.id)}
+                    className={`py-1.5 px-4 rounded-full text-sm font-medium transition-all duration-200 ${
+                      selectedTags.includes(tag.id)
+                        ? "bg-[#FFB130] text-white shadow-md"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                  >
+                    #{tag.name}
+                  </button>
+                ))}
+              </div>
+              
+              {tags.length === 0 && !isLoading && (
+                <p className="text-center text-gray-500 py-4">태그 정보가 없습니다</p>
               )}
+              
+              <p className="text-xs text-gray-500 mt-2">
+                나의 성격, 취향, 플레이 스타일 등을 표현할 수 있는 태그를 선택해주세요 (최대 5개)
+              </p>
             </div>
 
             {/* 등록 버튼 */}
