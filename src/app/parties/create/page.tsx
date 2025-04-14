@@ -50,8 +50,19 @@ export default function CreatePartyPage() {
     title: "",
     themeName: "",
     themeId: 0,
-    date: new Date().toISOString().split("T")[0],
-    time: "",
+    date: (() => {
+      // 내일 날짜 계산
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      return tomorrow.toISOString().split("T")[0];
+    })(),
+    time: (() => {
+      // 현재 시간 포맷팅 (HH:MM)
+      const now = new Date();
+      return `${String(now.getHours()).padStart(2, "0")}:${String(
+        now.getMinutes()
+      ).padStart(2, "0")}`;
+    })(),
     participantsNeeded: "",
     totalParticipants: "",
     rookieAvailable: false,

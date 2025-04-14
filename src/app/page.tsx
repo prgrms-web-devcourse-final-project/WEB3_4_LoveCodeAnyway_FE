@@ -132,77 +132,14 @@ export default function HomePage() {
       const response = await axios.get(`${API_BASE_URL}/api/v1/parties/main`, {
         withCredentials: true,
       });
-      // API 응답이 없거나 빈 배열인 경우 더미 데이터 사용
-      setParties(
-        response.data.data?.length ? response.data.data : getDummyParties()
-      );
+      // 실제 API 응답만 사용
+      setParties(response.data.data || []);
     } catch (error) {
       console.error("모임 조회 실패:", error);
-      setParties(getDummyParties());
+      setParties([]);
     } finally {
       setIsLoadingParties(false);
     }
-  };
-
-  // 더미 파티 데이터 생성 함수
-  const getDummyParties = (): Party[] => {
-    return [
-      {
-        id: 1,
-        themeId: 101,
-        themeName: "마법사의 방",
-        themeThumbnailUrl: "",
-        storeName: "마법의 방탈출",
-        title: "마법사의 방 함께 하실 분 구합니다!",
-        scheduledAt: "2024-03-20T19:00:00",
-        acceptedParticipantCount: 2,
-        totalParticipants: 4,
-      },
-      {
-        id: 2,
-        themeId: 102,
-        themeName: "추리왕",
-        themeThumbnailUrl: "",
-        storeName: "추리방탈출",
-        title: "추리왕 테마 함께 하실 분",
-        scheduledAt: "2024-03-21T20:00:00",
-        acceptedParticipantCount: 3,
-        totalParticipants: 6,
-      },
-      {
-        id: 3,
-        themeId: 103,
-        themeName: "좀비 아포칼립스",
-        themeThumbnailUrl: "",
-        storeName: "호러방탈출",
-        title: "좀비 테마 2명 더 필요합니다!",
-        scheduledAt: "2024-03-22T18:30:00",
-        acceptedParticipantCount: 4,
-        totalParticipants: 6,
-      },
-      {
-        id: 4,
-        themeId: 104,
-        themeName: "타임머신",
-        themeThumbnailUrl: "",
-        storeName: "SF방탈출",
-        title: "타임머신 테마 모임",
-        scheduledAt: "2024-03-23T19:30:00",
-        acceptedParticipantCount: 1,
-        totalParticipants: 4,
-      },
-      {
-        id: 5,
-        themeId: 105,
-        themeName: "황금열쇠",
-        themeThumbnailUrl: "",
-        storeName: "모험방탈출",
-        title: "황금열쇠 테마 함께 하실 분",
-        scheduledAt: "2024-03-24T20:00:00",
-        acceptedParticipantCount: 2,
-        totalParticipants: 4,
-      },
-    ];
   };
 
   // 로딩 인디케이터 컴포넌트

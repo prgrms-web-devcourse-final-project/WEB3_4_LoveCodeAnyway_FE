@@ -141,7 +141,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/v1/uploads/{parentId}": {
+  "/api/v1/upload/image/{diaryId}": {
     parameters: {
       query?: never;
       header?: never;
@@ -150,11 +150,23 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /**
-     * 파일 업로드
-     * @description 새로운 파일을 업로드합니다.
-     */
-    post: operations["upload"];
+    post: operations["uploadImage"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/upload/attachment/{postId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["uploadAttachment"];
     delete?: never;
     options?: never;
     head?: never;
@@ -192,6 +204,40 @@ export interface paths {
     put?: never;
     /** 모임 등록 */
     post: operations["createParty"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/parties/{id}/reviews": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** 모든 모임원 평가 */
+    post: operations["reviewPartyMembers"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/parties/{id}/reject/{memberId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** 모임 신청 거절 */
+    post: operations["rejectPartyMember"];
     delete?: never;
     options?: never;
     head?: never;
@@ -325,6 +371,38 @@ export interface paths {
     put?: never;
     /** 문의 등록 */
     post: operations["createPost"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/auth/signup": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["signup"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/auth/logout": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["logout"];
     delete?: never;
     options?: never;
     head?: never;
@@ -494,6 +572,54 @@ export interface paths {
     patch: operations["executeParty"];
     trace?: never;
   };
+  "/api/v1/members/me": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 내 프로필 조회 API
+     * @description 내 프로필 정보를 조회하며, 닉네임, 성별, 소개글, 프로필 이미지, 매너 점수를 응답합니다.
+     */
+    get: operations["getMyBasicProfile"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /**
+     * 내 프로필 수정 API
+     * @description 내 프로필 정보를 수정합니다. 닉네임, 소개글, 프로필 이미지를 수정할 수 있습니다.
+     */
+    patch: operations["updateMyProfile"];
+    trace?: never;
+  };
+  "/api/v1/members/me/tags": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 내 사용자 태그 조회 API
+     * @description 내 프로필에 설정된 사용자 태그를 조회하며, 태그 ID와 태그 이름을 응답합니다.
+     */
+    get: operations["getMyTags"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /**
+     * 내 사용자 태그 수정 API
+     * @description 내 프로필에 설정된 사용자 태그를 수정합니다. 태그 ID 리스트를 요청 본문에 포함하여 수정합니다.
+     */
+    patch: operations["updateMyTags"];
+    trace?: never;
+  };
   "/alarms/{id}/read": {
     parameters: {
       query?: never;
@@ -582,6 +708,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/members/{id}/review": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["getMemberReview"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/themes/{id}": {
     parameters: {
       query?: never;
@@ -594,6 +736,23 @@ export interface paths {
      * @description 테마 통계 부분은 해당 테마에 대한 방탈출 일지가 1개 이상 작성 되야 존재하므로 Nullable
      */
     get: operations["getTheme_1"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/themes/{id}/parties": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 해당 테마의 모집 중인 모임 조회 */
+    get: operations["getPartiesByTheme"];
     put?: never;
     post?: never;
     delete?: never;
@@ -709,6 +868,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/parties/review-keywords": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 평가 Enum 값 조회 */
+    get: operations["getReviewKeywords"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/parties/main": {
     parameters: {
       query?: never;
@@ -743,15 +919,94 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/v1/members/me": {
+  "/api/v1/members/{memberId}/profile": {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    /** 내 정보 */
-    get: operations["me"];
+    /**
+     * 타인 공개 프로필 통합 조회 API
+     * @description 타인 공개 프로필을 조회합니다. 닉네임, 성별, 소개글, 프로필 이미지, 매너 점수, 사용자 태그, 통계 정보를 응답합니다.
+     */
+    get: operations["getOtherProfile"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/members/stat": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 사용자 분석 페이지 조회 API
+     * @description 자신의 사용자 분석 정보를 조회합니다.데이터가 없는 경우에는 null을 반환합니다.
+     */
+    get: operations["getMemberStat"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/members/me/stats": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 내 요약 통계 조회 API
+     * @description 프로필에서 사용하는 통계 정보(총 탈출 수, 성공률, 노힌트 성공률)를 응답합니다.
+     */
+    get: operations["getMyEscapeSummary"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/members/check-nickname": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 닉네임 중복 확인 API
+     * @description 닉네임의 중복 여부를 확인합니다, 사용 가능한 경우 true, 사용 중인 경우 false를 응답합니다.
+     */
+    get: operations["checkNicknameDuplicate"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/auth/login": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["kakaoLogin"];
     put?: never;
     post?: never;
     delete?: never;
@@ -802,6 +1057,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/alarms/{id}/redirect": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 알림 클릭 처리
+     * @description 알림을 클릭했을 때 관련 페이지로 리다이렉트합니다.
+     */
+    get: operations["redirectAlarm"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/alarms/subscribe": {
     parameters: {
       query?: never;
@@ -842,29 +1117,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/v1/uploads/{id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    /**
-     * 파일 삭제
-     * @description 해당되는 게시물의 파일을 삭제합니다.
-     *
-     *     문의 게시판의 경우 해당 이미지의 id 입니다.
-     *
-     */
-    delete: operations["delete_2"];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   "/api/v1/parties/{id}/cancel": {
     parameters: {
       query?: never;
@@ -877,26 +1129,6 @@ export interface paths {
     post?: never;
     /** 모임 참가 신청 취소 */
     delete: operations["cancelAppliedParty"];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/members/logout": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    /**
-     * 로그아웃
-     * @description apiKey, accessToken 토큰을 제거합니다.
-     */
-    delete: operations["logout"];
     options?: never;
     head?: never;
     patch?: never;
@@ -1038,22 +1270,14 @@ export interface components {
       id?: number;
       nickname?: string;
       /** @enum {string} */
-      gender?: "MALE" | "FEMALE" | "OTHER";
+      gender?: "MALE" | "FEMALE" | "BLIND";
       introduction?: string;
       kakaoId?: string;
       profilePictureUrl?: string;
-      /** Format: int32 */
       mannerScore?: number;
       /** Format: int32 */
       hostCount?: number;
-      password?: string;
-      tags?: components["schemas"]["MemberTag"][];
-    };
-    MemberTag: {
-      /** Format: int64 */
-      id?: number;
-      name?: string;
-      members?: components["schemas"]["Member"][];
+      admPassword?: string;
     };
     Post: {
       /** Format: date-time */
@@ -1198,6 +1422,12 @@ export interface components {
       tags?: string[];
       thumbnailUrl?: string;
     };
+    PartyMemberReviewRequest: {
+      /** Format: int64 */
+      targetId?: number;
+      reviewKeywords?: string[];
+      noShow?: boolean;
+    };
     PartySearchCondition: {
       keyword?: string;
       regionIds?: number[];
@@ -1211,7 +1441,7 @@ export interface components {
       /** Format: date-time */
       scheduledAt?: string;
       /** Format: int32 */
-      participantsLeft?: number;
+      acceptedParticipantsCount?: number;
       /** Format: int32 */
       totalParticipants?: number;
       rookieAvailable?: boolean;
@@ -1293,6 +1523,14 @@ export interface components {
       message?: string;
       data?: components["schemas"]["PageDtoDiaryListDto"];
     };
+    SignupRequest: {
+      nickname: string;
+      /** @enum {string} */
+      gender: "MALE" | "FEMALE" | "BLIND";
+      introduction?: string;
+      tags?: number[];
+      profilePictureUrl?: string;
+    };
     SliceDtoSimpleThemeResponse: {
       content?: components["schemas"]["SimpleThemeResponse"][];
       hasNext?: boolean;
@@ -1342,7 +1580,15 @@ export interface components {
       /** Format: int64 */
       relId?: number;
       /** @enum {string} */
-      alarmType: "SYSTEM" | "MESSAGE" | "SUBSCRIBE" | "OTHER";
+      alarmType:
+        | "SYSTEM"
+        | "MESSAGE"
+        | "SUBSCRIBE"
+        | "PARTY_APPLY"
+        | "PARTY_STATUS"
+        | "ANSWER_COMMENT"
+        | "POST_REPLY"
+        | "OTHER";
     };
     AlarmResponse: {
       /** Format: int64 */
@@ -1353,7 +1599,15 @@ export interface components {
       content?: string;
       readStatus?: boolean;
       /** @enum {string} */
-      alarmType?: "SYSTEM" | "MESSAGE" | "SUBSCRIBE" | "OTHER";
+      alarmType?:
+        | "SYSTEM"
+        | "MESSAGE"
+        | "SUBSCRIBE"
+        | "PARTY_APPLY"
+        | "PARTY_STATUS"
+        | "ANSWER_COMMENT"
+        | "POST_REPLY"
+        | "OTHER";
       /** Format: int64 */
       relId?: number;
       /** Format: date-time */
@@ -1364,6 +1618,26 @@ export interface components {
     SuccessResponseAlarmResponse: {
       message?: string;
       data?: components["schemas"]["AlarmResponse"];
+    };
+    UpdateProfileRequest: {
+      nickname?: string;
+      introduction?: string;
+      profileImageUrl?: string;
+    };
+    BasicProfileResponse: {
+      nickname?: string;
+      /** @enum {string} */
+      gender?: "MALE" | "FEMALE" | "BLIND";
+      introduction?: string;
+      profilePictureUrl?: string;
+      mannerScore?: number;
+    };
+    SuccessResponseBasicProfileResponse: {
+      message?: string;
+      data?: components["schemas"]["BasicProfileResponse"];
+    };
+    UpdateTagsRequest: {
+      tagIds?: number[];
     };
     SuccessResponseInteger: {
       message?: string;
@@ -1377,6 +1651,39 @@ export interface components {
     SuccessResponseSliceDtoMessageDto: {
       message?: string;
       data?: components["schemas"]["SliceDtoMessageDto"];
+    };
+    KeywordStatResponse: {
+      /** @enum {string} */
+      keyword?:
+        | "ATTENDANCE"
+        | "COMMUNICATION"
+        | "COOPERATION"
+        | "INTUITION"
+        | "LEADERSHIP"
+        | "LATE"
+        | "PASSIVE"
+        | "SELF_CENTERED"
+        | "OFF_TOPIC"
+        | "RUDE"
+        | "NO_SHOW";
+      /** Format: int32 */
+      count?: number;
+    };
+    MemberReviewResponse: {
+      averageScore?: number;
+      /** Format: int32 */
+      totalReviews?: number;
+      /** Format: int32 */
+      positiveCount?: number;
+      /** Format: int32 */
+      negativeCount?: number;
+      /** Format: int32 */
+      noShowCount?: number;
+      keywords?: components["schemas"]["KeywordStatResponse"][];
+    };
+    SuccessResponseMemberReviewResponse: {
+      message?: string;
+      data?: components["schemas"]["MemberReviewResponse"];
     };
     StoreInfo: {
       name?: string;
@@ -1478,7 +1785,7 @@ export interface components {
       hostNickname?: string;
       hostProfilePictureUrl?: string;
       /** Format: int32 */
-      recruitableCount?: number;
+      acceptedParticipantsCount?: number;
       /** Format: int32 */
       totalParticipants?: number;
       acceptedPartyMembers?: components["schemas"]["PartyMemberSummaries"][];
@@ -1607,15 +1914,106 @@ export interface components {
       message?: string;
       data?: components["schemas"]["PageDtoPartySummaryResponse"];
     };
-    MemberDto: {
+    EscapeProfileSummaryDto: {
+      /** Format: int32 */
+      totalCount?: number;
+      /** Format: double */
+      successRate?: number;
+      /** Format: double */
+      noHintSuccessRate?: number;
+    };
+    MemberTagResponse: {
       /** Format: int64 */
       id?: number;
-      /** Format: date-time */
-      createdAt?: string;
-      /** Format: date-time */
-      modifiedAt?: string;
+      name?: string;
+    };
+    OtherMemberProfileResponse: {
+      profile?: components["schemas"]["OtherProfileResponse"];
+      tags?: components["schemas"]["MemberTagResponse"][];
+      stats?: components["schemas"]["EscapeProfileSummaryDto"];
+    };
+    OtherProfileResponse: {
       nickname?: string;
-      pofilePictureUrl?: string;
+      /** @enum {string} */
+      gender?: "MALE" | "FEMALE" | "BLIND";
+      introduction?: string;
+      profilePicture?: string;
+      mannerScore?: number;
+      /** Format: int32 */
+      hostCount?: number;
+    };
+    SuccessResponseOtherMemberProfileResponse: {
+      message?: string;
+      data?: components["schemas"]["OtherMemberProfileResponse"];
+    };
+    LastMonthInfo: {
+      /** Format: int32 */
+      lastMonthCount?: number;
+      /** Format: double */
+      lastMonthAvgSatisfaction?: number;
+      /** Format: double */
+      lastMonthAvgHintCount?: number;
+      /** Format: double */
+      lastMonthSuccessRate?: number;
+      /** Format: int32 */
+      lastMonthAvgTime?: number;
+      lastMonthTopTheme?: string;
+      /** Format: int32 */
+      lastMonthTopSatisfaction?: number;
+    };
+    MemberStatResponse: {
+      /** Format: int32 */
+      totalCount?: number;
+      /** Format: double */
+      successRate?: number;
+      /** Format: int32 */
+      noHintSuccessCount?: number;
+      /** Format: double */
+      noHintSuccessRate?: number;
+      /** Format: double */
+      averageHintCount?: number;
+      genreCountMap?: {
+        [key: string]: number;
+      };
+      genreSuccessMap?: {
+        [key: string]: number;
+      };
+      tendencyMap?: {
+        [key: string]: number;
+      };
+      monthlyCountMap?: {
+        [key: string]: number;
+      };
+      /** Format: date */
+      firstEscapeDate?: string;
+      mostActiveMonth?: string;
+      /** Format: int32 */
+      mostActiveMonthCount?: number;
+      /** Format: int32 */
+      daysSinceFirstEscape?: number;
+      lastMonthInfo?: components["schemas"]["LastMonthInfo"];
+      difficultyHintAvgMap?: {
+        [key: string]: number;
+      };
+      difficultySatisAvgMap?: {
+        [key: string]: number;
+      };
+    };
+    SuccessResponseMemberStatResponse: {
+      message?: string;
+      data?: components["schemas"]["MemberStatResponse"];
+    };
+    SuccessResponseListMemberTagResponse: {
+      message?: string;
+      data?: components["schemas"]["MemberTagResponse"][];
+    };
+    SuccessResponseEscapeProfileSummaryDto: {
+      message?: string;
+      data?: components["schemas"]["EscapeProfileSummaryDto"];
+    };
+    SuccessResponseBoolean: {
+      message?: string;
+      data?: boolean;
     };
     SuccessResponseListDiaryListDto: {
       message?: string;
@@ -1718,6 +2116,10 @@ export interface components {
     SuccessResponsePageDtoAlarmResponse: {
       message?: string;
       data?: components["schemas"]["PageDtoAlarmResponse"];
+    };
+    SuccessResponseString: {
+      message?: string;
+      data?: string;
     };
     SseEmitter: {
       /** Format: int64 */
@@ -2138,15 +2540,45 @@ export interface operations {
       };
     };
   };
-  upload: {
+  uploadImage: {
     parameters: {
-      query: {
-        target?: "PROFILE" | "DIARY" | "BOARD" | "NONE";
-        files: string[];
+      query?: {
+        target?: "PROFILE" | "DIARY" | "POST" | "NONE";
       };
       header?: never;
       path: {
-        parentId: number;
+        diaryId: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: {
+      content: {
+        "multipart/form-data": {
+          /** Format: binary */
+          file?: string;
+        };
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SuccessResponseVoid"];
+        };
+      };
+    };
+  };
+  uploadAttachment: {
+    parameters: {
+      query?: {
+        files?: string[];
+      };
+      header?: never;
+      path: {
+        postId: number;
       };
       cookie?: never;
     };
@@ -2211,6 +2643,51 @@ export interface operations {
         content: {
           "application/json": components["schemas"]["SuccessResponsePartyDto"];
         };
+      };
+    };
+  };
+  reviewPartyMembers: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["PartyMemberReviewRequest"][];
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  rejectPartyMember: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+        memberId: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
     };
   };
@@ -2425,6 +2902,52 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["SuccessResponsePostDto"];
+        };
+      };
+    };
+  };
+  signup: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie: {
+        signupToken: string;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SignupRequest"];
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SuccessResponseVoid"];
+        };
+      };
+    };
+  };
+  logout: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SuccessResponseVoid"];
         };
       };
     };
@@ -2687,6 +3210,94 @@ export interface operations {
       };
     };
   };
+  getMyBasicProfile: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SuccessResponseBasicProfileResponse"];
+        };
+      };
+    };
+  };
+  updateMyProfile: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateProfileRequest"];
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SuccessResponseBasicProfileResponse"];
+        };
+      };
+    };
+  };
+  getMyTags: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SuccessResponseListMemberTagResponse"];
+        };
+      };
+    };
+  };
+  updateMyTags: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateTagsRequest"];
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SuccessResponseVoid"];
+        };
+      };
+    };
+  };
   markAsRead: {
     parameters: {
       query?: never;
@@ -2819,6 +3430,28 @@ export interface operations {
       };
     };
   };
+  getMemberReview: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SuccessResponseMemberReviewResponse"];
+        };
+      };
+    };
+  };
   getTheme_1: {
     parameters: {
       query?: never;
@@ -2837,6 +3470,31 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["SuccessResponseThemeDetailResponse"];
+        };
+      };
+    };
+  };
+  getPartiesByTheme: {
+    parameters: {
+      query?: {
+        lastId?: number;
+        size?: number;
+      };
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SuccessResponseSliceDtoPartySummaryResponse"];
         };
       };
     };
@@ -2971,6 +3629,28 @@ export interface operations {
       };
     };
   };
+  getReviewKeywords: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            [key: string]: string[];
+          };
+        };
+      };
+    };
+  };
   getMainParties: {
     parameters: {
       query?: never;
@@ -3016,7 +3696,29 @@ export interface operations {
       };
     };
   };
-  me: {
+  getOtherProfile: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        memberId: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SuccessResponseOtherMemberProfileResponse"];
+        };
+      };
+    };
+  };
+  getMemberStat: {
     parameters: {
       query?: never;
       header?: never;
@@ -3031,8 +3733,70 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["MemberDto"];
+          "application/json": components["schemas"]["SuccessResponseMemberStatResponse"];
         };
+      };
+    };
+  };
+  getMyEscapeSummary: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SuccessResponseEscapeProfileSummaryDto"];
+        };
+      };
+    };
+  };
+  checkNicknameDuplicate: {
+    parameters: {
+      query: {
+        nickname: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SuccessResponseBoolean"];
+        };
+      };
+    };
+  };
+  kakaoLogin: {
+    parameters: {
+      query: {
+        redirectUrl: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
     };
   };
@@ -3120,6 +3884,28 @@ export interface operations {
       };
     };
   };
+  redirectAlarm: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SuccessResponseString"];
+        };
+      };
+    };
+  };
   subscribeAlarm: {
     parameters: {
       query?: never;
@@ -3160,30 +3946,6 @@ export interface operations {
       };
     };
   };
-  delete_2: {
-    parameters: {
-      query?: {
-        target?: "PROFILE" | "DIARY" | "BOARD" | "NONE";
-      };
-      header?: never;
-      path: {
-        id: number;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description OK */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["SuccessResponseVoid"];
-        };
-      };
-    };
-  };
   cancelAppliedParty: {
     parameters: {
       query?: never;
@@ -3191,24 +3953,6 @@ export interface operations {
       path: {
         id: number;
       };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description OK */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  logout: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
       cookie?: never;
     };
     requestBody?: never;

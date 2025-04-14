@@ -49,7 +49,7 @@ interface SuccessResponseListPartyMainResponse {
 export default function PartiesPage() {
   const router = useRouter();
   const [parties, setParties] = useState<EscapeRoom[]>([]);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
@@ -117,9 +117,9 @@ export default function PartiesPage() {
 
     setLoading(true);
     try {
-      // API 요청
+      // API 요청 (page=0&size=12 파라미터 추가)
       const response = await axios.post<SuccessResponseListPartyMainResponse>(
-        `${baseUrl}/api/v1/parties/search`,
+        `${baseUrl}/api/v1/parties/search?page=0&size=12`,
         {
           keyword: searchKeyword,
           region: filterRegion,
@@ -188,17 +188,76 @@ export default function PartiesPage() {
     }
   };
 
-  // 무한 스크롤을 위한 더 많은 모임 로드 (실제로는 해당 API가 없으므로 mock)
+  // 무한 스크롤을 위한 더 많은 모임 로드
   const loadMoreParties = async () => {
-    // 기본 API는 pagination을 지원하지 않으므로 현재는 추가 로드 없음
-    setHasMore(false);
+    if (loading) return;
+
+    setLoading(true);
+    try {
+      const nextPage = page + 1;
+      // API 요청 (페이지네이션 파라미터 추가)
+      const response = await axios.post<SuccessResponseListPartyMainResponse>(
+        `${baseUrl}/api/v1/parties/search?page=${nextPage}&size=12`,
+        {
+          keyword: searchKeyword,
+          region: filterRegion,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+
+      if (response.data.data) {
+        let partyData: PartyMainResponse[] = [];
+
+        // 데이터 타입에 따라 처리
+        if (Array.isArray(response.data.data)) {
+          partyData = response.data.data;
+        } else if (
+          "content" in response.data.data &&
+          Array.isArray(response.data.data.content)
+        ) {
+          partyData = response.data.data.content;
+
+          // 페이지네이션 정보가 있으면 hasMore 설정
+          if ("last" in response.data.data) {
+            setHasMore(!response.data.data.last);
+          }
+        }
+
+        // 데이터가 비어있으면 더 이상 불러올 데이터가 없음
+        if (partyData.length === 0) {
+          setHasMore(false);
+          return;
+        }
+
+        // API 응답 데이터를 EscapeRoom 형식으로 변환
+        const convertedData = partyData.map(convertToEscapeRoom);
+
+        // 기존 데이터와 새 데이터 병합 (중복 제거)
+        const newParties = [...parties, ...convertedData];
+        const uniqueParties = Array.from(
+          new Map(newParties.map((item) => [item.id, item])).values()
+        );
+
+        setParties(uniqueParties);
+        setPage(nextPage);
+      } else {
+        setHasMore(false);
+      }
+    } catch (error) {
+      console.error("추가 모임 데이터 로드 중 오류:", error);
+      setHasMore(false);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 검색 처리
   const handleSearch = (keyword: string) => {
     setSearchKeyword(keyword);
     setParties([]);
-    setPage(1);
+    setPage(0);
     loadParties(); // 검색어가 API 요청에 포함되므로 바로 API 호출
   };
 
@@ -207,7 +266,7 @@ export default function PartiesPage() {
     if (filterType === "region") {
       setFilterRegion(value);
       setParties([]);
-      setPage(1);
+      setPage(0);
       loadParties(); // 필터가 API 요청에 포함되므로 바로 API 호출
     }
   };
