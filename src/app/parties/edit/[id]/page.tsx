@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ThemeSearchModal } from "@/components/ThemeSearchModal";
 import { TimePickerModal } from "@/components/TimePickerModal";
 import axios from "axios";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { LoginMemberContext } from "@/stores/auth/loginMember";
 
 interface PartyFormData {
@@ -31,6 +31,32 @@ interface PartyRequest {
   rookieAvailable: boolean;
 }
 
+interface PartyDetailResponse {
+  id?: number;
+  title?: string;
+  scheduledAt?: string;
+  content?: string;
+  hostId?: number;
+  hostNickname?: string;
+  hostProfilePictureUrl?: string;
+  recruitableCount?: number;
+  totalParticipants?: number;
+  acceptedPartyMembers?: any[];
+  AppliedPartyMembers?: any[];
+  rookieAvailable?: boolean;
+  themeId?: number;
+  themeName?: string;
+  themeThumbnailUrl?: string;
+  themeTagMappings?: any[];
+  noHintEscapeRate?: number;
+  escapeResult?: number;
+  escapeTimeAvg?: number;
+  storeName?: string;
+  storeAddress?: string;
+  themeGenre?: string;
+  runtime?: number;
+}
+
 interface SuccessResponsePartyDto {
   message?: string;
   data?: {
@@ -45,31 +71,38 @@ interface ThemeInfo {
   themeId: number;
 }
 
-export default function CreatePartyPage() {
+export default function EditPartyPage() {
   const router = useRouter();
-  const { isLogin } = useContext(LoginMemberContext);
+  const params = useParams();
+  const { isLogin, loginMember } = useContext(LoginMemberContext);
+  
   const [formData, setFormData] = useState<PartyFormData>({
     title: "",
     themeName: "",
     themeId: 0,
-    date: (() => {
-      // 내일 날짜 계산
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      return tomorrow.toISOString().split("T")[0];
-    })(),
-    time: (() => {
-      // 현재 시간 포맷팅 (HH:MM)
-      const now = new Date();
-      return `${String(now.getHours()).padStart(2, "0")}:${String(
-        now.getMinutes()
-      ).padStart(2, "0")}`;
-    })(),
+    date: "",
+    time: "",
     participantsNeeded: "",
     totalParticipants: "",
     rookieAvailable: false,
     content: "",
   });
+
+  const [isThemeSearchModalOpen, setIsThemeSearchModalOpen] = useState(false);
+  const [isTimePickerModalOpen, setIsTimePickerModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // 기본 베이스 URL 설정
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL
+    ? process.env.NEXT_PUBLIC_API_URL
+    : process.env.NODE_ENV === "development"
+    ? "http://localhost:8080"
+    : "https://api.ddobang.site";
+
+  // 모임 ID 가져오기
+  const partyId = params?.id;
 
   // 로그인 확인 및 리다이렉트
   useEffect(() => {
@@ -79,17 +112,66 @@ export default function CreatePartyPage() {
     }
   }, [isLogin, router]);
 
-  const [isThemeSearchModalOpen, setIsThemeSearchModalOpen] = useState(false);
-  const [isTimePickerModalOpen, setIsTimePickerModalOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // 모임 정보 불러오기
+  useEffect(() => {
+    // 로그인되지 않은 경우 API 호출하지 않음
+    if (!isLogin || !partyId) return;
+    
+    const fetchPartyDetail = async () => {
+      setLoading(true);
+      
+      try {
+        const response = await axios.get(
+          `${baseUrl}/api/v1/parties/${partyId}`,
+          {
+            withCredentials: true,
+          }
+        );
 
-  // 기본 베이스 URL 설정
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL
-    ? process.env.NEXT_PUBLIC_API_URL
-    : process.env.NODE_ENV === "development"
-    ? "http://localhost:8080"
-    : "https://api.ddobang.site";
+        if (response.data.data) {
+          const partyData = response.data.data;
+          
+          // 모임장인지 확인
+          if (partyData.hostId !== loginMember.id) {
+            alert("모임 수정 권한이 없습니다.");
+            router.push(`/parties/${partyId}`);
+            return;
+          }
+          
+          // 날짜와 시간 분리
+          const scheduledAt = new Date(partyData.scheduledAt || "");
+          const date = scheduledAt.toISOString().split('T')[0];
+          const time = `${String(scheduledAt.getHours()).padStart(2, '0')}:${String(scheduledAt.getMinutes()).padStart(2, '0')}`;
+          
+          // 폼 데이터 초기화
+          setFormData({
+            title: partyData.title || "",
+            themeName: partyData.themeName || "",
+            themeId: partyData.themeId || 0,
+            date: date,
+            time: time,
+            participantsNeeded: String(partyData.recruitableCount || ""),
+            totalParticipants: String(partyData.totalParticipants || ""),
+            rookieAvailable: partyData.rookieAvailable || false,
+            content: partyData.content || "",
+          });
+        } else {
+          setError("모임 정보를 찾을 수 없습니다.");
+          alert("모임 정보를 찾을 수 없습니다.");
+          router.push("/parties");
+        }
+      } catch (err) {
+        console.error("모임 상세 정보 로드 중 오류:", err);
+        setError("모임 정보를 가져오는 중 오류가 발생했습니다.");
+        alert("모임 정보를 가져오는 중 오류가 발생했습니다.");
+        router.push("/parties");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPartyDetail();
+  }, [partyId, baseUrl, isLogin, router, loginMember]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,29 +222,25 @@ export default function CreatePartyPage() {
         rookieAvailable: formData.rookieAvailable,
       };
 
-      // API 호출
-      const response = await axios.post<SuccessResponsePartyDto>(
-        `${baseUrl}/api/v1/parties`,
+      // API 호출 (PUT 메서드로 변경)
+      const response = await axios.put<SuccessResponsePartyDto>(
+        `${baseUrl}/api/v1/parties/${partyId}`,
         requestData,
         {
           withCredentials: true,
         }
-      )
-   
+      );
 
       // 성공시 모임 상세 페이지로 이동
-      if (response.data.data?.id) {
-        router.push(`/parties/${response.data.data.id}`);
-      } else {
-        router.push("/parties");
-      }
+      alert("모임 정보가 수정되었습니다.");
+      router.push(`/parties/${partyId}`);
     } catch (err) {
-      console.error("모임 등록 중 오류:", err);
+      console.error("모임 수정 중 오류:", err);
       if (axios.isAxiosError(err) && err.response) {
-        setError(err.response.data.message || "모임 등록에 실패했습니다.");
+        setError(err.response.data.message || "모임 수정에 실패했습니다.");
       } else {
         setError(
-          err instanceof Error ? err.message : "모임 등록에 실패했습니다."
+          err instanceof Error ? err.message : "모임 수정에 실패했습니다."
         );
       }
     } finally {
@@ -229,13 +307,25 @@ export default function CreatePartyPage() {
     }));
   };
 
+  // 로딩 중 표시
+  if (loading) {
+    return (
+      <main className="bg-gray-50 min-h-screen">
+        <Navigation activePage="parties" />
+        <div className="max-w-7xl mx-auto px-6 py-12 flex justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="bg-gray-50 min-h-screen">
       <Navigation activePage="parties" />
 
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-8">
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8">
-          <h1 className="text-2xl font-bold mb-6">모임 등록</h1>
+          <h1 className="text-2xl font-bold mb-6">모임 정보 수정</h1>
 
           {error && (
             <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg border border-red-200">
@@ -470,7 +560,7 @@ export default function CreatePartyPage() {
             {/* 버튼 그룹 */}
             <div className="flex gap-3 mt-8">
               <Link
-                href="/parties"
+                href={`/parties/${partyId}`}
                 className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 text-center"
               >
                 취소
@@ -482,7 +572,7 @@ export default function CreatePartyPage() {
                   isSubmitting ? "opacity-70 cursor-not-allowed" : ""
                 }`}
               >
-                {isSubmitting ? "등록 중..." : "등록하기"}
+                {isSubmitting ? "수정 중..." : "수정하기"}
               </button>
             </div>
           </form>
@@ -503,4 +593,4 @@ export default function CreatePartyPage() {
       />
     </main>
   );
-}
+} 
