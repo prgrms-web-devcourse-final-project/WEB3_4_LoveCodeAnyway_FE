@@ -360,7 +360,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
                         <img
                           src={
                             loginMember.pofilePictureUrl ||
-                            "/images/default-profile.png"
+                            "/default-profile.svg"
                           }
                           alt={loginMember.nickname || "프로필"}
                           className="w-full h-full object-cover"

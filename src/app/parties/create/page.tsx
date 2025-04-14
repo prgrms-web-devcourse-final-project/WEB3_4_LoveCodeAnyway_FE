@@ -233,7 +233,7 @@ export default function CreatePartyPage() {
     <main className="bg-gray-50 min-h-screen">
       <Navigation activePage="parties" />
 
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-8">
+      <div className="max-w-4xl mx-auto px-6 sm:px-8 lg:px-10 py-8">
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8">
           <h1 className="text-2xl font-bold mb-6">모임 등록</h1>
 

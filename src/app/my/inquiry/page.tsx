@@ -37,6 +37,9 @@ export default function InquiryPage() {
   const fetchInquiries = async () => {
     try {
       setIsLoading(true);
+      
+      // API 호출 코드 주석 처리
+      /*
       const response = await axios.get(`${API_BASE_URL}/api/v1/boards`, {
         params: {
           page: currentPage,
@@ -48,6 +51,72 @@ export default function InquiryPage() {
 
       setInquiries(response.data.data.content);
       setTotalPages(response.data.data.totalPages);
+      */
+
+      // 가데이터로 대체
+      const mockInquiries: Inquiry[] = [
+        {
+          id: 1,
+          type: "사이트 이용 문의",
+          title: "회원가입 관련 문의드립니다",
+          nickname: "사용자1",
+          createdAt: "2023-06-15",
+          status: "답변완료"
+        },
+        {
+          id: 2,
+          type: "유지 보수",
+          title: "페이지 로딩이 느려요",
+          nickname: "사용자2",
+          createdAt: "2023-06-14",
+          status: "대기중"
+        },
+        {
+          id: 3,
+          type: "테마등록요청",
+          title: "새로운 테마 등록 요청드립니다",
+          nickname: "사용자3",
+          createdAt: "2023-06-12",
+          status: "답변완료"
+        },
+        {
+          id: 4,
+          type: "사이트 이용 문의",
+          title: "비밀번호 변경 방법이 궁금합니다",
+          nickname: "사용자4",
+          createdAt: "2023-06-10",
+          status: "대기중"
+        },
+        {
+          id: 5,
+          type: "유지 보수",
+          title: "모바일에서 접속 시 오류가 발생합니다",
+          nickname: "사용자5",
+          createdAt: "2023-06-08",
+          status: "답변완료"
+        }
+      ];
+
+      // 검색 및 필터링 적용
+      let filteredInquiries = mockInquiries;
+      
+      // 문의 유형 필터링
+      if (inquiryType !== "전체") {
+        filteredInquiries = filteredInquiries.filter(inquiry => inquiry.type === inquiryType);
+      }
+      
+      // 검색어 필터링
+      if (searchKeyword) {
+        const keyword = searchKeyword.toLowerCase();
+        filteredInquiries = filteredInquiries.filter(
+          inquiry => 
+            inquiry.title.toLowerCase().includes(keyword) || 
+            inquiry.nickname.toLowerCase().includes(keyword)
+        );
+      }
+
+      setInquiries(filteredInquiries);
+      setTotalPages(Math.ceil(filteredInquiries.length / 5)); // 페이지당 5개 항목 기준
     } catch (error) {
       console.error("문의 목록 로딩 에러:", error);
       setError("문의 목록을 불러오는데 실패했습니다.");
@@ -162,7 +231,7 @@ export default function InquiryPage() {
 
         {/* 문의 목록 */}
         <div className="w-full">
-          <div className="grid grid-cols-12 text-sm text-gray-600 border-y py-4 px-4">
+          <div className="grid bg-black grid-cols-12 text-sm text-white border-y py-4 px-4">
             <div className="col-span-1 text-center">번호</div>
             <div className="col-span-2">분류</div>
             <div className="col-span-4">제목</div>
