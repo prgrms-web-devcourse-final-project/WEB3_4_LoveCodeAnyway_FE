@@ -75,7 +75,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
 
   const fetchNotifications = async () => {
     try {
-      const response = await client.GET("/alarms");
+      const response = await client.GET("/api/v1/alarms");
       if (response.data?.data) {
         setNotifications(response.data.data.items || []);
       }

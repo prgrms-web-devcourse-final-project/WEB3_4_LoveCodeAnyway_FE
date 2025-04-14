@@ -56,10 +56,28 @@ export default function MyPage() {
   // 프로필 정보 가져오기
   const fetchUserProfile = async () => {
     try {
+      // API 호출 코드 주석 처리
+      /*
       const response = await axios.get(`${API_BASE_URL}/api/v1/users/me`, {
         withCredentials: true,
       });
       setUserProfile(response.data.data);
+      */
+
+      // 가데이터로 대체
+      const mockUserProfile: UserProfile = {
+        nickname: "테스트유저",
+        profileImage: "/images/profile.jpg",
+        gender: "male",
+        mannerScore: 4.5,
+        tags: ["친절함", "시간약속", "적극적"],
+        stats: {
+          successRate: 85,
+          averageClear: 45,
+          totalRooms: 12
+        }
+      };
+      setUserProfile(mockUserProfile);
     } catch (error) {
       console.error("프로필 로딩 에러:", error);
       setError("프로필을 불러오는데 실패했습니다.");
@@ -69,6 +87,8 @@ export default function MyPage() {
   // 희망 테마 가져오기
   const fetchWishThemes = async () => {
     try {
+      // API 호출 코드 주석 처리
+      /*
       const response = await axios.get(
         `${API_BASE_URL}/api/v1/users/me/wish-themes`,
         {
@@ -76,6 +96,30 @@ export default function MyPage() {
         }
       );
       setWishThemes(response.data.data);
+      */
+
+      // 가데이터로 대체
+      const mockWishThemes: WishTheme[] = [
+        {
+          id: 1,
+          name: "미스터리 박스",
+          thumbnailUrl: "/images/theme1.jpg",
+          storeName: "이스케이프 룸",
+          difficulty: 3,
+          genre: "미스터리",
+          rating: 4.5
+        },
+        {
+          id: 2,
+          name: "좀비 아포칼립스",
+          thumbnailUrl: "/images/theme2.jpg",
+          storeName: "테마월드",
+          difficulty: 4,
+          genre: "공포",
+          rating: 4.2
+        }
+      ];
+      setWishThemes(mockWishThemes);
     } catch (error) {
       console.error("희망 테마 로딩 에러:", error);
       setError("희망 테마를 불러오는데 실패했습니다.");
@@ -85,6 +129,8 @@ export default function MyPage() {
   // 달력 데이터 가져오기
   const fetchCalendarDiaries = async () => {
     try {
+      // API 호출 코드 주석 처리
+      /*
       const response = await axios.get(
         `${API_BASE_URL}/api/v1/diaries/calendar`,
         {
@@ -92,6 +138,24 @@ export default function MyPage() {
         }
       );
       setCalendarDiaries(response.data.data);
+      */
+
+      // 가데이터로 대체
+      const mockCalendarDiaries: CalendarDiary[] = [
+        {
+          date: "2023-06-15",
+          themeName: "미스터리 박스",
+          storeName: "이스케이프 룸",
+          escapeResult: true
+        },
+        {
+          date: "2023-06-20",
+          themeName: "좀비 아포칼립스",
+          storeName: "테마월드",
+          escapeResult: false
+        }
+      ];
+      setCalendarDiaries(mockCalendarDiaries);
     } catch (error) {
       console.error("달력 데이터 로딩 에러:", error);
       setError("달력 데이터를 불러오는데 실패했습니다.");
