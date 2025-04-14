@@ -429,18 +429,18 @@ export default function SignupPage() {
                   <span className={`group-hover:text-[#FFB130] transition-colors ${gender === "FEMALE" ? "text-[#FFB130] font-medium" : "text-gray-700"}`}>여성</span>
                 </label>
                 <label className="flex items-center cursor-pointer group">
-                  <div className={`w-5 h-5 rounded-full border flex items-center justify-center mr-3 ${gender === "NONE" ? "border-[#FFB130] bg-white" : "border-gray-300"}`}>
-                    {gender === "NONE" && <div className="w-3 h-3 rounded-full bg-[#FFB130]"></div>}
+                  <div className={`w-5 h-5 rounded-full border flex items-center justify-center mr-3 ${gender === "BLIND" ? "border-[#FFB130] bg-white" : "border-gray-300"}`}>
+                    {gender === "BLIND" && <div className="w-3 h-3 rounded-full bg-[#FFB130]"></div>}
                   </div>
                   <input
                     type="radio"
                     name="gender"
-                    value="NONE"
-                    checked={gender === "NONE"}
-                    onChange={() => setGender("NONE")}
+                    value="BLIND"
+                    checked={gender === "BLIND"}
+                    onChange={() => setGender("BLIND")}
                     className="hidden"
                   />
-                  <span className={`group-hover:text-[#FFB130] transition-colors ${gender === "NONE" ? "text-[#FFB130] font-medium" : "text-gray-700"}`}>공개안함</span>
+                  <span className={`group-hover:text-[#FFB130] transition-colors ${gender === "BLIND" ? "text-[#FFB130] font-medium" : "text-gray-700"}`}>공개안함</span>
                 </label>
               </div>
             </div>

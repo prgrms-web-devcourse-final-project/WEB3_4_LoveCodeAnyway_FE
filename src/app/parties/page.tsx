@@ -1,14 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useInView } from "react-intersection-observer";
 import { Navigation } from "@/components/Navigation";
 import { PartyCard } from "@/components/PartyCard";
 import { ThemeSearch } from "@/components/ThemeSearch";
-import { EscapeRoom } from "@/types/EscapeRoom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import axios from "axios";
+import { getParties } from "@/lib/api/party";
 import { PageLoading } from "@/components/PageLoading";
 
 // API에서 받는 모임 데이터 타입
@@ -19,263 +17,106 @@ interface PartyMainResponse {
   storeId?: number;
   storeName?: string;
   id?: number;
+  partyId?: number;
   title?: string;
   scheduledAt?: string;
   acceptedParticipantCount?: number;
   totalParticipants?: number;
 }
 
-// 페이지 응답 구조
-interface PageResponse<T> {
-  content: T[];
-  pageable?: any;
-  totalPages?: number;
-  totalElements?: number;
-  last?: boolean;
-  size?: number;
-  number?: number;
-  sort?: any;
-  numberOfElements?: number;
-  first?: boolean;
-  empty?: boolean;
-}
-
 // API에서 받는 응답 형태
-interface SuccessResponseListPartyMainResponse {
+interface SuccessResponseSliceDtoPartySummaryResponse {
   message?: string;
-  data?: PartyMainResponse[] | PageResponse<PartyMainResponse>;
+  data?: {
+    content?: PartyMainResponse[];
+    hasNext?: boolean;
+  };
 }
 
 export default function PartiesPage() {
   const router = useRouter();
-  const [parties, setParties] = useState<EscapeRoom[]>([]);
-  const [page, setPage] = useState(0);
+  const [parties, setParties] = useState<PartyMainResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
-  const [hasMore, setHasMore] = useState(true);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [filterRegion, setFilterRegion] = useState("");
-  const { ref, inView } = useInView();
-
-  // 기본 베이스 URL 설정
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL
-    ? process.env.NEXT_PUBLIC_API_URL
-    : process.env.NODE_ENV === "development"
-    ? "http://localhost:8080"
-    : "https://api.ddobang.site";
-
-  // API에서 받은 데이터를 EscapeRoom 형식으로 변환하는 함수
-  const convertToEscapeRoom = (partyData: PartyMainResponse): EscapeRoom => {
-    // scheduledAt이 있으면 날짜 포맷 변환
-    const formattedDate = partyData.scheduledAt
-      ? new Date(partyData.scheduledAt)
-          .toLocaleString("ko-KR", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false,
-          })
-          .replace(/\. /g, ".")
-          .replace(",", " ")
-      : "";
-
-    return {
-      id: partyData.id?.toString(),
-      title: partyData.title || "제목 없음",
-      category: partyData.themeName || "",
-      date: formattedDate,
-      location: partyData.storeName || "",
-      participants: `${partyData.acceptedParticipantCount || 0}/${
-        partyData.totalParticipants || 0
-      }명`,
-      image: partyData.themeThumbnailUrl || "/images/theme-1.jpg",
-      host: {
-        name: "모임장",
-        image: "/profile_man.jpg",
-      },
-    };
-  };
+  const ITEMS_PER_PAGE = 100; // 한 번에 많은 데이터 로드
 
   // 초기 데이터 로드
   useEffect(() => {
-    // 실제 API 호출로 변경
     loadParties();
   }, []);
 
-  useEffect(() => {
-      loadMoreParties();
-  }, []);
-
-  // API에서 모임 데이터 로드
-  const loadParties = async () => {
+  // 모임 데이터 로드 (무한 스크롤 대신 한 번에 데이터 로드)
+  const loadParties = async (reset = false) => {
     if (loading) return;
 
     setLoading(true);
     try {
-      // API 요청 (page=0&size=12 파라미터 추가)
-      const response = await axios.post<SuccessResponseListPartyMainResponse>(
-        `${baseUrl}/api/v1/parties/search?page=0&size=12`,
+      if (reset) {
+        setParties([]);
+      }
+
+      // API 요청 (regionIds 배열로 수정)
+      const response = await getParties(
         {
           keyword: searchKeyword,
-          region: filterRegion,
+          regionIds: filterRegion ? [parseInt(filterRegion)] : undefined,
         },
-        {
-          withCredentials: true,
-        }
+        undefined,
+        ITEMS_PER_PAGE
       );
 
-      // 응답 데이터 구조 확인
-      console.log("API 응답:", response.data);
-
-      // 데이터가 있는지 확인하고 형식에 맞게 처리
-      if (response.data.data) {
+      if (response) {
         let partyData: PartyMainResponse[] = [];
 
         // 데이터 타입에 따라 처리
-        if (Array.isArray(response.data.data)) {
-          // 배열 형태
-          partyData = response.data.data;
-        } else if (
-          "content" in response.data.data &&
-          Array.isArray(response.data.data.content)
-        ) {
-          // 페이지 형태
-          partyData = response.data.data.content;
-
-          // 페이지네이션 정보가 있으면 hasMore 설정
-          if ("last" in response.data.data) {
-            setHasMore(!response.data.data.last);
-          }
-        } else {
-          console.error("예상치 못한 응답 구조:", response.data.data);
-          setParties([]);
-          setHasMore(false);
-          return;
+        if (Array.isArray(response)) {
+          partyData = response;
+        } else if (response.data?.content && Array.isArray(response.data.content)) {
+          partyData = response.data.content;
         }
 
-        // 빈 데이터 처리
-        if (partyData.length === 0) {
-          setParties([]);
-          setHasMore(false);
-          return;
-        }
-
-        // API 응답 데이터를 EscapeRoom 형식으로 변환
-        const convertedData = partyData.map(convertToEscapeRoom);
-
-        // 중복 ID 제거 (무한 스크롤에서 중요)
-        const uniqueParties = Array.from(
-          new Map(convertedData.map((item) => [item.id, item])).values()
-        );
-
-        setParties(uniqueParties);
-      } else {
-        setParties([]);
-        setHasMore(false);
+        setParties(partyData);
+        console.log("파티 데이터 로드 완료:", partyData);
       }
     } catch (error) {
-      console.error("모임 데이터 로드 중 오류:", error);
-      setParties([]);
-      setHasMore(false);
+      console.error("모임 데이터 로드 중 오류 발생:", error);
     } finally {
       setLoading(false);
       setInitialLoading(false);
     }
   };
 
-  // 무한 스크롤을 위한 더 많은 모임 로드
-  const loadMoreParties = async () => {
-    if (loading) return;
-
-    setLoading(true);
-    try {
-      const nextPage = page + 1;
-      // API 요청 (페이지네이션 파라미터 추가)
-      const response = await axios.post<SuccessResponseListPartyMainResponse>(
-        `${baseUrl}/api/v1/parties/search?page=${nextPage}&size=12`,
-        {
-          keyword: searchKeyword,
-          region: filterRegion,
-        },
-        {
-          withCredentials: true,
-        }
-      );
-
-      if (response.data.data) {
-        let partyData: PartyMainResponse[] = [];
-
-        // 데이터 타입에 따라 처리
-        if (Array.isArray(response.data.data)) {
-          partyData = response.data.data;
-        } else if (
-          "content" in response.data.data &&
-          Array.isArray(response.data.data.content)
-        ) {
-          partyData = response.data.data.content;
-
-          // 페이지네이션 정보가 있으면 hasMore 설정
-          if ("last" in response.data.data) {
-            setHasMore(!response.data.data.last);
-          }
-        }
-
-        // 데이터가 비어있으면 더 이상 불러올 데이터가 없음
-        if (partyData.length === 0) {
-          setHasMore(false);
-          return;
-        }
-
-        // API 응답 데이터를 EscapeRoom 형식으로 변환
-        const convertedData = partyData.map(convertToEscapeRoom);
-
-        // 기존 데이터와 새 데이터 병합 (중복 제거)
-        const newParties = [...parties, ...convertedData];
-        const uniqueParties = Array.from(
-          new Map(newParties.map((item) => [item.id, item])).values()
-        );
-
-        setParties(uniqueParties);
-        setPage(nextPage);
-      } else {
-        setHasMore(false);
-      }
-    } catch (error) {
-      console.error("추가 모임 데이터 로드 중 오류:", error);
-      setHasMore(false);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // 검색 처리
   const handleSearch = (keyword: string) => {
     setSearchKeyword(keyword);
-    setParties([]);
-    setPage(0);
-    loadParties(); // 검색어가 API 요청에 포함되므로 바로 API 호출
+    loadParties(true); // 검색어가 변경되면 데이터 리셋 후 다시 로드
   };
 
   // 필터 처리
   const handleFilterChange = (filterType: string, value: string) => {
     if (filterType === "region") {
       setFilterRegion(value);
-      setParties([]);
-      setPage(0);
-      loadParties(); // 필터가 API 요청에 포함되므로 바로 API 호출
+      loadParties(true); // 필터가 변경되면 데이터 리셋 후 다시 로드
     }
   };
 
   // 카드 클릭 처리
-  const handleCardClick = (room: EscapeRoom) => {
-    router.push(`/parties/${room.id}`);
+  const handleCardClick = (party: PartyMainResponse) => {
+    console.log("이동할 모임:", party);
+    if (party && (party.id || party.partyId)) {
+      // id 또는 partyId 중 존재하는 값 사용
+      const partyId = party.id || party.partyId;
+      router.push(`/parties/${partyId}`);
+    } else {
+      console.error("모임의 ID가 없습니다", party);
+    }
   };
 
   // 스켈레톤 카드 렌더링 함수
   const renderSkeletonCards = () => {
-    return Array(6)
+    return Array(8)
       .fill(0)
       .map((_, index) => (
         <div
@@ -294,72 +135,84 @@ export default function PartiesPage() {
               <div className="h-4 w-2/3 bg-gray-200 rounded animate-pulse"></div>
             </div>
             <div className="mt-auto">
-              <div className="h-8 bg-gray-200 rounded animate-pulse mt-4"></div>
+              <div className="h-5 w-1/2 bg-gray-200 rounded animate-pulse"></div>
             </div>
           </div>
         </div>
       ));
   };
 
+  const renderPartyCard = (party: PartyMainResponse) => {
+    // PartyCard 컴포넌트에 필요한 데이터 구조로 변환
+    const cardData = {
+      id: (party.id || party.partyId)?.toString() || "",
+      image: party.themeThumbnailUrl || "/room_sample.jpg",
+      title: party.title || "제목 없음",
+      category: "모임",
+      date: party.scheduledAt
+        ? new Date(party.scheduledAt).toLocaleDateString()
+        : "날짜 정보 없음",
+      location: party.storeName || "위치 정보 없음",
+      participants: `${party.acceptedParticipantCount || 0}/${party.totalParticipants || 0}`,
+      tags: party.themeName ? [party.themeName] : ["테마 정보 없음"],
+      host: {
+        name: "모임장",
+        image: "/profile_man.jpg",
+      },
+    };
+
+    return (
+      <div 
+        key={`party-${party.id || party.partyId}`} 
+        onClick={() => handleCardClick(party)}
+        className="cursor-pointer"
+      >
+        <PartyCard room={cardData} />
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation />
-
-      {/* 검색 및 필터 섹션 */}
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 pt-8 pb-4">
-        <div className="flex items-center gap-4">
-          <div className="flex-1 h-[40px]">
-            <ThemeSearch
-              onSearch={handleSearch}
-              onFilterChange={handleFilterChange}
-            />
-          </div>
-          <div className="w-[90px] h-[40px]">
-            <Link
-              href="/parties/create"
-              className="w-full h-full flex items-center justify-center px-3 bg-[#FFB130] text-white text-sm rounded-lg hover:bg-[#F0A420]"
-            >
-              모임 등록
-            </Link>
-          </div>
+      <main className="container mx-auto px-4 py-10">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">모임 목록</h1>
+          <Link
+            href="/parties/create"
+            className="bg-black text-white px-5 py-2 rounded-full font-medium hover:bg-gray-800 transition"
+          >
+            모임 만들기
+          </Link>
         </div>
-      </div>
 
-      {/* 전체 화면 로딩 인디케이터 */}
-      <PageLoading isLoading={initialLoading} />
+        {/* 검색 및 필터 섹션 */}
+        <ThemeSearch
+          onSearch={handleSearch}
+          onFilterChange={handleFilterChange}
+        />
 
-      {/* 모임 목록 섹션 */}
-      {!initialLoading && (
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 pb-16">
-          {/* 모임 카드 그리드 */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {parties.map((room) => (
-              <PartyCard key={room.id} room={room} onClick={handleCardClick} />
-            ))}
-          </div>
-
-          {/* 로딩 인디케이터 */}
-          {loading && !initialLoading && (
-            <div className="flex justify-center mt-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+        {initialLoading ? (
+          <PageLoading />
+        ) : (
+          <div className="mt-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {parties.map((party) => renderPartyCard(party))}
+              {loading && renderSkeletonCards()}
             </div>
-          )}
-
-          {/* 무한 스크롤 감지용 div */}
-          {hasMore && <div ref={ref} className="h-10" />}
-
-          {/* 데이터 없음 메시지 */}
-          {parties.length === 0 && !loading && !initialLoading && (
-            <div className="w-full my-12">
-              <div className="bg-gray-50 border border-gray-300 rounded-xl py-24 px-8 text-center">
-                <p className="text-lg font-medium text-gray-400">
-                  등록된 모임이 없습니다
+            {parties.length === 0 && !loading && (
+              <div className="text-center my-20">
+                <p className="text-xl text-gray-500 mb-4">
+                  표시할 모임이 없습니다.
+                </p>
+                <p className="text-gray-400">
+                  다른 검색어나 필터로 시도해보세요.
                 </p>
               </div>
-            </div>
-          )}
-        </div>
-      )}
+            )}
+          </div>
+        )}
+      </main>
     </div>
   );
 }
