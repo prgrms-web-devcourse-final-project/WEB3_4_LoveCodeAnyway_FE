@@ -49,7 +49,7 @@ export default function SignupPage() {
     "/default-profile.svg"
   );
   const [nickname, setNickname] = useState<string>("");
-  const [gender, setGender] = useState<"MALE" | "FEMALE" | "NONE" | "">("");
+  const [gender, setGender] = useState<"MALE" | "FEMALE" | "BLIND" | "">("");
   const [introduction, setIntroduction] = useState<string>("");
   const [selectedTags, setSelectedTags] = useState<number[]>([]);
 

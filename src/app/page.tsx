@@ -193,9 +193,9 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-white">
       {/* Section 1: 메인 배너 */}
-      <section className="w-full h-[400px] relative bg-gray-800">
+      <section className="w-full h-[450px] relative bg-gray-800">
         <Navigation activePage="home" />
-        <div className="max-w-7xl mx-auto h-full relative flex flex-col items-center justify-start text-center pt-8">
+        <div className="max-w-7xl mx-auto h-full relative flex flex-col items-center justify-start text-center pt-20">
           <Image
             src="/logo.svg"
             alt="또방 로고"
@@ -207,7 +207,7 @@ export default function HomePage() {
           <h1 className="text-white text-3xl font-bold">
             방탈출 메이트 찾기, 또방
           </h1>
-          <p className="text-gray-300 mt-4 max-w-2xl">
+          <p className="text-gray-300 text-lg font-bold mt-4 max-w-2xl">
             함께 방탈출할 메이트를 찾고 계신가요?
             <br />
             또방과 함께 방탈출 크루를 만들어보세요
