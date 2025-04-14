@@ -28,7 +28,8 @@ export function Navigation({ activePage }: { activePage?: string }) {
     setMounted(true);
     if (isLogin) {
       fetchNotifications();
-      subscribeToNotifications();
+      // SSE 연동 코드 임시 주석 처리
+      // subscribeToNotifications();
     }
     return () => {
       if (eventSource) {
@@ -84,6 +85,8 @@ export function Navigation({ activePage }: { activePage?: string }) {
   };
 
   const subscribeToNotifications = () => {
+    // SSE 관련 코드 임시 주석 처리
+    /*
     const sse = new EventSource(
       `${process.env.NEXT_PUBLIC_API_URL}/alarms/subscribe`,
       {
@@ -101,6 +104,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
     };
 
     setEventSource(sse);
+    */
   };
 
   const markAsRead = async (id: number) => {

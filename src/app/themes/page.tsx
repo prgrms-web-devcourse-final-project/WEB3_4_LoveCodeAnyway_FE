@@ -6,6 +6,7 @@ import { Navigation } from "@/components/Navigation";
 import { ThemeCard } from "@/components/ThemeCard";
 import { ThemeSearch } from "@/components/ThemeSearch";
 import { EscapeRoom } from "@/types/EscapeRoom";
+import { PageLoading } from "@/components/PageLoading";
 
 export default function ThemesPage() {
   const [themes, setThemes] = useState<EscapeRoom[]>([]);
@@ -143,15 +144,21 @@ export default function ThemesPage() {
       .map((_, index) => (
         <div
           key={`skeleton-${index}`}
-          className="bg-white rounded-lg overflow-hidden shadow-sm"
+          className="bg-white rounded-xl shadow-sm overflow-hidden cursor-pointer h-[450px] flex flex-col"
         >
-          <div className="aspect-[3/4] bg-gray-200 animate-pulse"></div>
-          <div className="p-4">
-            <div className="h-5 bg-gray-200 rounded animate-pulse mb-2"></div>
-            <div className="h-4 w-3/4 bg-gray-200 rounded animate-pulse mb-2"></div>
-            <div className="flex gap-2 mt-4">
-              <div className="h-6 w-16 bg-gray-200 rounded-full animate-pulse"></div>
-              <div className="h-6 w-16 bg-gray-200 rounded-full animate-pulse"></div>
+          {/* 이미지 섹션 */}
+          <div className="relative h-[220px] bg-gray-200 animate-pulse"></div>
+
+          {/* 내용 섹션 */}
+          <div className="p-5 flex flex-col h-full">
+            <div className="h-6 bg-gray-200 rounded animate-pulse mb-3"></div>
+            <div className="h-5 w-3/4 bg-gray-200 rounded animate-pulse mb-3"></div>
+            <div className="mt-2">
+              <div className="h-4 w-full bg-gray-200 rounded animate-pulse mb-2"></div>
+              <div className="h-4 w-2/3 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+            <div className="mt-auto">
+              <div className="h-5 w-1/2 bg-gray-200 rounded animate-pulse"></div>
             </div>
           </div>
         </div>
@@ -159,42 +166,44 @@ export default function ThemesPage() {
   };
 
   return (
-    <main className="bg-gray-50 min-h-screen">
+    <div className="min-h-screen bg-gray-50">
       <Navigation activePage="themes" />
+      <main className="container mx-auto px-4 py-10">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">방탈출 테마</h1>
+        </div>
 
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-8">
         <ThemeSearch
           onSearch={handleSearch}
           onFilterApply={handleFilterApply}
         />
 
         {initialLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {renderSkeletonCards()}
-          </div>
-        ) : themes.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {themes.map((theme) => (
-              <ThemeCard key={theme.id} room={theme} />
-            ))}
-          </div>
+          <PageLoading />
         ) : (
-          <div className="w-full my-12">
-            <div className="bg-gray-50 border border-gray-300 rounded-xl py-24 px-8 text-center">
-              <p className="text-lg font-medium text-gray-400">
-                등록된 테마가 없습니다
-              </p>
+          <div className="mt-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {themes.map((theme) => (
+                <ThemeCard key={theme.id} room={theme} />
+              ))}
+              {loading && !initialLoading && renderSkeletonCards()}
             </div>
+            {themes.length === 0 && !loading && (
+              <div className="text-center my-20">
+                <p className="text-xl text-gray-500 mb-4">
+                  표시할 테마가 없습니다.
+                </p>
+                <p className="text-gray-400">
+                  다른 검색어나 필터로 시도해보세요.
+                </p>
+              </div>
+            )}
           </div>
         )}
 
-        {/* 로딩 인디케이터 */}
-        <div ref={ref} className="flex justify-center py-8">
-          {loading && !initialLoading && (
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
-          )}
-        </div>
-      </div>
-    </main>
+        {/* 무한 스크롤 감지용 요소 */}
+        <div ref={ref} className="h-10 w-full" />
+      </main>
+    </div>
   );
 }

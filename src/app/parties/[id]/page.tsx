@@ -99,17 +99,21 @@ export default function PartyDetailPage() {
           setUserRole("none");
         } else {
           setError("모임 정보를 찾을 수 없습니다.");
+          alert("모임 정보를 찾을 수 없습니다.");
+          router.push("/parties");
         }
       } catch (err) {
         console.error("모임 상세 정보 로드 중 오류:", err);
         setError("모임 정보를 가져오는 중 오류가 발생했습니다.");
+        alert("모임 정보를 가져오는 중 오류가 발생했습니다.");
+        router.push("/parties");
       } finally {
         setLoading(false);
       }
     };
 
     fetchPartyDetail();
-  }, [partyId, baseUrl, isLogin]);
+  }, [partyId, baseUrl, isLogin, router]);
 
   // 로딩 중 표시
   if (loading) {
@@ -123,23 +127,15 @@ export default function PartyDetailPage() {
     );
   }
 
-  // 오류 표시
+  // 오류 발생 시 모임 목록으로 자동 리다이렉트하므로 오류 표시 UI 제거
   if (error || !partyData) {
+    // 렌더링 전에 이미 리다이렉트 처리되었지만, 
+    // 혹시 렌더링되는 경우를 대비해 최소한의 로딩 화면 표시
     return (
       <main className="bg-gray-50 min-h-screen">
         <Navigation activePage="parties" />
-        <div className="max-w-7xl mx-auto px-6 py-12">
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8">
-            <h1 className="text-xl font-bold text-red-500 mb-4">
-              {error || "모임 정보를 찾을 수 없습니다."}
-            </h1>
-            <button
-              onClick={() => router.push("/parties")}
-              className="px-4 py-2 bg-black text-white rounded-lg"
-            >
-              모임 목록으로 돌아가기
-            </button>
-          </div>
+        <div className="max-w-7xl mx-auto px-6 py-12 flex justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
         </div>
       </main>
     );

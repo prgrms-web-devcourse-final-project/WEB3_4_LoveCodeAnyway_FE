@@ -40,7 +40,7 @@ export default function PartiesPage() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [filterRegion, setFilterRegion] = useState("");
-  const ITEMS_PER_PAGE = 100; // 한 번에 많은 데이터 로드
+  const ITEMS_PER_PAGE = 30; // 한 번에 많은 데이터 로드
 
   // 초기 데이터 로드
   useEffect(() => {
