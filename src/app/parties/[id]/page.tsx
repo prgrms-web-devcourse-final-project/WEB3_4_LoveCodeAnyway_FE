@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import Image from "next/image";
 import { Navigation } from "@/components/Navigation";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
+import { LoginMemberContext } from "@/stores/auth/loginMember";
 
 // API 응답 데이터 타입 정의
 interface PartyMemberSummaries {
@@ -51,11 +52,20 @@ interface SuccessResponsePartyDetailResponse {
 export default function PartyDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { isLogin } = useContext(LoginMemberContext);
   const [partyData, setPartyData] = useState<PartyDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isRequestsOpen, setIsRequestsOpen] = useState(false);
   const [userRole, setUserRole] = useState<"none" | "member" | "host">("none");
+
+  // 로그인 확인 및 리다이렉트
+  useEffect(() => {
+    if (!isLogin) {
+      console.log("로그인이 필요합니다. 로그인 페이지로 이동합니다.");
+      router.push("/login");
+    }
+  }, [isLogin, router]);
 
   // 기본 베이스 URL 설정
   const baseUrl = process.env.NEXT_PUBLIC_API_URL
@@ -69,6 +79,9 @@ export default function PartyDetailPage() {
 
   // 모임 상세 정보 가져오기
   useEffect(() => {
+    // 로그인되지 않은 경우 API 호출하지 않음
+    if (!isLogin) return;
+    
     const fetchPartyDetail = async () => {
       if (!partyId) return;
 
@@ -96,7 +109,7 @@ export default function PartyDetailPage() {
     };
 
     fetchPartyDetail();
-  }, [partyId, baseUrl]);
+  }, [partyId, baseUrl, isLogin]);
 
   // 로딩 중 표시
   if (loading) {
