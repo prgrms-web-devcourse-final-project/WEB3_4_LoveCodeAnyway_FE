@@ -284,201 +284,33 @@ export default function DiaryPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
       <Navigation activePage="my-diary" />
+      <main className="container mx-auto px-4 py-10">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">나의 탈출일지</h1>
+          <Link
+            href="/diary/create"
+            className="bg-black text-white px-5 py-2 rounded-full font-medium hover:bg-gray-800 transition"
+          >
+            일지 작성하기
+          </Link>
+        </div>
 
-      {/* 전체 페이지 로딩 */}
-      <PageLoading isLoading={initialLoading} />
-
-      {!initialLoading && (
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-          {/* 상단 - 타이틀, 필터 및 액션 영역 */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-            <h1 className="text-2xl font-bold">나의 탈출일지</h1>
-
-            <div className="flex w-full md:w-auto gap-2 items-center">
-              {/* 검색 입력 필드 */}
-              <div className="relative flex-grow">
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  value={searchKeyword}
-                  onChange={(e) => setSearchKeyword(e.target.value)}
-                  placeholder="테마명 또는 매장명 검색"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FFB130]"
-                />
-                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
-                </span>
-              </div>
-
-              {/* 필터 버튼 */}
-              <div className="relative">
-                <button
-                  onClick={() => setIsFilterModalOpen(!isFilterModalOpen)}
-                  className={`px-4 py-2 border ${
-                    appliedFiltersCount > 0
-                      ? "border-[#FFB130] text-[#FFB130]"
-                      : "border-gray-300 text-gray-700"
-                  } rounded-lg hover:bg-gray-50 flex items-center gap-1`}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-                    />
-                  </svg>
-                  필터
-                  {appliedFiltersCount > 0 && (
-                    <span className="ml-1">({appliedFiltersCount})</span>
-                  )}
-                </button>
-
-                {/* 필터 모달 */}
-                {isFilterModalOpen && (
-                  <div
-                    ref={filterModalRef}
-                    className="absolute right-0 mt-2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-10"
-                  >
-                    <div className="p-4">
-                      <h3 className="font-medium text-lg mb-4">상세 필터</h3>
-
-                      {/* 필터 옵션들 */}
-                      <div className="space-y-4">
-                        {/* 지역 필터 (예시) */}
-                        <div>
-                          <label className="block text-sm font-medium mb-1">
-                            지역
-                          </label>
-                          <div className="flex flex-wrap gap-1">
-                            {["서울", "경기", "인천", "부산", "대구"].map(
-                              (region) => (
-                                <button
-                                  key={region}
-                                  onClick={() => {
-                                    const regions = filter.region || [];
-                                    const newRegions = regions.includes(region)
-                                      ? regions.filter((r) => r !== region)
-                                      : [...regions, region];
-                                    handleApplyFilter({ region: newRegions });
-                                  }}
-                                  className={`px-2 py-1 text-xs rounded-full ${
-                                    filter.region?.includes(region)
-                                      ? "bg-[#FFB130] text-white"
-                                      : "bg-gray-100 text-gray-700"
-                                  }`}
-                                >
-                                  {region}
-                                </button>
-                              )
-                            )}
-                          </div>
-                        </div>
-
-                        {/* 성공 여부 필터 */}
-                        <div>
-                          <label className="block text-sm font-medium mb-1">
-                            성공 여부
-                          </label>
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() =>
-                                handleApplyFilter({ escapeResult: null })
-                              }
-                              className={`px-3 py-1 text-sm rounded-lg ${
-                                filter.escapeResult === null
-                                  ? "bg-[#FFB130] text-white"
-                                  : "bg-gray-100 text-gray-700"
-                              }`}
-                            >
-                              전체
-                            </button>
-                            <button
-                              onClick={() =>
-                                handleApplyFilter({ escapeResult: true })
-                              }
-                              className={`px-3 py-1 text-sm rounded-lg ${
-                                filter.escapeResult === true
-                                  ? "bg-[#FFB130] text-white"
-                                  : "bg-gray-100 text-gray-700"
-                              }`}
-                            >
-                              성공
-                            </button>
-                            <button
-                              onClick={() =>
-                                handleApplyFilter({ escapeResult: false })
-                              }
-                              className={`px-3 py-1 text-sm rounded-lg ${
-                                filter.escapeResult === false
-                                  ? "bg-[#FFB130] text-white"
-                                  : "bg-gray-100 text-gray-700"
-                              }`}
-                            >
-                              실패
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* 추가 필터 옵션들 */}
-                      </div>
-
-                      {/* 필터 적용 버튼 */}
-                      <div className="mt-4 pt-4 border-t border-gray-100 flex justify-end">
-                        <button
-                          onClick={() =>
-                            handleApplyFilter({
-                              keyword: "",
-                              region: [],
-                              genre: [],
-                              dateFrom: undefined,
-                              dateTo: undefined,
-                              escapeResult: null,
-                              noHint: null,
-                            })
-                          }
-                          className="px-3 py-1 text-sm text-gray-500 hover:text-gray-700 mr-2"
-                        >
-                          초기화
-                        </button>
-                        <button
-                          onClick={() => setIsFilterModalOpen(false)}
-                          className="px-4 py-2 bg-[#FFB130] text-white rounded-lg hover:bg-[#F0A420]"
-                        >
-                          닫기
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* 일지 작성 버튼 */}
-              <Link
-                href="/my/diary/new"
-                className="px-4 py-2 bg-[#FFB130] text-white rounded-lg hover:bg-[#F0A420] flex items-center gap-1 whitespace-nowrap"
-              >
+        {/* 검색 및 필터 섹션 */}
+        <div className="bg-white rounded-xl p-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            {/* 검색창 */}
+            <div className="relative flex-1">
+              <input
+                type="text"
+                placeholder="테마명, 매장명으로 검색"
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                ref={searchInputRef}
+                className="w-full py-2 pl-10 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FFB130] focus:border-[#FFB130]"
+              />
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5"
@@ -490,170 +322,209 @@ export default function DiaryPage() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M12 4v16m8-8H4"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                   />
                 </svg>
-                일지 작성
-              </Link>
+              </span>
             </div>
+
+            {/* 필터 버튼 */}
+            <button
+              onClick={() => setIsFilterModalOpen(true)}
+              className="flex items-center gap-1.5 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                />
+              </svg>
+              필터
+              {appliedFiltersCount > 0 && (
+                <span className="bg-[#FFB130] text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                  {appliedFiltersCount}
+                </span>
+              )}
+            </button>
           </div>
-
-          {/* 중단 - 카드 리스트 영역 */}
-          {loading && !initialLoading ? (
-            <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#FFB130]"></div>
-            </div>
-          ) : diaries.length === 0 ? (
-            <div className="w-full my-12">
-              <div className="bg-gray-50 border border-gray-300 rounded-xl py-24 px-8 text-center">
-                <p className="text-lg font-medium text-gray-400">
-                  등록된 탈출일지가 없습니다
-                </p>
-                <Link
-                  href="/my/diary/new"
-                  className="mt-4 inline-block px-6 py-2 bg-[#FFB130] text-white rounded-lg hover:bg-[#F0A420]"
-                >
-                  첫 탈출일지 작성하기
-                </Link>
-              </div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {diaries.map((diary) => (
-                <div
-                  key={diary.id}
-                  onClick={() => router.push(`/my/diary/${diary.id}`)}
-                  className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer"
-                >
-                  {/* 썸네일 영역 */}
-                  <div className="relative h-40 bg-gray-200">
-                    {diary.thumbnailUrl ? (
-                      <Image
-                        src={diary.thumbnailUrl}
-                        alt={diary.themeName}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-12 w-12"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14"
-                          />
-                        </svg>
-                      </div>
-                    )}
-                    {/* 성공/실패 배지 */}
-                    <div className="absolute top-3 right-3">
-                      <span
-                        className={`px-2 py-1 text-xs rounded-full ${
-                          diary.escapeResult
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {diary.escapeResult ? "성공" : "실패"}
-                      </span>
-                    </div>
-                    {/* 모임/개인 구분 배지 */}
-                    {diary.isPartyDiary !== undefined && (
-                      <div className="absolute top-3 left-3">
-                        <span
-                          className={`px-2 py-1 text-xs rounded-full ${
-                            diary.isPartyDiary
-                              ? "bg-blue-100 text-blue-800"
-                              : "bg-purple-100 text-purple-800"
-                          }`}
-                        >
-                          {diary.isPartyDiary ? "모임" : "개인"}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* 컨텐츠 영역 */}
-                  <div className="p-4">
-                    <h3 className="font-medium text-lg mb-1 line-clamp-1">
-                      {diary.themeName}
-                    </h3>
-                    <p className="text-gray-500 text-sm mb-3">
-                      {diary.storeName}
-                    </p>
-
-                    <div className="flex justify-between items-center">
-                      <div className="text-sm text-gray-500">
-                        {formatDate(diary.escapeDate)}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {/* 탈출 시간 */}
-                        {diary.escapeTime !== undefined && (
-                          <div className="flex items-center text-xs text-gray-500">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-3 w-3 mr-1"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                              />
-                            </svg>
-                            {formatTime(diary.escapeTime)}
-                          </div>
-                        )}
-
-                        {/* 힌트 수 */}
-                        {diary.hintCount !== undefined && (
-                          <div className="flex items-center text-xs text-gray-500">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-3 w-3 mr-1"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                              />
-                            </svg>
-                            힌트 {diary.hintCount}개
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* 하단 - 페이지네이션 영역 */}
-          {renderPagination()}
-
-          {/* 페이지 정보 */}
-          {diaries.length > 0 && (
-            <div className="text-sm text-gray-500 mt-4 text-center">
-              총 {pagination.totalElements}개의 일지
-            </div>
-          )}
         </div>
-      )}
-    </main>
+
+        {/* 전체 페이지 로딩 */}
+        <PageLoading isLoading={initialLoading} />
+
+        {!initialLoading && (
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+            {/* 중단 - 카드 리스트 영역 */}
+            {loading && !initialLoading ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#FFB130]"></div>
+              </div>
+            ) : diaries.length === 0 ? (
+              <div className="w-full my-12">
+                <div className="bg-gray-50 border border-gray-300 rounded-xl py-24 px-8 text-center">
+                  <p className="text-lg font-medium text-gray-400">
+                    등록된 탈출일지가 없습니다
+                  </p>
+                  <Link
+                    href="/my/diary/new"
+                    className="mt-4 inline-block px-6 py-2 bg-[#FFB130] text-white rounded-lg hover:bg-[#F0A420]"
+                  >
+                    첫 탈출일지 작성하기
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {diaries.map((diary) => (
+                    <div
+                      key={diary.id}
+                      onClick={() => router.push(`/my/diary/${diary.id}`)}
+                      className="bg-white rounded-xl shadow-sm overflow-hidden cursor-pointer h-full flex flex-col hover:shadow-md transition"
+                    >
+                      {/* 썸네일 영역 */}
+                      <div className="relative h-[220px] bg-gray-200">
+                        {diary.thumbnailUrl ? (
+                          <Image
+                            src={diary.thumbnailUrl}
+                            alt={diary.themeName}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-400">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-12 w-12"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14"
+                              />
+                            </svg>
+                          </div>
+                        )}
+                        {/* 성공/실패 배지 */}
+                        <div className="absolute top-3 right-3">
+                          <div
+                            className={`${
+                              diary.escapeResult
+                                ? "bg-green-500"
+                                : "bg-red-500"
+                            } text-white text-xs font-bold px-2 py-1 rounded-full`}
+                          >
+                            {diary.escapeResult ? "성공" : "실패"}
+                          </div>
+                        </div>
+                        {/* 모임/개인 구분 배지 */}
+                        {diary.isPartyDiary && (
+                          <div className="absolute top-3 left-3">
+                            <div className="bg-[#FFB130] text-white text-xs font-bold px-2 py-1 rounded-full">
+                              모임
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* 컨텐츠 영역 */}
+                      <div className="p-5 flex flex-col h-full">
+                        <h3 className="text-lg font-bold text-gray-800 mb-1 line-clamp-1">
+                          {diary.themeName}
+                        </h3>
+                        <p className="text-sm text-gray-600 mb-2">
+                          {diary.storeName}
+                        </p>
+                        <div className="flex items-center gap-3 text-sm text-gray-500 mb-2">
+                          <div className="flex items-center gap-1">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-4 w-4"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                              />
+                            </svg>
+                            {formatDate(diary.escapeDate)}
+                          </div>
+                          {diary.escapeTime && (
+                            <div className="flex items-center gap-1">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-4 w-4"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                              </svg>
+                              {formatTime(diary.escapeTime)}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center justify-between mt-auto">
+                          <div className="flex items-center gap-1">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-4 w-4 text-yellow-500"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <span className="font-medium">
+                              {diary.ratingAvg.toFixed(1)}
+                            </span>
+                          </div>
+                          {diary.hintCount !== undefined && (
+                            <span className="text-sm text-gray-500">
+                              힌트 {diary.hintCount}개
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {loading && !initialLoading && renderSkeletonCards()}
+                </div>
+                {diaries.length === 0 && !loading && (
+                  <div className="w-full my-12">
+                    <div className="bg-gray-50 border border-gray-300 rounded-xl py-24 px-8 text-center">
+                      <p className="text-lg font-medium text-gray-400">
+                        등록된 일지가 없습니다
+                      </p>
+                    </div>
+                  </div>
+                )}
+                {renderPagination()}
+              </div>
+            )}
+          </div>
+        )}
+      </main>
+    </div>
   );
 }

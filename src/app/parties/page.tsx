@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Navigation } from "@/components/Navigation";
 import { PartyCard } from "@/components/PartyCard";
 import { ThemeSearch } from "@/components/ThemeSearch";
@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getParties } from "@/lib/api/party";
 import { PageLoading } from "@/components/PageLoading";
+import { LoginMemberContext } from "@/stores/auth/loginMember";
 
 // API에서 받는 모임 데이터 타입
 interface PartyMainResponse {
@@ -35,6 +36,7 @@ interface SuccessResponseSliceDtoPartySummaryResponse {
 
 export default function PartiesPage() {
   const router = useRouter();
+  const { isLogin } = useContext(LoginMemberContext);
   const [parties, setParties] = useState<PartyMainResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -178,12 +180,14 @@ export default function PartiesPage() {
       <main className="container mx-auto px-4 py-10">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800">모임 목록</h1>
-          <Link
-            href="/parties/create"
-            className="bg-black text-white px-5 py-2 rounded-full font-medium hover:bg-gray-800 transition"
-          >
-            모임 만들기
-          </Link>
+          {isLogin && (
+            <Link
+              href="/parties/create"
+              className="bg-black text-white px-5 py-2 rounded-full font-medium hover:bg-gray-800 transition"
+            >
+              모임 만들기
+            </Link>
+          )}
         </div>
 
         {/* 검색 및 필터 섹션 */}
@@ -201,13 +205,12 @@ export default function PartiesPage() {
               {loading && renderSkeletonCards()}
             </div>
             {parties.length === 0 && !loading && (
-              <div className="text-center my-20">
-                <p className="text-xl text-gray-500 mb-4">
-                  표시할 모임이 없습니다.
-                </p>
-                <p className="text-gray-400">
-                  다른 검색어나 필터로 시도해보세요.
-                </p>
+              <div className="w-full my-12">
+                <div className="bg-gray-50 border border-gray-300 rounded-xl py-24 px-8 text-center">
+                  <p className="text-lg font-medium text-gray-400">
+                    등록된 모임이 없습니다
+                  </p>
+                </div>
               </div>
             )}
           </div>
