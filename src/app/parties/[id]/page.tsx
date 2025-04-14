@@ -79,6 +79,12 @@ export default function PartyDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { isLogin, loginMember } = useContext(LoginMemberContext);
+  
+  // 디버깅: loginMember 객체 확인
+  useEffect(() => {
+    console.log("LoginMemberContext:", { isLogin, loginMember });
+  }, [isLogin, loginMember]);
+
   const [partyData, setPartyData] = useState<PartyDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -115,26 +121,32 @@ export default function PartyDetailPage() {
 
       setLoading(true);
       try {
+        console.log("로그인된 사용자 ID:", loginMember.id);
         const response = await axios.get<SuccessResponsePartyDetailResponse>(
           `${baseUrl}/api/v1/parties/${partyId}`,
           {
-            withCredentials: true, // 쿠키를 요청에 포함시킴 (accessToken 전송)
+            withCredentials: true,
           }
         );
 
         if (response.data.data) {
+          console.log("모임 데이터:", response.data.data);
+          console.log("모임장 ID:", response.data.data.hostId);
           setPartyData(response.data.data);
 
           // 사용자 역할 설정
           if (response.data.data.hostId === loginMember.id) {
+            console.log("사용자 역할: 모임장");
             setUserRole("host");
           } else if (
             response.data.data.acceptedPartyMembers?.some(
               member => member.id === loginMember.id
             )
           ) {
+            console.log("사용자 역할: 모임원");
             setUserRole("member");
           } else {
+            console.log("사용자 역할: 일반 사용자");
             setUserRole("none");
           }
         } else {
@@ -222,8 +234,11 @@ export default function PartyDetailPage() {
 
     try {
       await axios.post(
-        `${baseUrl}/api/v1/parties/${partyId}/join`,
-        {}
+        `${baseUrl}/api/v1/parties/${partyId}/apply`,
+        {},
+        {
+          withCredentials: true,
+        }
       );
       alert("참가 신청이 완료되었습니다.");
       // 페이지 새로고침
@@ -633,12 +648,12 @@ export default function PartyDetailPage() {
 
         {/* [5단] 버튼 섹션 */}
         <div className="flex flex-wrap justify-center gap-4 my-8">
-          {/* 모임장일 경우 */}
+          {/* 모임장(글쓴이)인 경우 */}
           {userRole === "host" && (
             <>
               <Link
                 href={`/parties/edit/${partyId}`}
-                className="px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition"
+                className="px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#F0A420] transition"
               >
                 모임 정보 수정
               </Link>
@@ -651,7 +666,7 @@ export default function PartyDetailPage() {
             </>
           )}
 
-          {/* 모임원일 경우 */}
+          {/* 모임원(글쓴이가 아닌 경우)인 경우 */}
           {userRole === "member" && (
             <button
               onClick={handleCancelJoin}
@@ -661,7 +676,7 @@ export default function PartyDetailPage() {
             </button>
           )}
 
-          {/* 일반 사용자일 경우 */}
+          {/* 일반 사용자(글쓴이가 아닌 경우)인 경우 */}
           {userRole === "none" && (
             <button
               onClick={handleJoinRequest}

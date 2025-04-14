@@ -290,7 +290,7 @@ export default function DiaryPage() {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800">나의 탈출일지</h1>
           <Link
-            href="/diary/create"
+            href="/my/diary/new"
             className="bg-black text-white px-5 py-2 rounded-full font-medium hover:bg-gray-800 transition"
           >
             일지 작성하기

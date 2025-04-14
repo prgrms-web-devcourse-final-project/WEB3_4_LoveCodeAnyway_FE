@@ -37,7 +37,7 @@ export default function InquiryPage() {
   const fetchInquiries = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get(`${API_BASE_URL}/api/v1/inquiries`, {
+      const response = await axios.get(`${API_BASE_URL}/api/v1/boards`, {
         params: {
           page: currentPage,
           type: inquiryType === "전체" ? undefined : inquiryType,
