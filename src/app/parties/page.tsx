@@ -49,6 +49,21 @@ export default function PartiesPage() {
     loadParties();
   }, []);
 
+  // 더미 데이터 생성 함수
+  const generateDummyParties = () => {
+    return Array(8).fill(0).map((_, index) => ({
+      id: index + 1,
+      partyId: index + 1,
+      title: `방탈출 모임 ${index + 1}`,
+      themeName: ["좀비 연구소", "비밀의 방", "사망 이스케이프", "유령의 저택"][index % 4],
+      themeThumbnailUrl: "https://i.postimg.cc/PJNVr12v/theme.jpg",
+      storeName: ["이스케이프 홍대점", "솔버 강남점", "마스터키 명동점", "키이스케이프 건대점"][index % 4],
+      scheduledAt: new Date(Date.now() + (index % 3) * 2 * 24 * 60 * 60 * 1000).toISOString(),
+      acceptedParticipantCount: Math.floor(Math.random() * 3) + 2,
+      totalParticipants: 6
+    }));
+  };
+
   // 모임 데이터 로드 (무한 스크롤 대신 한 번에 데이터 로드)
   const loadParties = async (reset = false) => {
     if (loading) return;
@@ -79,11 +94,25 @@ export default function PartiesPage() {
           partyData = response.data.content;
         }
 
+        // API에서 데이터가 없는 경우 더미 데이터 사용
+        if (partyData.length === 0) {
+          partyData = generateDummyParties();
+        }
+
         setParties(partyData);
         console.log("파티 데이터 로드 완료:", partyData);
+      } else {
+        // API 응답이 없는 경우 더미 데이터 사용
+        const dummyData = generateDummyParties();
+        setParties(dummyData);
+        console.log("더미 데이터 사용:", dummyData);
       }
     } catch (error) {
       console.error("모임 데이터 로드 중 오류 발생:", error);
+      // 오류 시 더미 데이터 사용
+      const dummyData = generateDummyParties();
+      setParties(dummyData);
+      console.log("오류 발생, 더미 데이터 사용:", dummyData);
     } finally {
       setLoading(false);
       setInitialLoading(false);
@@ -148,7 +177,9 @@ export default function PartiesPage() {
     // PartyCard 컴포넌트에 필요한 데이터 구조로 변환
     const cardData = {
       id: (party.id || party.partyId)?.toString() || "",
-      image: party.themeThumbnailUrl || "/room_sample.jpg",
+      image: party.themeThumbnailUrl 
+        ? party.themeThumbnailUrl 
+        : "https://i.postimg.cc/PJNVr12v/theme.jpg",
       title: party.title || "제목 없음",
       category: "모임",
       date: party.scheduledAt

@@ -30,6 +30,8 @@ export function PartyCard({ room, onClick }: PartyCardProps) {
             className="object-cover"
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            unoptimized
+            priority
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -98,6 +100,7 @@ export function PartyCard({ room, onClick }: PartyCardProps) {
                   fill
                   className="object-cover"
                   sizes="24px"
+                  unoptimized
                 />
               </div>
             ) : (
@@ -108,6 +111,7 @@ export function PartyCard({ room, onClick }: PartyCardProps) {
                   fill
                   className="object-cover"
                   sizes="24px"
+                  unoptimized
                 />
               </div>
             )}
