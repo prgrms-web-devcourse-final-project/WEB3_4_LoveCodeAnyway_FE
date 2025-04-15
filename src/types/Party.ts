@@ -1,4 +1,4 @@
-export interface Meeting {
+export interface Party {
   id: string;
   title: string;
   themeName: string;

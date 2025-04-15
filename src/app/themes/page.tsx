@@ -6,209 +6,125 @@ import { Navigation } from "@/components/Navigation";
 import { ThemeCard } from "@/components/ThemeCard";
 import { ThemeSearch } from "@/components/ThemeSearch";
 import { EscapeRoom } from "@/types/EscapeRoom";
-
-// 더미 데이터 생성 함수
-const generateThemes = (start: number, end: number): EscapeRoom[] => {
-  const baseThemes = [
-    {
-      id: "1",
-      title: "비밀의 방",
-      category: "미스터리 룸 강남점",
-      date: "오늘",
-      location: "강남",
-      participants: "2-4인",
-      subInfo: "60분",
-      tags: ["공포", "추리"],
-      image: "/images/mystery-room.jpg",
-      rating: "60",
-    },
-    {
-      id: "2",
-      title: "타임머신",
-      category: "이스케이프 홍대점",
-      date: "오늘",
-      location: "홍대",
-      participants: "3-6인",
-      subInfo: "75분",
-      tags: ["SF", "액션"],
-      image: "/images/sf-room.jpg",
-      rating: "75",
-    },
-    {
-      id: "3",
-      title: "탐정사무소",
-      category: "방탈출 신촌점",
-      date: "오늘",
-      location: "신촌",
-      participants: "2-5인",
-      subInfo: "90분",
-      tags: ["추리", "미스터리"],
-      image: "/images/detective-room.jpg",
-      rating: "90",
-    },
-    {
-      id: "4",
-      title: "저주받은 저택",
-      category: "호러룸 건대점",
-      date: "오늘",
-      location: "건대",
-      participants: "2-4인",
-      subInfo: "70분",
-      tags: ["공포", "어드벤처"],
-      image: "/images/horror-room.jpg",
-      rating: "70",
-    },
-    {
-      id: "5",
-      title: "이집트 피라미드",
-      category: "이스케이프 강남점",
-      date: "오늘",
-      location: "강남",
-      participants: "2-6인",
-      subInfo: "65분",
-      tags: ["어드벤처", "퍼즐"],
-      image: "/images/mystery-room.jpg",
-      rating: "85",
-    },
-    {
-      id: "6",
-      title: "외계인의 방문",
-      category: "SF룸 홍대점",
-      date: "오늘",
-      location: "홍대",
-      participants: "2-4인",
-      subInfo: "70분",
-      tags: ["SF", "미스터리"],
-      image: "/images/sf-room.jpg",
-      rating: "80",
-    },
-    {
-      id: "7",
-      title: "마법사의 성",
-      category: "판타지룸 신촌점",
-      date: "오늘",
-      location: "신촌",
-      participants: "3-5인",
-      subInfo: "80분",
-      tags: ["판타지", "퍼즐"],
-      image: "/images/detective-room.jpg",
-      rating: "95",
-    },
-    {
-      id: "8",
-      title: "잃어버린 보물",
-      category: "어드벤처룸 건대점",
-      date: "오늘",
-      location: "건대",
-      participants: "2-6인",
-      subInfo: "75분",
-      tags: ["어드벤처", "액션"],
-      image: "/images/horror-room.jpg",
-      rating: "88",
-    },
-    {
-      id: "9",
-      title: "연쇄 살인마의 집",
-      category: "호러룸 강남점",
-      date: "오늘",
-      location: "강남",
-      participants: "2-4인",
-      subInfo: "60분",
-      tags: ["공포", "추리"],
-      image: "/images/mystery-room.jpg",
-      rating: "92",
-    },
-    {
-      id: "10",
-      title: "시간의 문",
-      category: "SF룸 홍대점",
-      date: "오늘",
-      location: "홍대",
-      participants: "2-5인",
-      subInfo: "70분",
-      tags: ["SF", "퍼즐"],
-      image: "/images/sf-room.jpg",
-      rating: "87",
-    },
-    {
-      id: "11",
-      title: "비밀 연구소",
-      category: "미스터리룸 신촌점",
-      date: "오늘",
-      location: "신촌",
-      participants: "2-4인",
-      subInfo: "65분",
-      tags: ["미스터리", "SF"],
-      image: "/images/detective-room.jpg",
-      rating: "83",
-    },
-    {
-      id: "12",
-      title: "지하 감옥",
-      category: "호러룸 건대점",
-      date: "오늘",
-      location: "건대",
-      participants: "2-4인",
-      subInfo: "70분",
-      tags: ["공포", "미스터리"],
-      image: "/images/horror-room.jpg",
-      rating: "78",
-    },
-  ];
-
-  // 기존 테마를 기반으로 새로운 테마 생성
-  const extendedThemes = Array.from({ length: 100 }, (_, index) => {
-    const baseTheme = baseThemes[index % baseThemes.length];
-    const pageNumber = Math.floor(index / baseThemes.length) + 1;
-
-    return {
-      ...baseTheme,
-      id: `theme_${index + 1}`,
-      title: `${baseTheme.title} ${pageNumber > 1 ? pageNumber : ""}`,
-      category: `${baseTheme.category} ${pageNumber > 1 ? pageNumber : ""}호점`,
-      rating: `${Math.floor(Math.random() * 41 + 60)}`,
-    };
-  });
-
-  return extendedThemes.slice(start, end);
-};
+import { PageLoading } from "@/components/PageLoading";
 
 export default function ThemesPage() {
   const [themes, setThemes] = useState<EscapeRoom[]>([]);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [selectedFilters, setSelectedFilters] = useState({
+    regionId: [] as number[],
+    tagIds: [] as number[],
+    participants: "",
+  });
   const { ref, inView } = useInView({
     threshold: 0,
   });
 
   const ITEMS_PER_PAGE = 12;
 
-  const loadMoreThemes = async () => {
-    if (loading || !hasMore) return;
+  const loadMoreThemes = async (reset = false) => {
+    if (loading || (!hasMore && !reset)) return;
 
     setLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      if (reset) {
+        setPage(0);
+        setThemes([]);
+        setHasMore(true);
+      }
 
-    const start = (page - 1) * ITEMS_PER_PAGE;
-    const end = start + ITEMS_PER_PAGE;
-    const newThemes = generateThemes(start, end);
+      const currentPage = reset ? 0 : page;
 
-    if (newThemes.length === 0) {
+      const response = await fetch(
+        `${
+          process.env.NODE_ENV === "development"
+            ? "http://localhost:8080"
+            : "https://api.ddobang.site"
+        }/api/v1/themes?page=${currentPage}&size=${ITEMS_PER_PAGE}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            regionId: selectedFilters.regionId,
+            tagIds: selectedFilters.tagIds,
+            keyword: searchKeyword,
+            participants: selectedFilters.participants
+              ? parseInt(selectedFilters.participants.replace(/[^0-9]/g, ""))
+              : undefined,
+          }),
+          credentials: "include",
+        }
+      );
+
+      const data = await response.json();
+
+      if (data && data.data) {
+        const apiThemes = data.data.content || [];
+
+        if (apiThemes.length === 0) {
+          setHasMore(false);
+        } else {
+          // API 응답에서 받은 테마 데이터를 EscapeRoom 타입으로 변환
+          const newThemes = apiThemes.map((theme: any) => ({
+            id: theme.id?.toString(),
+            title: theme.name || "",
+            category: theme.storeName || "",
+            date: "오늘",
+            location: theme.storeName?.split(" ")[0] || "",
+            participants: theme.recommendedParticipants || "2-4인",
+            subInfo: theme.runtime ? `${theme.runtime}분` : "",
+            tags: theme.tags || [],
+            image: theme.thumbnailUrl || "/images/mystery-room.jpg",
+            rating: "80",
+          }));
+
+          setThemes((prev) => {
+            if (reset || currentPage === 0) return newThemes;
+
+            // 중복 제거
+            const uniqueThemes = [
+              ...new Set([...prev, ...newThemes].map((theme) => theme.id)),
+            ].map(
+              (id) => [...prev, ...newThemes].find((theme) => theme.id === id)!
+            );
+            return uniqueThemes;
+          });
+
+          setPage((prev) => (reset ? 1 : prev + 1));
+          setHasMore(data.data.hasNext || false);
+        }
+      } else {
+        setHasMore(false);
+      }
+    } catch (error) {
+      console.error("테마 목록을 불러오는 중 오류가 발생했습니다:", error);
       setHasMore(false);
-    } else {
-      setThemes((prev) => {
-        const uniqueThemes = [
-          ...new Set([...prev, ...newThemes].map((theme) => theme.id)),
-        ].map(
-          (id) => [...prev, ...newThemes].find((theme) => theme.id === id)!
-        );
-        return uniqueThemes;
-      });
-      setPage((prev) => prev + 1);
+    } finally {
+      setLoading(false);
+      setInitialLoading(false);
     }
+  };
 
-    setLoading(false);
+  const handleSearch = (keyword: string) => {
+    setSearchKeyword(keyword);
+    loadMoreThemes(true);
+  };
+
+  const handleFilterApply = (filters: any) => {
+    setSelectedFilters({
+      regionId: Array.isArray(filters.regions)
+        ? filters.regions.map((region: string) => parseInt(region))
+        : [],
+      tagIds: filters.tagIds || [],
+      participants: filters.participant || "",
+    });
+    loadMoreThemes(true);
   };
 
   useEffect(() => {
@@ -221,29 +137,73 @@ export default function ThemesPage() {
     }
   }, [inView]);
 
+  // 스켈레톤 카드 렌더링 함수
+  const renderSkeletonCards = () => {
+    return Array(8)
+      .fill(0)
+      .map((_, index) => (
+        <div
+          key={`skeleton-${index}`}
+          className="bg-white rounded-xl shadow-sm overflow-hidden cursor-pointer h-[450px] flex flex-col"
+        >
+          {/* 이미지 섹션 */}
+          <div className="relative h-[220px] bg-gray-200 animate-pulse"></div>
+
+          {/* 내용 섹션 */}
+          <div className="p-5 flex flex-col h-full">
+            <div className="h-6 bg-gray-200 rounded animate-pulse mb-3"></div>
+            <div className="h-5 w-3/4 bg-gray-200 rounded animate-pulse mb-3"></div>
+            <div className="mt-2">
+              <div className="h-4 w-full bg-gray-200 rounded animate-pulse mb-2"></div>
+              <div className="h-4 w-2/3 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+            <div className="mt-auto">
+              <div className="h-5 w-1/2 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+      ));
+  };
+
   return (
-    <main className="bg-gray-50 min-h-screen">
+    <div className="min-h-screen bg-gray-50">
       <Navigation activePage="themes" />
-
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-8">
-        <ThemeSearch />
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {themes.map((theme) => (
-            <ThemeCard key={theme.id} room={theme} />
-          ))}
+      <main className="container mx-auto px-4 py-10">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">방탈출 테마</h1>
         </div>
 
-        {/* 로딩 인디케이터 */}
-        <div ref={ref} className="flex justify-center py-8">
-          {loading && (
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
-          )}
-          {!hasMore && (
-            <p className="text-gray-500">더 이상 표시할 테마가 없습니다.</p>
-          )}
-        </div>
-      </div>
-    </main>
+        <ThemeSearch
+          onSearch={handleSearch}
+          onFilterApply={handleFilterApply}
+        />
+
+        {initialLoading ? (
+          <PageLoading />
+        ) : (
+          <div className="mt-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {themes.map((theme) => (
+                <ThemeCard key={theme.id} room={theme} />
+              ))}
+              {loading && !initialLoading && renderSkeletonCards()}
+            </div>
+            {themes.length === 0 && !loading && (
+              <div className="text-center my-20">
+                <p className="text-xl text-gray-500 mb-4">
+                  표시할 테마가 없습니다.
+                </p>
+                <p className="text-gray-400">
+                  다른 검색어나 필터로 시도해보세요.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 무한 스크롤 감지용 요소 */}
+        <div ref={ref} className="h-10 w-full" />
+      </main>
+    </div>
   );
 }

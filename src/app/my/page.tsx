@@ -1,60 +1,238 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Calendar } from "@/components/Calendar";
+import axios from "axios";
 
-// 임시 데이터
-const userProfile = {
-  nickname: "방탈러",
-  profileImage: "/images/profile.jpg",
-  gender: "male",
-  mannerScore: 4.5,
-  tags: ["#공포매니아", "#추리고수", "#액션러버", "#초보환영", "#친절한"],
+// API 기본 URL 설정
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
+  ? process.env.NEXT_PUBLIC_API_URL
+  : process.env.NODE_ENV === "development"
+  ? "http://localhost:8080"
+  : "https://api.ddobang.site";
+
+// 타입 정의
+type UserProfile = {
+  nickname: string;
+  profileImage: string;
+  gender: string;
+  mannerScore: number;
+  tags: string[];
   stats: {
-    successRate: 75,
-    averageClear: 45,
-    totalRooms: 30,
-  },
+    successRate: number;
+    averageClear: number;
+    totalRooms: number;
+  };
 };
 
-const wishThemes = [
-  {
-    id: 1,
-    title: "비밀의 방",
-    storeName: "이스케이프 홍대점",
-    genre: "추리",
-    playTime: "60분",
-    thumbnail: "/images/theme-1.jpg",
-  },
-  // ... 더 많은 테마
-];
+type WishTheme = {
+  id: number;
+  title: string;
+  storeName: string;
+  genre: string;
+  playTime: string;
+  thumbnailUrl: string;
+  name?: string;
+  difficulty?: number;
+  rating?: number;
+};
+
+type CalendarDiary = {
+  id: number;
+  date: string;
+  title: string;
+  themeName: string;
+  isSuccess: boolean;
+  storeName?: string;
+  escapeResult?: boolean;
+};
 
 export default function MyPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [wishThemes, setWishThemes] = useState<WishTheme[]>([]);
+  const [calendarDiaries, setCalendarDiaries] = useState<CalendarDiary[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // 프로필 정보 가져오기
+  const fetchUserProfile = async () => {
+    try {
+      // API 호출 코드 주석 처리
+      /*
+      const response = await axios.get(`${API_BASE_URL}/api/v1/users/me`, {
+        withCredentials: true,
+      });
+      setUserProfile(response.data.data);
+      */
+
+      // 가데이터로 대체
+      const mockUserProfile: UserProfile = {
+        nickname: "테스트유저",
+        profileImage: "/default-profile.svg",
+        gender: "male",
+        mannerScore: 4.5,
+        tags: ["친절함", "시간약속", "적극적"],
+        stats: {
+          successRate: 85,
+          averageClear: 45,
+          totalRooms: 12
+        }
+      };
+      setUserProfile(mockUserProfile);
+    } catch (error) {
+      console.error("프로필 로딩 에러:", error);
+      setError("프로필을 불러오는데 실패했습니다.");
+    }
+  };
+
+  // 희망 테마 가져오기
+  const fetchWishThemes = async () => {
+    try {
+      // API 호출 코드 주석 처리
+      /*
+      const response = await axios.get(
+        `${API_BASE_URL}/api/v1/users/me/wish-themes`,
+        {
+          withCredentials: true,
+        }
+      );
+      setWishThemes(response.data.data);
+      */
+
+      // 가데이터로 대체
+      const mockWishThemes: WishTheme[] = [
+        {
+          id: 1,
+          name: "미스터리 박스",
+          thumbnailUrl: "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
+          storeName: "이스케이프 룸",
+          difficulty: 3,
+          genre: "미스터리",
+          rating: 4.5
+        },
+        {
+          id: 2,
+          name: "좀비 아포칼립스",
+          thumbnailUrl: "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
+          storeName: "테마월드",
+          difficulty: 4,
+          genre: "공포",
+          rating: 4.2
+        }
+      ];
+      setWishThemes(mockWishThemes);
+    } catch (error) {
+      console.error("희망 테마 로딩 에러:", error);
+      setError("희망 테마를 불러오는데 실패했습니다.");
+    }
+  };
+
+  // 달력 데이터 가져오기
+  const fetchCalendarDiaries = async () => {
+    try {
+      // API 호출 코드 주석 처리
+      /*
+      const response = await axios.get(
+        `${API_BASE_URL}/api/v1/diaries/calendar`,
+        {
+          withCredentials: true,
+        }
+      );
+      setCalendarDiaries(response.data.data);
+      */
+
+      // 가데이터로 대체
+      const mockCalendarDiaries: CalendarDiary[] = [
+        {
+          date: "2023-06-15",
+          themeName: "미스터리 박스",
+          storeName: "이스케이프 룸",
+          escapeResult: true
+        },
+        {
+          date: "2023-06-20",
+          themeName: "좀비 아포칼립스",
+          storeName: "테마월드",
+          escapeResult: false
+        }
+      ];
+      setCalendarDiaries(mockCalendarDiaries);
+    } catch (error) {
+      console.error("달력 데이터 로딩 에러:", error);
+      setError("달력 데이터를 불러오는데 실패했습니다.");
+    }
+  };
+
+  // 컴포넌트 마운트 시 데이터 로딩
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        await Promise.all([
+          fetchUserProfile(),
+          fetchWishThemes(),
+          fetchCalendarDiaries(),
+        ]);
+      } catch (error) {
+        console.error("데이터 로딩 에러:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-red-500">{error}</div>
+      </div>
+    );
+  }
+
+  if (!userProfile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-gray-500">프로필을 찾을 수 없습니다.</div>
+      </div>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-gray-50">
       <Navigation activePage="my" />
 
       {/* Section 1: 사용자 프로필 */}
-      <section className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="flex justify-between items-start mb-6">
-            <div className="flex gap-6">
+      <section className="bg-white shadow-md">
+        <div className="max-w-7xl mx-auto px-4 py-10">
+          <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-6 mb-8">
+            <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
               <div className="relative">
-                <Image
-                  src={userProfile.profileImage}
-                  alt="프로필 이미지"
-                  width={100}
-                  height={100}
-                  className="rounded-full"
-                />
-                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-[#FFB130] shadow-md">
+                  <Image
+                    src={userProfile.profileImage || "/images/profile.jpg"}
+                    alt="프로필 이미지"
+                    width={128}
+                    height={128}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-black rounded-full flex items-center justify-center shadow-md">
                   <svg
-                    className="w-4 h-4 text-white"
+                    className="w-5 h-5 text-white"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -77,20 +255,23 @@ export default function MyPage() {
                   </svg>
                 </div>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold mb-2">
+              <div className="text-center md:text-left">
+                <h1 className="text-3xl font-bold mb-3 text-gray-800">
                   {userProfile.nickname}
                 </h1>
-                <div className="flex gap-2 mb-4">
-                  <span className="text-sm text-gray-600">
-                    매너점수 {userProfile.mannerScore}
+                <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-4">
+                  <span className="inline-flex items-center text-sm bg-gray-100 px-3 py-1 rounded-full">
+                    <svg className="w-4 h-4 text-[#FFB130] mr-1" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    매너점수 <span className="font-semibold ml-1">{userProfile.mannerScore}</span>
                   </span>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap justify-center md:justify-start gap-2">
                   {userProfile.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm"
+                      className="px-3 py-1 bg-black text-white rounded-full text-sm"
                     >
                       {tag}
                     </span>
@@ -98,27 +279,60 @@ export default function MyPage() {
                 </div>
               </div>
             </div>
-            <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+            <Link
+              href="/my/profile/edit"
+              className="px-6 py-2.5 bg-black text-white rounded-full hover:bg-gray-800 transition-colors font-medium text-sm shadow-sm flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
               프로필 수정
-            </button>
+            </Link>
           </div>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="text-sm text-gray-600 mb-1">평균 성공률</div>
-              <div className="text-2xl font-bold">
-                {userProfile.stats.successRate}%
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-[#FFB130]/10 flex items-center justify-center">
+                  <svg className="w-6 h-6 text-[#FFB130]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-500 mb-1">평균 성공률</div>
+                  <div className="text-3xl font-bold text-gray-800">
+                    {userProfile.stats.successRate}%
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="text-sm text-gray-600 mb-1">평균 클리어</div>
-              <div className="text-2xl font-bold">
-                {userProfile.stats.averageClear}분
+            <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-[#FFB130]/10 flex items-center justify-center">
+                  <svg className="w-6 h-6 text-[#FFB130]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-500 mb-1">평균 클리어</div>
+                  <div className="text-3xl font-bold text-gray-800">
+                    {userProfile.stats.averageClear}<span className="text-lg font-medium">분</span>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="text-sm text-gray-600 mb-1">누적 방 수</div>
-              <div className="text-2xl font-bold">
-                {userProfile.stats.totalRooms}개
+            <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-[#FFB130]/10 flex items-center justify-center">
+                  <svg className="w-6 h-6 text-[#FFB130]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-500 mb-1">누적 방 수</div>
+                  <div className="text-3xl font-bold text-gray-800">
+                    {userProfile.stats.totalRooms}<span className="text-lg font-medium">개</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -126,42 +340,66 @@ export default function MyPage() {
       </section>
 
       {/* Section 2: 모임 희망 테마 */}
-      <section className="py-12">
+      <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold">모임 희망 테마</h2>
-            <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800">모임 희망 테마</h2>
+              <p className="text-gray-500 mt-1">내가 참여하고 싶은 테마들</p>
+            </div>
+            <Link
+              href="/themes"
+              className="px-6 py-2.5 bg-[#FFB130] text-white rounded-full hover:bg-[#F0A120] transition-colors font-medium text-sm shadow-sm flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
               테마 추가
-            </button>
+            </Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {wishThemes.map((theme) => (
               <Link
                 key={theme.id}
                 href={`/themes/${theme.id}`}
-                className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+                className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all hover:translate-y-[-4px] duration-300 border border-gray-100"
               >
                 <div className="aspect-[3/4] relative">
                   <Image
-                    src={theme.thumbnail}
-                    alt={theme.title}
+                    src={theme.thumbnailUrl || "/images/theme-placeholder.jpg"}
+                    alt={theme.title || theme.name || "테마"}
                     fill
                     className="object-cover"
                   />
                 </div>
-                <div className="p-4">
-                  <h3 className="font-medium mb-1">{theme.title}</h3>
-                  <p className="text-sm text-gray-600 mb-2">
+                <div className="p-5">
+                  <h3 className="font-bold text-lg text-gray-800 mb-2 line-clamp-1">{theme.title || theme.name}</h3>
+                  <p className="text-sm text-gray-600 mb-3 line-clamp-1">
                     {theme.storeName}
                   </p>
                   <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <span>{theme.genre}</span>
+                    <span className="px-2 py-1 bg-gray-100 rounded-md">{theme.genre}</span>
                     <span>•</span>
-                    <span>{theme.playTime}</span>
+                    <span className="px-2 py-1 bg-gray-100 rounded-md">{theme.playTime}</span>
                   </div>
                 </div>
               </Link>
             ))}
+            <div className="bg-gray-100 rounded-2xl overflow-hidden border border-dashed border-gray-300 flex flex-col items-center justify-center p-6 min-h-[300px]">
+              <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mb-4 shadow-sm">
+                <svg className="w-8 h-8 text-[#FFB130]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+              </div>
+              <p className="text-gray-600 font-medium mb-2">새로운 테마 추가하기</p>
+              <p className="text-gray-500 text-sm text-center mb-4">관심있는 테마를 찾아보세요</p>
+              <Link
+                href="/themes"
+                className="px-4 py-2 bg-black text-white rounded-full text-sm hover:bg-gray-800 transition-colors"
+              >
+                테마 찾기
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -173,7 +411,7 @@ export default function MyPage() {
             <h2 className="text-xl font-bold">나의 탈출일지</h2>
             <Link
               href="/my/diary"
-              className="text-blue-500 hover:text-blue-600 transition-colors"
+              className="text-[#FFB130] hover:text-[#F0A120] transition-colors"
             >
               전체보기
             </Link>
@@ -183,11 +421,9 @@ export default function MyPage() {
               <Calendar
                 selectedDate={selectedDate}
                 onChange={setSelectedDate}
-                markedDates={[
-                  new Date(),
-                  new Date(2024, 2, 15),
-                  new Date(2024, 2, 20),
-                ]}
+                markedDates={calendarDiaries.map(
+                  (diary) => new Date(diary.date)
+                )}
               />
             </div>
             <div className="bg-gray-50 rounded-lg p-6">
@@ -198,34 +434,39 @@ export default function MyPage() {
                       year: "numeric",
                       month: "long",
                       day: "numeric",
-                      weekday: "long",
                     })}
                   </div>
-                  {/* 선택된 날짜의 탈출일지 목록 */}
-                  <div className="bg-white rounded-lg p-4">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-medium mb-1">비밀의 방</h3>
-                        <p className="text-sm text-gray-600 mb-2">
-                          이스케이프 홍대점
+                  {calendarDiaries
+                    .filter(
+                      (diary) =>
+                        new Date(diary.date).toDateString() ===
+                        selectedDate.toDateString()
+                    )
+                    .map((diary) => (
+                      <Link
+                        key={diary.id}
+                        href={`/my/diary/${diary.id}`}
+                        className="block bg-white p-4 rounded-lg hover:shadow-md transition-shadow"
+                      >
+                        <h3 className="font-medium mb-2">{diary.title}</h3>
+                        <p className="text-sm text-gray-600">
+                          {diary.themeName}
                         </p>
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                          <span>4인 참여</span>
-                          <span>•</span>
-                          <span>60분</span>
-                          <span>•</span>
-                          <span className="text-green-500">성공</span>
-                        </div>
-                      </div>
-                      <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm">
-                        힌트 2회
-                      </span>
-                    </div>
-                  </div>
+                        <span
+                          className={`inline-block mt-2 px-2 py-1 text-sm rounded ${
+                            diary.isSuccess
+                              ? "bg-green-100 text-green-600"
+                              : "bg-red-100 text-red-600"
+                          }`}
+                        >
+                          {diary.isSuccess ? "성공" : "실패"}
+                        </span>
+                      </Link>
+                    ))}
                 </div>
               ) : (
-                <div className="text-center text-gray-500 py-12">
-                  날짜를 선택하면 탈출일지를 확인할 수 있습니다
+                <div className="text-center text-gray-500">
+                  날짜를 선택하면 해당 날짜의 탈출일지를 볼 수 있습니다.
                 </div>
               )}
             </div>
@@ -239,8 +480,8 @@ export default function MyPage() {
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold">나의 모임 히스토리</h2>
             <Link
-              href="/my/meetings"
-              className="text-blue-500 hover:text-blue-600 transition-colors"
+              href="/my/parties"
+              className="text-[#FFB130] hover:text-[#F0A120] transition-colors"
             >
               전체보기
             </Link>
@@ -254,13 +495,16 @@ export default function MyPage() {
                 <div className="p-6">
                   <div className="flex gap-4">
                     <div className="w-24 h-24 bg-gray-200 rounded-lg flex-shrink-0">
-                      <Image
-                        src={`/images/meeting-${item}.jpg`}
-                        alt="Meeting thumbnail"
-                        width={96}
-                        height={96}
-                        className="rounded-lg object-cover"
-                      />
+                      <div key={item} className="space-y-2">
+                        <div className="aspect-video relative rounded-lg overflow-hidden">
+                          <Image
+                            src={`/favicon.svg`}
+                            alt="Party thumbnail"
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      </div>
                     </div>
                     <div className="flex-1">
                       <h3 className="font-medium mb-1">
@@ -279,7 +523,7 @@ export default function MyPage() {
                     </div>
                   </div>
                   <div className="mt-4 flex justify-end">
-                    <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                    <button className="px-4 py-2 bg-[#FFB130] text-white rounded-lg hover:bg-[#F0A120] transition-colors">
                       후기 작성
                     </button>
                   </div>

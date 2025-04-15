@@ -1,38 +1,105 @@
+"use client";
+
 import { Navigation } from "@/components/Navigation";
 import Link from "next/link";
 import { DiaryDetail } from "@/types/Diary";
-import { Metadata } from "next";
+import { useEffect, useState, use } from "react";
+import axios from "axios";
+import { Diary } from "@/types/Diary";
+import { useRouter } from "next/navigation";
+import { Spinner } from "@/components/common/Spinner";
 
-// 더미 데이터
-const dummyDiaryDetail: DiaryDetail = {
-  id: "1",
-  themeName: "미스터리 하우스",
-  storeName: "이스케이프 월드",
-  themeImage: "/images/theme.jpg",
-  escapeImages: ["/images/escape1.jpg", "/images/escape2.jpg"],
-  isSuccess: true,
-  playDate: "2024-01-15",
-  escapeTime: "45:23",
-  hintCount: 2,
-  participants: "김철수, 이영희, 박지민",
-  ratings: {
-    interior: 4,
-    composition: 4,
-    story: 5,
-    production: 4,
-    satisfaction: 4,
-    deviceRatio: 75,
-    difficulty: 4,
-    horror: 3,
-    activity: 4,
-  },
-  comment:
-    "정말 재미있는 방탈출이었습니다. 소품들도 분위기에 적절한 난이도로 구성되어 있어서 즐겁게 플레이했습니다. 특히 마지막 퍼즐은 팀원들과 협력이 잘 되어서 클리어할 수 있었습니다. 다음에도 이 매장의 다른 테마도 도전해보고 싶네요!",
+// API 응답을 DiaryDetail 타입으로 변환하는 함수
+const convertApiToDiaryDetail = (apiData: any): DiaryDetail => {
+  return {
+    id: apiData.id?.toString() || "",
+    themeName: apiData.themeName || "",
+    storeName: apiData.storeName || "",
+    isSuccess: apiData.escapeResult || false,
+    playDate: apiData.escapeDate || "",
+    escapeTime: apiData.elapsedTime?.toString() || "",
+    hintCount: apiData.hintCount || 0,
+    themeImage: apiData.imageUrl || "",
+    escapeImages: apiData.escapeImages || [],
+    participants: apiData.participants || "",
+    ratings: {
+      interior: apiData.interior || 0,
+      composition: apiData.question || 0,
+      story: apiData.story || 0,
+      production: apiData.production || 0,
+      satisfaction: apiData.satisfaction || 0,
+      deviceRatio: apiData.deviceRatio || 0,
+      difficulty: apiData.difficulty || 0,
+      horror: apiData.fear || 0,
+      activity: apiData.activity || 0,
+    },
+    comment: apiData.review || "",
+  };
 };
 
-export default function Page({ params }: any) {
-  // TODO: API로 데이터 가져오기
-  const diary = dummyDiaryDetail;
+export default function Page({ params }: { params: Promise<{ id: string }> }) {
+  const unwrappedParams = use(params);
+  const [diary, setDiary] = useState<DiaryDetail | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchDiary = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axios.get(
+          `http://localhost:8080/api/v1/diaries/${unwrappedParams.id}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            withCredentials: true,
+          }
+        );
+        const diaryData = convertApiToDiaryDetail(response.data.data);
+        setDiary(diaryData);
+        setError(null);
+      } catch (err) {
+        console.error("Error details:", err);
+        setError("탈출일지를 불러오는데 실패했습니다.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDiary();
+  }, [unwrappedParams.id]);
+
+  if (isLoading) {
+    return (
+      <main className="min-h-screen bg-gray-50">
+        <Navigation activePage="my-diary" />
+        <div className="max-w-3xl mx-auto px-4 py-8 flex justify-center items-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        </div>
+      </main>
+    );
+  }
+
+  if (error || !diary) {
+    return (
+      <main className="min-h-screen bg-gray-50">
+        <Navigation activePage="my-diary" />
+        <div className="max-w-3xl mx-auto px-4 py-8">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            {error || "탈출일지를 찾을 수 없습니다."}
+          </div>
+          <Link
+            href="/my/diary"
+            className="mt-4 inline-block text-blue-600 hover:underline"
+          >
+            목록으로 돌아가기
+          </Link>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-gray-50">

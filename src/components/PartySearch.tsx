@@ -1,30 +1,35 @@
+"use client";
+
 import { useState } from "react";
 import Image from "next/image";
-import { ThemeFilterModal } from "./ThemeFilterModal";
+import Link from "next/link";
 
-interface MeetingSearchProps {
-  onSearch: (keyword: string) => void;
-  onFilterChange: (filterType: string, value: string) => void;
+interface PartySearchProps {
+  showCreateButton?: boolean;
+  onSearch?: (keyword: string) => void;
+  onFilterApply?: (filters: any) => void;
 }
 
-export function MeetingSearch({
+export function PartySearch({
+  showCreateButton = false,
   onSearch,
-  onFilterChange,
-}: MeetingSearchProps) {
-  const [keyword, setKeyword] = useState("");
+  onFilterApply,
+}: PartySearchProps) {
+  const [searchTerm, setSearchTerm] = useState("");
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    onSearch(keyword);
+    if (onSearch) {
+      onSearch(searchTerm);
+    }
   };
 
   const handleFilterApply = (filters: any) => {
-    console.log("Applied filters:", filters);
-    // TODO: 필터 적용 로직 구현
-    if (filters.regions.length > 0) {
-      onFilterChange("region", filters.regions[0]);
+    if (onFilterApply) {
+      onFilterApply(filters);
     }
+    setIsFilterModalOpen(false);
   };
 
   return (
@@ -43,8 +48,8 @@ export function MeetingSearch({
             </div>
             <input
               type="text"
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="모임명으로 검색"
               className="w-full pl-9 pr-4 py-2.5 border border-black rounded-lg focus:outline-none focus:border-black placeholder:text-gray-400"
             />
@@ -80,17 +85,45 @@ export function MeetingSearch({
             </svg>
             검색필터
           </button>
-          <button className="px-4 py-2 bg-black text-white text-sm rounded-lg hover:bg-gray-800">
-            모임 등록
-          </button>
+          {showCreateButton && (
+            <Link
+              href="/parties/create"
+              className="px-4 py-2 bg-black text-white text-sm rounded-lg hover:bg-gray-800"
+            >
+              모임 등록
+            </Link>
+          )}
         </div>
       </div>
 
-      <ThemeFilterModal
-        isOpen={isFilterModalOpen}
-        onClose={() => setIsFilterModalOpen(false)}
-        onApply={handleFilterApply}
-      />
+      {/* 필터 모달 - 추후 구현 */}
+      {isFilterModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full">
+            <h2 className="text-xl font-bold mb-4">검색 필터</h2>
+            <div className="flex justify-end">
+              <button
+                onClick={() => setIsFilterModalOpen(false)}
+                className="px-4 py-2 text-gray-500"
+              >
+                닫기
+              </button>
+              <button
+                onClick={() => {
+                  // Apply filter logic here
+                  setIsFilterModalOpen(false);
+                  if (onFilterApply) {
+                    onFilterApply({});
+                  }
+                }}
+                className="px-4 py-2 bg-black text-white rounded-lg"
+              >
+                적용
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

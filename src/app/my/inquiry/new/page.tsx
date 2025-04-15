@@ -3,6 +3,15 @@
 import { useState } from "react";
 import { Navigation } from "@/components/Navigation";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import axios from "axios";
+
+// API 기본 URL 설정
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
+  ? process.env.NEXT_PUBLIC_API_URL
+  : process.env.NODE_ENV === "development"
+  ? "http://localhost:8080"
+  : "https://api.ddobang.site";
 
 const inquiryTypes = [
   "사이트 이용 문의",
@@ -12,14 +21,89 @@ const inquiryTypes = [
 ];
 
 export default function NewInquiryPage() {
+  const router = useRouter();
   const [inquiryType, setInquiryType] = useState("");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [files, setFiles] = useState<File[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const selectedFiles = Array.from(e.target.files);
+      const validFiles = selectedFiles.filter((file) => {
+        const isValidType = ["image/jpeg", "image/png", "image/gif"].includes(
+          file.type
+        );
+        const isValidSize = file.size <= 10 * 1024 * 1024; // 10MB
+        return isValidType && isValidSize;
+      });
+
+      if (validFiles.length !== selectedFiles.length) {
+        alert(
+          "일부 파일이 업로드되지 않았습니다. (10MB 이하의 JPG, PNG, GIF 파일만 가능)"
+        );
+      }
+
+      setFiles(validFiles);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: API 호출
-    console.log({ inquiryType, title, content });
+
+    if (!inquiryType || !title || !content) {
+      setError("모든 필수 항목을 입력해주세요.");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setError(null);
+
+      // 파일이 있는 경우 먼저 업로드
+      let fileUrls: string[] = [];
+      if (files.length > 0) {
+        const formData = new FormData();
+        files.forEach((file) => {
+          formData.append("files", file);
+        });
+
+        const uploadResponse = await axios.post(
+          `${API_BASE_URL}/api/v1/files/upload`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+            withCredentials: true,
+          }
+        );
+        fileUrls = uploadResponse.data.data;
+      }
+
+      // 문의 등록
+      await axios.post(
+        `${API_BASE_URL}/api/v1/inquiries`,
+        {
+          type: inquiryType,
+          title,
+          content,
+          fileUrls,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+
+      router.push("/my/inquiry");
+    } catch (error) {
+      console.error("문의 등록 에러:", error);
+      setError("문의 등록에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -31,6 +115,12 @@ export default function NewInquiryPage() {
         <p className="text-gray-600 mb-8">
           아래 양식을 작성하여 문의사항을 등록해주세요.
         </p>
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-lg">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* 문의 유형 */}
@@ -113,13 +203,22 @@ export default function NewInquiryPage() {
                   className="hidden"
                   accept="image/*"
                   multiple
-                  onChange={(e) => {
-                    // TODO: 파일 업로드 처리
-                    console.log(e.target.files);
-                  }}
+                  onChange={handleFileChange}
                 />
               </div>
             </div>
+            {files.length > 0 && (
+              <div className="mt-4">
+                <p className="text-sm font-medium mb-2">선택된 파일:</p>
+                <ul className="space-y-2">
+                  {files.map((file, index) => (
+                    <li key={index} className="text-sm text-gray-600">
+                      {file.name} ({(file.size / 1024 / 1024).toFixed(2)}MB)
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
           {/* 버튼 */}
@@ -132,9 +231,12 @@ export default function NewInquiryPage() {
             </Link>
             <button
               type="submit"
-              className="px-6 py-2 text-white bg-black rounded-lg hover:bg-gray-800"
+              disabled={isSubmitting}
+              className={`px-6 py-2 text-white bg-black rounded-lg hover:bg-gray-800 ${
+                isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             >
-              등록하기
+              {isSubmitting ? "등록 중..." : "등록하기"}
             </button>
           </div>
         </form>
