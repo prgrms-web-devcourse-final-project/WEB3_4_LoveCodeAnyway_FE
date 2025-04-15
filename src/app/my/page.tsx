@@ -72,7 +72,7 @@ export default function MyPage() {
       // 가데이터로 대체
       const mockUserProfile: UserProfile = {
         nickname: "테스트유저",
-        profileImage: "/images/profile.jpg",
+        profileImage: "/default-profile.svg",
         gender: "male",
         mannerScore: 4.5,
         tags: ["친절함", "시간약속", "적극적"],
@@ -108,7 +108,7 @@ export default function MyPage() {
         {
           id: 1,
           name: "미스터리 박스",
-          thumbnailUrl: "/images/theme1.jpg",
+          thumbnailUrl: "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
           storeName: "이스케이프 룸",
           difficulty: 3,
           genre: "미스터리",
@@ -117,7 +117,7 @@ export default function MyPage() {
         {
           id: 2,
           name: "좀비 아포칼립스",
-          thumbnailUrl: "/images/theme2.jpg",
+          thumbnailUrl: "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
           storeName: "테마월드",
           difficulty: 4,
           genre: "공포",
@@ -411,7 +411,7 @@ export default function MyPage() {
             <h2 className="text-xl font-bold">나의 탈출일지</h2>
             <Link
               href="/my/diary"
-              className="text-blue-500 hover:text-blue-600 transition-colors"
+              className="text-[#FFB130] hover:text-[#F0A120] transition-colors"
             >
               전체보기
             </Link>
@@ -481,7 +481,7 @@ export default function MyPage() {
             <h2 className="text-xl font-bold">나의 모임 히스토리</h2>
             <Link
               href="/my/parties"
-              className="text-blue-500 hover:text-blue-600 transition-colors"
+              className="text-[#FFB130] hover:text-[#F0A120] transition-colors"
             >
               전체보기
             </Link>
@@ -498,7 +498,7 @@ export default function MyPage() {
                       <div key={item} className="space-y-2">
                         <div className="aspect-video relative rounded-lg overflow-hidden">
                           <Image
-                            src={`/images/meeting-${item}.jpg`}
+                            src={`/favicon.svg`}
                             alt="Party thumbnail"
                             fill
                             className="object-cover"
@@ -523,7 +523,7 @@ export default function MyPage() {
                     </div>
                   </div>
                   <div className="mt-4 flex justify-end">
-                    <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                    <button className="px-4 py-2 bg-[#FFB130] text-white rounded-lg hover:bg-[#F0A120] transition-colors">
                       후기 작성
                     </button>
                   </div>
