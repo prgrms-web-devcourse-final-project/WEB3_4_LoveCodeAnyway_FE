@@ -48,11 +48,11 @@ export default function HistoryPage() {
         {
           id: 1,
           title: "좀비 연구소 모집합니다",
-          dateTime: "2023-12-25T15:30:00",
+          dateTime: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(), // 15일 후
           location: "이스케이프 홍대점",
           participantsNeeded: 5,
           totalParticipants: 6,
-          themeThumbnailUrl: "/images/theme-1.jpg",
+          themeThumbnailUrl: "https://images.unsplash.com/photo-1603739903239-8b6e64c3b185?q=80&w=300&auto=format",
           themeTitle: "좀비 연구소",
           role: "HOST" as const,
           reviewStatus: "WRITABLE" as const,
@@ -60,11 +60,11 @@ export default function HistoryPage() {
         {
           id: 2,
           title: "심야 병동 같이 가실 분",
-          dateTime: "2023-12-20T18:00:00",
+          dateTime: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5일 전
           location: "플레이포인트 강남점",
           participantsNeeded: 4,
           totalParticipants: 4,
-          themeThumbnailUrl: "/images/theme-2.jpg",
+          themeThumbnailUrl: "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?q=80&w=300&auto=format",
           themeTitle: "심야 병동",
           role: "MEMBER" as const,
           reviewStatus: "COMPLETED" as const,
@@ -72,11 +72,11 @@ export default function HistoryPage() {
         {
           id: 3,
           title: "타임루프 도전하실 분 모집해요",
-          dateTime: "2024-01-15T17:00:00",
+          dateTime: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(), // 10일 후
           location: "솔버 강남점",
           participantsNeeded: 3,
           totalParticipants: 6,
-          themeThumbnailUrl: "/images/theme-3.jpg",
+          themeThumbnailUrl: "https://images.unsplash.com/photo-1509248961158-e54f6934749c?q=80&w=300&auto=format",
           themeTitle: "타임루프",
           role: "MEMBER" as const,
           reviewStatus: "NOT_WRITABLE" as const,
@@ -84,11 +84,11 @@ export default function HistoryPage() {
         {
           id: 4,
           title: "마술사의 집 모임 모집",
-          dateTime: "2023-12-10T14:00:00",
+          dateTime: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(), // 15일 전
           location: "키이스케이프 건대점",
           participantsNeeded: 4,
           totalParticipants: 4,
-          themeThumbnailUrl: "/images/theme-4.jpg",
+          themeThumbnailUrl: "https://images.unsplash.com/photo-1543083115-638c6e275a2a?q=80&w=300&auto=format",
           themeTitle: "마술사의 집",
           role: "HOST" as const,
           reviewStatus: "COMPLETED" as const,
@@ -96,11 +96,11 @@ export default function HistoryPage() {
         {
           id: 5,
           title: "자살 사건 추리 모임",
-          dateTime: "2024-01-05T20:00:00",
+          dateTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // 3일 후
           location: "비트포비아 홍대점",
           participantsNeeded: 4,
           totalParticipants: 6,
-          themeThumbnailUrl: "/images/theme-5.jpg",
+          themeThumbnailUrl: "https://images.unsplash.com/photo-1604537466608-109fa2f16c3b?q=80&w=300&auto=format",
           themeTitle: "자살 사건 추리",
           role: "MEMBER" as const,
           reviewStatus: "NOT_WRITABLE" as const,
@@ -108,29 +108,108 @@ export default function HistoryPage() {
         {
           id: 6,
           title: "공포체험 좋아하시는 분",
-          dateTime: "2023-11-20T21:00:00",
+          dateTime: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(), // 20일 전
           location: "셜록홈즈 신촌점",
           participantsNeeded: 3,
           totalParticipants: 4,
-          themeThumbnailUrl: "/images/theme-6.jpg",
+          themeThumbnailUrl: "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?q=80&w=300&auto=format",
           themeTitle: "공포체험",
           role: "HOST" as const,
           reviewStatus: "COMPLETED" as const,
+        },
+        {
+          id: 7,
+          title: "미스터리 방 탈출 도전",
+          dateTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7일 후
+          location: "비밀의 방 강남점",
+          participantsNeeded: 4,
+          totalParticipants: 5,
+          themeThumbnailUrl: "https://images.unsplash.com/photo-1487147264018-f937fba0c817?q=80&w=300&auto=format",
+          themeTitle: "비밀의 방",
+          role: "HOST" as const,
+          reviewStatus: "NOT_WRITABLE" as const,
+        },
+        {
+          id: 8,
+          title: "유령의 저택 공략 모임",
+          dateTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // 2일 후
+          location: "이스케이프 종로점",
+          participantsNeeded: 5,
+          totalParticipants: 6,
+          themeThumbnailUrl: "https://images.unsplash.com/photo-1563841930606-67e2bce48b78?q=80&w=300&auto=format",
+          themeTitle: "유령의 저택",
+          role: "MEMBER" as const,
+          reviewStatus: "WRITABLE" as const,
+        },
+        {
+          id: 9,
+          title: "초급자만! 쉬운 테마 함께해요",
+          dateTime: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // 5일 후
+          location: "마스터키 명동점",
+          participantsNeeded: 3,
+          totalParticipants: 4,
+          themeThumbnailUrl: "https://images.unsplash.com/photo-1536349788264-1b816db3cc13?q=80&w=300&auto=format",
+          themeTitle: "비밀 사무실",
+          role: "MEMBER" as const,
+          reviewStatus: "WRITABLE" as const,
+        },
+        {
+          id: 10,
+          title: "범죄자의 하우스 도전하실 분",
+          dateTime: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(), // 10일 전
+          location: "룸이스케이프 신림점",
+          participantsNeeded: 6,
+          totalParticipants: 6,
+          themeThumbnailUrl: "https://images.unsplash.com/photo-1464823063530-08f10ed1a2dd?q=80&w=300&auto=format",
+          themeTitle: "범죄자의 하우스",
+          role: "HOST" as const,
+          reviewStatus: "COMPLETED" as const,
+        },
+        {
+          id: 11,
+          title: "초특급 난이도! 지하실 탈출",
+          dateTime: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5일 전
+          location: "키이스케이프 홍대점",
+          participantsNeeded: 4,
+          totalParticipants: 5,
+          themeThumbnailUrl: "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?q=80&w=300&auto=format",
+          themeTitle: "지하실",
+          role: "MEMBER" as const,
+          reviewStatus: "NOT_WRITABLE" as const,
+        },
+        {
+          id: 12,
+          title: "마지막 기회, 사망 이스케이프",
+          dateTime: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 7일 전
+          location: "넥스트에디션 강남점",
+          participantsNeeded: 4,
+          totalParticipants: 4,
+          themeThumbnailUrl: "https://images.unsplash.com/photo-1595769816263-9b910be24d5f?q=80&w=300&auto=format",
+          themeTitle: "사망 이스케이프",
+          role: "HOST" as const,
+          reviewStatus: "WRITABLE" as const,
         },
       ];
 
       // 필터링 적용
       let filteredData = [...mockData];
 
-      // 탭 필터
+      // 탭 필터 - 날짜 비교 간소화
+      const now = new Date();
+      // 날짜 표시를 위해 시간 부분 제거
+      now.setHours(0, 0, 0, 0);
+      
       if (activeTab === "upcoming") {
-        filteredData = filteredData.filter(
-          (party) => new Date(party.dateTime) > new Date()
-        );
+        filteredData = filteredData.filter((party) => {
+          const partyDate = new Date(party.dateTime);
+          // 같은 날짜도 예정된 모임에 포함
+          return partyDate >= now;
+        });
       } else {
-        filteredData = filteredData.filter(
-          (party) => new Date(party.dateTime) <= new Date()
-        );
+        filteredData = filteredData.filter((party) => {
+          const partyDate = new Date(party.dateTime);
+          return partyDate < now;
+        });
       }
 
       // 리뷰 상태 필터
@@ -147,8 +226,15 @@ export default function HistoryPage() {
         );
       }
 
-      setParties(filteredData);
+      // 전체 데이터 설정
       setTotalPages(Math.ceil(filteredData.length / 6));
+      
+      // 현재 페이지에 해당하는 데이터만 선택
+      const startIndex = (currentPage - 1) * 6;
+      const endIndex = startIndex + 6;
+      const paginatedData = filteredData.slice(startIndex, endIndex);
+      
+      setParties(paginatedData);
       setIsLoading(false);
     }, 500);
   }, [activeTab, statusFilter, roleFilter, currentPage]);
@@ -332,7 +418,9 @@ export default function HistoryPage() {
                         src={party.themeThumbnailUrl}
                         alt={party.title}
                         fill
+                        sizes="(max-width: 96px) 100vw, 96px"
                         className="object-cover"
+                        unoptimized
                       />
                     </div>
                   ) : (

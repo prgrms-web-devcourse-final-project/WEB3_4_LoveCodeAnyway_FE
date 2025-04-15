@@ -105,7 +105,7 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
     return (
       <main className="min-h-screen bg-gray-50">
         <Navigation activePage="my-diary" />
-        <div className="max-w-3xl mx-auto px-4 py-8 flex justify-center items-center">
+        <div className="max-w-7xl mx-auto px-4 py-8 flex justify-center items-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
         </div>
       </main>
@@ -116,7 +116,7 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
     return (
       <main className="min-h-screen bg-gray-50">
         <Navigation activePage="my-diary" />
-        <div className="max-w-3xl mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
             {error || "탈출일지를 찾을 수 없습니다."}
           </div>
@@ -135,7 +135,7 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
     <main className="min-h-screen bg-gray-50">
       <Navigation activePage="my-diary" />
 
-      <div className="max-w-3xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8">
         {/* 헤더 - 버튼 영역 */}
         <div className="flex justify-between items-center mb-6">
           <Link
@@ -164,7 +164,7 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
         
         {/* 테마 이미지 섹션 */}
         <div className="bg-white rounded-lg overflow-hidden mb-6 shadow-sm">
-          <div className="aspect-[16/9] relative overflow-hidden">
+          <div className="aspect-[21/9] relative overflow-hidden">
             {diary.themeImage ? (
               <img
                 src={diary.themeImage}
