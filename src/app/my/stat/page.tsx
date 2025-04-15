@@ -184,7 +184,7 @@ export default function StatPage() {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">방탈출 통계 대시보드 <span className="text-[#ff5c5c] font-normal text-lg">(변경가능)</span></h1>
+          <h1 className="text-2xl font-bold">방탈출 통계 대시보드</h1>
           <p className="text-gray-500 text-sm">당신이 방탈출 여행을 한눈에 확인하세요.</p>
         </div>
         
