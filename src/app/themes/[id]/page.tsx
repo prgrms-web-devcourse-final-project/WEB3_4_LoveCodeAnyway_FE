@@ -361,9 +361,9 @@ export default function ThemeDetailPage() {
                     />
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">기믹/장치</span>
+                    <span className="text-gray-600">문제</span>
                     <StarRating
-                      rating={themeDetail.diaryBasedThemeStat.deviceRatio || 0}
+                      rating={themeDetail.diaryBasedThemeStat.question || 0}
                       maxRating={5}
                     />
                   </div>
@@ -422,13 +422,13 @@ export default function ThemeDetailPage() {
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">문제 난이도</span>
+                    <span className="text-gray-600">기믹/장치</span>
                     <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-blue-500 rounded-full"
                         style={{
                           width: `${
-                            (themeDetail.diaryBasedThemeStat.question || 0) * 20
+                            (themeDetail.diaryBasedThemeStat.deviceRatio || 0) * 20
                           }%`,
                         }}
                       ></div>
@@ -437,17 +437,8 @@ export default function ThemeDetailPage() {
                 </div>
               </div>
 
-              {/* 방 특성 방사형 차트 */}
-              <div>
-                <h2 className="text-2xl font-bold mb-6">테마 특성</h2>
-                <div className="h-64 flex items-center justify-center">
-                  {radarData.length > 0 ? (
-                    <RadarChart data={radarData} />
-                  ) : (
-                    <p className="text-gray-400">데이터가 없습니다</p>
-                  )}
-                </div>
-              </div>
+              {/* 빈 공간으로 균형 맞추기 */}
+              <div></div>
             </div>
 
             {/* 통계 */}
@@ -468,9 +459,9 @@ export default function ThemeDetailPage() {
                 </div>
                 <div className="bg-gray-50 rounded-lg p-5 text-center">
                   <div className="text-4xl font-bold mb-2">
-                    {themeDetail.diaryBasedThemeStat.escapeTimeAvg || 0}분
+                    {themeDetail.diaryBasedThemeStat.escapeTimeAvg || 0}개
                   </div>
-                  <div className="text-gray-500">평균 탈출 시간</div>
+                  <div className="text-gray-500">평균 힌트</div>
                 </div>
               </div>
             </div>
@@ -498,7 +489,7 @@ export default function ThemeDetailPage() {
               </svg>
               테마 목록으로 돌아가기
             </Link>
-            <Link href={themeDetail.reservationUrl} 
+            <Link href={themeDetail.reservationUrl || "#"} 
                   className="flex-1 px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFA000] transition-colors text-center shadow-sm whitespace-nowrap"
             >
               예약하러 가기

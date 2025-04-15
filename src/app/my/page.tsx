@@ -71,7 +71,7 @@ export default function MyPage() {
 
       // 가데이터로 대체
       const mockUserProfile: UserProfile = {
-        nickname: "테스트유저",
+        nickname: "또방이",
         profileImage: "/default-profile.svg",
         gender: "male",
         mannerScore: 4.5,
@@ -280,7 +280,7 @@ export default function MyPage() {
               </div>
             </div>
             <Link
-              href="/my/profile/edit"
+              href="/my/edit"
               className="px-6 py-2.5 bg-black text-white rounded-full hover:bg-gray-800 transition-colors font-medium text-sm shadow-sm flex items-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
