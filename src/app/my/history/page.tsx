@@ -262,18 +262,18 @@ export default function HistoryPage() {
 
   // 이미지 URL 처리 함수
   const getImageUrl = (url: string) => {
-    // postimg.cc 또는 postimages.org 도메인을 사용하는 경우 그대로 반환
-    if (url.includes("postimg.cc") || url.includes("postimages.org")) {
-      return url;
+    // URL이 없는 경우 기본 이미지 반환
+    if (!url) {
+      return "https://i.postimg.cc/PJNVr12v/theme.jpg";
     }
     
-    // 내부 경로인 경우 그대로 반환
+    // 내부 경로는 그대로 사용
     if (url.startsWith("/")) {
       return url;
     }
     
-    // 기본 이미지 URL 반환
-    return "https://i.postimg.cc/PJNVr12v/theme.jpg";
+    // 외부 URL은 그대로 사용
+    return url;
   };
 
   // 리뷰 버튼 표시 여부 및 스타일 결정 함수

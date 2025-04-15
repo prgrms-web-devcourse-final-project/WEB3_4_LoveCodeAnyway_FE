@@ -41,8 +41,8 @@ export function ThemeCard({ room }: { room: EscapeRoom }) {
         </div>
 
         <div className="p-5">
-          <h3 className="font-bold text-lg mb-3">{room.title}</h3>
-          <p className="text-gray-600 text-sm mb-3">
+          <h3 className="font-bold text-lg mb-3 truncate">{room.title}</h3>
+          <p className="text-gray-600 text-sm mb-3 truncate">
             {room.category || "미스터리 룸 강남점"}
           </p>
           <div className="flex items-center mb-4">
@@ -69,8 +69,8 @@ export function ThemeCard({ room }: { room: EscapeRoom }) {
               <span>{room.participants || "2-4인"}</span>
             </div>
           </div>
-          <div className="flex flex-wrap gap-2 mb-3">
-            {(room.tags || ["공포", "추리"]).map((tag, index) => {
+          <div className="flex flex-wrap gap-2 mb-3 h-[24px] overflow-hidden">
+            {(room.tags || ["공포", "추리"]).slice(0, 3).map((tag, index) => {
               // 태그별 배경색과 텍스트 색상 지정
               let bgColorClass = "";
               let textColorClass = "";
@@ -104,12 +104,17 @@ export function ThemeCard({ room }: { room: EscapeRoom }) {
               return (
                 <span
                   key={index}
-                  className={`px-3 py-1 ${bgColorClass} ${textColorClass} text-xs rounded-sm`}
+                  className={`px-3 py-1 ${bgColorClass} ${textColorClass} text-xs rounded-sm truncate max-w-[120px]`}
                 >
                   {tag}
                 </span>
               );
             })}
+            {(room.tags || []).length > 3 && (
+              <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-sm">
+                +{(room.tags || []).length - 3}
+              </span>
+            )}
           </div>
         </div>
       </div>

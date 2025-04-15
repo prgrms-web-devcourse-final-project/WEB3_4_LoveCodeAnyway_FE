@@ -18,13 +18,14 @@ export function PartyCard({ room, onClick }: PartyCardProps) {
 
   // 이미지 URL이 유효한지 확인하는 함수
   const isValidImageUrl = (url: string) => {
+    // URL이 없는 경우
+    if (!url) return false;
+    
     // 내부 이미지 경로인 경우
     if (url.startsWith('/')) return true;
     
-    // postimg.cc 또는 postimages.org 도메인 이미지인 경우
-    if (url.includes('postimg.cc') || url.includes('postimages.org')) return true;
-    
-    return false;
+    // 외부 URL은 모두 허용
+    return true;
   };
 
   return (

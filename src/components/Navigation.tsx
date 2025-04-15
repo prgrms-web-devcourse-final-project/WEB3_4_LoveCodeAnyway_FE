@@ -6,7 +6,16 @@ import { useState, useContext, useEffect, useRef } from "react";
 import { LoginMemberContext } from "@/stores/auth/loginMember";
 import client from "@/lib/backend/client";
 import { useRouter } from "next/navigation";
-import { GetAlarmsResponse, Alarm } from "@/lib/backend/apiV1/schema";
+
+// 알림 데이터 타입 직접 정의
+interface Alarm {
+  id: number;
+  title: string;
+  content: string;
+  createdAt: string;
+  readStatus: boolean;
+  alarmType: "SYSTEM" | "MESSAGE" | "SUBSCRIBE" | string;
+}
 
 export function Navigation({ activePage }: { activePage?: string }) {
   const router = useRouter();
@@ -75,10 +84,26 @@ export function Navigation({ activePage }: { activePage?: string }) {
 
   const fetchNotifications = async () => {
     try {
-      const response = await client.GET("/api/v1/alarms");
-      if (response.data?.data) {
-        setNotifications(response.data.data.items || []);
-      }
+      // 임의의 알림 데이터 사용
+      const mockNotifications: Alarm[] = [
+        {
+          id: 1,
+          title: "새로운 모임이 생성되었습니다",
+          content: "관심 테마의 새로운 모임이 생성되었습니다. 확인해보세요!",
+          createdAt: new Date().toISOString(),
+          readStatus: false,
+          alarmType: "SYSTEM"
+        },
+        {
+          id: 2,
+          title: "새 메시지가 도착했습니다",
+          content: "모임장으로부터 새 메시지가 도착했습니다.",
+          createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+          readStatus: true,
+          alarmType: "MESSAGE"
+        }
+      ];
+      setNotifications(mockNotifications);
     } catch (error) {
       console.error("알림 목록 조회 실패:", error);
     }
@@ -109,7 +134,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
 
   const markAsRead = async (id: number) => {
     try {
-      await client.PATCH(`/alarms/${id}/read`);
+      // API 호출 없이 상태 업데이트
       setNotifications((prev) =>
         prev.map((notification) =>
           notification.id === id
@@ -124,7 +149,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
 
   const markAllAsRead = async () => {
     try {
-      await client.PATCH("/alarms/read-all");
+      // API 호출 없이 상태 업데이트
       setNotifications((prev) =>
         prev.map((notification) => ({ ...notification, readStatus: true }))
       );
@@ -357,26 +382,67 @@ export function Navigation({ activePage }: { activePage?: string }) {
                   >
                     <div className="w-8 h-8 rounded-full overflow-hidden relative bg-gray-700 flex items-center justify-center">
                       {loginMember && (
-                        <img
+                        <Image
                           src={
-                            loginMember.pofilePictureUrl ||
+                            loginMember.profilePictureUrl ||
                             "/default-profile.svg"
                           }
                           alt={loginMember.nickname || "프로필"}
+                          width={32}
+                          height={32}
                           className="w-full h-full object-cover"
+                          unoptimized
                         />
                       )}
                     </div>
-                    <span className="text-gray-300 text-sm">
-                      {loginMember?.nickname || "사용자"}
-                    </span>
+                    <div className="flex flex-col items-start">
+                      <span className="text-gray-300 text-sm font-semibold">
+                        {loginMember?.nickname || "사용자"}
+                      </span>
+                      <span className="text-gray-400 text-xs">
+                        회원
+                      </span>
+                    </div>
                   </button>
 
                   {isProfileMenuOpen && (
                     <div
                       ref={profileMenuRef}
-                      className="absolute right-0 -mt-1 w-48 bg-[#FFF8EC] rounded-lg shadow-lg py-1 z-50"
+                      className="absolute right-0 -mt-1 w-60 bg-[#FFF8EC] rounded-lg shadow-lg py-1 z-50"
                     >
+                      <div className="px-4 py-3 border-b border-gray-100">
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 rounded-full overflow-hidden relative bg-gray-200 flex items-center justify-center mr-3">
+                            <Image
+                              src={
+                                loginMember.profilePictureUrl ||
+                                "/default-profile.svg"
+                              }
+                              alt={loginMember.nickname || "프로필"}
+                              width={40}
+                              height={40}
+                              className="w-full h-full object-cover"
+                              unoptimized
+                            />
+                          </div>
+                          <div>
+                            <div className="font-semibold text-gray-800">
+                              {loginMember?.nickname || "사용자"}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              회원 ID: {loginMember?.id || ""}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-2">
+                          <Link
+                            href="/my/edit"
+                            className="text-sm text-[#FFB230] hover:underline"
+                          >
+                            프로필 수정
+                          </Link>
+                        </div>
+                      </div>
                       <Link
                         href="/my"
                         className="block px-4 py-3 text-base font-medium text-gray-500 hover:bg-[#FFFCF7]"

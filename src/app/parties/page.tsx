@@ -180,18 +180,13 @@ export default function PartiesPage() {
     const getImageUrl = (url?: string) => {
       if (!url) return "https://i.postimg.cc/PJNVr12v/theme.jpg";
       
-      // postimages.org 또는 postimg.cc 도메인의 이미지는 그대로 사용
-      if (url.includes("postimg.cc") || url.includes("postimages.org")) {
+      // 내부 경로인 경우 그대로 사용
+      if (url.startsWith("/")) {
         return url;
       }
       
-      // 외부 이미지 URL이 아닌 경우 기본 이미지 사용
-      if (url.startsWith("/")) {
-        return url; // 내부 경로는 그대로 유지
-      }
-      
-      // 다른 모든 경우에 기본 이미지 사용
-      return "https://i.postimg.cc/PJNVr12v/theme.jpg";
+      // 외부 이미지 URL은 그대로 사용
+      return url;
     };
     
     // PartyCard 컴포넌트에 필요한 데이터 구조로 변환
