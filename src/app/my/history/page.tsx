@@ -52,7 +52,7 @@ export default function HistoryPage() {
           location: "이스케이프 홍대점",
           participantsNeeded: 5,
           totalParticipants: 6,
-          themeThumbnailUrl: "https://i.postimg.cc/PJNVr12v/theme.jpg",
+          themeThumbnailUrl: "https://i.postimg.cc/305Ft0M3/theme.jpg",
           themeTitle: "좀비 연구소",
           role: "HOST" as const,
           reviewStatus: "WRITABLE" as const,
@@ -64,7 +64,7 @@ export default function HistoryPage() {
           location: "플레이포인트 강남점",
           participantsNeeded: 4,
           totalParticipants: 4,
-          themeThumbnailUrl: "https://i.postimg.cc/PJNVr12v/theme.jpg",
+          themeThumbnailUrl: "https://i.postimg.cc/305Ft0M3/theme.jpg",
           themeTitle: "심야 병동",
           role: "MEMBER" as const,
           reviewStatus: "COMPLETED" as const,
@@ -76,7 +76,7 @@ export default function HistoryPage() {
           location: "솔버 강남점",
           participantsNeeded: 3,
           totalParticipants: 6,
-          themeThumbnailUrl: "https://i.postimg.cc/PJNVr12v/theme.jpg",
+          themeThumbnailUrl: "https://i.postimg.cc/305Ft0M3/theme.jpg",
           themeTitle: "타임루프",
           role: "MEMBER" as const,
           reviewStatus: "NOT_WRITABLE" as const,
@@ -88,7 +88,7 @@ export default function HistoryPage() {
           location: "키이스케이프 건대점",
           participantsNeeded: 4,
           totalParticipants: 4,
-          themeThumbnailUrl: "https://i.postimg.cc/PJNVr12v/theme.jpg",
+          themeThumbnailUrl: "https://i.postimg.cc/305Ft0M3/theme.jpg",
           themeTitle: "마술사의 집",
           role: "HOST" as const,
           reviewStatus: "COMPLETED" as const,
@@ -100,7 +100,7 @@ export default function HistoryPage() {
           location: "비트포비아 홍대점",
           participantsNeeded: 4,
           totalParticipants: 6,
-          themeThumbnailUrl: "https://i.postimg.cc/PJNVr12v/theme.jpg",
+          themeThumbnailUrl: "https://i.postimg.cc/305Ft0M3/theme.jpg",
           themeTitle: "자살 사건 추리",
           role: "MEMBER" as const,
           reviewStatus: "NOT_WRITABLE" as const,
@@ -112,7 +112,7 @@ export default function HistoryPage() {
           location: "셜록홈즈 신촌점",
           participantsNeeded: 3,
           totalParticipants: 4,
-          themeThumbnailUrl: "https://i.postimg.cc/PJNVr12v/theme.jpg",
+          themeThumbnailUrl: "https://i.postimg.cc/305Ft0M3/theme.jpg",
           themeTitle: "공포체험",
           role: "HOST" as const,
           reviewStatus: "COMPLETED" as const,
@@ -124,7 +124,7 @@ export default function HistoryPage() {
           location: "비밀의 방 강남점",
           participantsNeeded: 4,
           totalParticipants: 5,
-          themeThumbnailUrl: "https://i.postimg.cc/PJNVr12v/theme.jpg",
+          themeThumbnailUrl: "https://i.postimg.cc/305Ft0M3/theme.jpg",
           themeTitle: "비밀의 방",
           role: "HOST" as const,
           reviewStatus: "NOT_WRITABLE" as const,
@@ -136,7 +136,7 @@ export default function HistoryPage() {
           location: "이스케이프 종로점",
           participantsNeeded: 5,
           totalParticipants: 6,
-          themeThumbnailUrl: "https://i.postimg.cc/PJNVr12v/theme.jpg",
+          themeThumbnailUrl: "https://i.postimg.cc/305Ft0M3/theme.jpg",
           themeTitle: "유령의 저택",
           role: "MEMBER" as const,
           reviewStatus: "WRITABLE" as const,
@@ -148,7 +148,7 @@ export default function HistoryPage() {
           location: "마스터키 명동점",
           participantsNeeded: 3,
           totalParticipants: 4,
-          themeThumbnailUrl: "https://i.postimg.cc/PJNVr12v/theme.jpg",
+          themeThumbnailUrl: "https://i.postimg.cc/305Ft0M3/theme.jpg",
           themeTitle: "비밀 사무실",
           role: "MEMBER" as const,
           reviewStatus: "WRITABLE" as const,
@@ -160,7 +160,7 @@ export default function HistoryPage() {
           location: "룸이스케이프 신림점",
           participantsNeeded: 6,
           totalParticipants: 6,
-          themeThumbnailUrl: "https://i.postimg.cc/PJNVr12v/theme.jpg",
+          themeThumbnailUrl: "https://i.postimg.cc/305Ft0M3/theme.jpg",
           themeTitle: "범죄자의 하우스",
           role: "HOST" as const,
           reviewStatus: "COMPLETED" as const,
@@ -172,7 +172,7 @@ export default function HistoryPage() {
           location: "키이스케이프 홍대점",
           participantsNeeded: 4,
           totalParticipants: 5,
-          themeThumbnailUrl: "https://i.postimg.cc/PJNVr12v/theme.jpg",
+          themeThumbnailUrl: "https://i.postimg.cc/305Ft0M3/theme.jpg",
           themeTitle: "지하실",
           role: "MEMBER" as const,
           reviewStatus: "NOT_WRITABLE" as const,
@@ -184,7 +184,7 @@ export default function HistoryPage() {
           location: "넥스트에디션 강남점",
           participantsNeeded: 4,
           totalParticipants: 4,
-          themeThumbnailUrl: "https://i.postimg.cc/PJNVr12v/theme.jpg",
+          themeThumbnailUrl: "https://i.postimg.cc/305Ft0M3/theme.jpg",
           themeTitle: "사망 이스케이프",
           role: "HOST" as const,
           reviewStatus: "WRITABLE" as const,
@@ -299,6 +299,68 @@ export default function HistoryPage() {
     <main className="min-h-screen bg-white">
       <Navigation activePage="my" />
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* 마감 임박 모임 섹션 추가 */}
+        <div className="mb-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">마감 임박 모임</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* 마감 임박 모임 카드 */}
+            {parties.slice(0, 3).map((party) => (
+              <div
+                key={`deadline-${party.id}`}
+                className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+              >
+                <div className="relative h-48">
+                  <Image
+                    src={party.themeThumbnailUrl}
+                    alt={party.title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    className="object-cover"
+                    unoptimized
+                    priority
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
+                    <h3 className="text-white font-bold text-lg">{party.title}</h3>
+                    <div className="flex justify-between items-center mt-1">
+                      <span className="text-white text-sm">{party.themeTitle}</span>
+                      <span className="bg-[#FFB130] text-white text-xs px-2 py-1 rounded-full">
+                        D-{Math.floor((new Date(party.dateTime).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-4">
+                  <div className="flex justify-between items-center text-gray-600 text-sm mb-2">
+                    <div className="flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                      </svg>
+                      <span>{party.location}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                      </svg>
+                      <span>{new Date(party.dateTime).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <div className="text-sm text-gray-600">
+                      인원: {party.participantsNeeded} / {party.totalParticipants}명
+                    </div>
+                    <Link
+                      href={`/parties/detail/${party.id}`}
+                      className="px-3 py-1 bg-[#FFB130] text-white text-xs rounded hover:bg-[#FFA000] transition-colors"
+                    >
+                      참여하기
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* 상단 - 타이틀 + 필터 영역 */}
         <div className="mb-8">
           <div className="flex justify-between items-center mb-6">
@@ -421,11 +483,26 @@ export default function HistoryPage() {
                         sizes="(max-width: 96px) 100vw, 96px"
                         className="object-cover"
                         unoptimized
+                        priority
+                        loading="eager"
                       />
                     </div>
                   ) : (
                     <div className="w-24 h-24 bg-gray-100 rounded flex-shrink-0 flex items-center justify-center">
-                      <svg>...</svg>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-10 w-10 text-gray-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
                     </div>
                   )}
                   <div className="flex-1">
