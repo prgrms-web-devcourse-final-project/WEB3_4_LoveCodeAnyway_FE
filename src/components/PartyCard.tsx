@@ -90,10 +90,10 @@ export function PartyCard({ room, onClick }: PartyCardProps) {
 
         {room.host && (
           <div className="flex items-center">
-            {room.host.image.startsWith("/images/") ? (
+            {room.host.image.startsWith("/images/") || !room.host.image ? (
               <div className="w-6 h-6 mr-2 rounded-full overflow-hidden relative">
                 <Image
-                  src="/profile_man.jpg"
+                  src="/default-profile.svg"
                   alt="프로필"
                   fill
                   className="object-cover"
