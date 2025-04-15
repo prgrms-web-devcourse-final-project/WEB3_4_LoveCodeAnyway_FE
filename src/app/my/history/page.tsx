@@ -52,7 +52,7 @@ export default function HistoryPage() {
           location: "이스케이프 홍대점",
           participantsNeeded: 5,
           totalParticipants: 6,
-          themeThumbnailUrl: "https://i.postimg.cc/305Ft0M3/theme.jpg",
+          themeThumbnailUrl: "https://i.postimages.org/PJNVr12v/theme.jpg",
           themeTitle: "좀비 연구소",
           role: "HOST" as const,
           reviewStatus: "WRITABLE" as const,
@@ -76,7 +76,7 @@ export default function HistoryPage() {
           location: "솔버 강남점",
           participantsNeeded: 3,
           totalParticipants: 6,
-          themeThumbnailUrl: "https://i.postimg.cc/305Ft0M3/theme.jpg",
+          themeThumbnailUrl: "https://i.postimages.org/PJNVr12v/theme.jpg",
           themeTitle: "타임루프",
           role: "MEMBER" as const,
           reviewStatus: "NOT_WRITABLE" as const,
@@ -260,6 +260,22 @@ export default function HistoryPage() {
     return `${year}.${month}.${day} (${dayOfWeek}) ${hours}:${minutes}`;
   };
 
+  // 이미지 URL 처리 함수
+  const getImageUrl = (url: string) => {
+    // postimg.cc 또는 postimages.org 도메인을 사용하는 경우 그대로 반환
+    if (url.includes("postimg.cc") || url.includes("postimages.org")) {
+      return url;
+    }
+    
+    // 내부 경로인 경우 그대로 반환
+    if (url.startsWith("/")) {
+      return url;
+    }
+    
+    // 기본 이미지 URL 반환
+    return "https://i.postimg.cc/PJNVr12v/theme.jpg";
+  };
+
   // 리뷰 버튼 표시 여부 및 스타일 결정 함수
   const getReviewButton = (party: PartyType) => {
     const now = new Date();
@@ -311,7 +327,7 @@ export default function HistoryPage() {
               >
                 <div className="relative h-48">
                   <Image
-                    src={party.themeThumbnailUrl}
+                    src={getImageUrl(party.themeThumbnailUrl)}
                     alt={party.title}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -477,7 +493,7 @@ export default function HistoryPage() {
                   {party.themeThumbnailUrl ? (
                     <div className="w-24 h-24 bg-gray-100 rounded overflow-hidden relative flex-shrink-0">
                       <Image
-                        src={party.themeThumbnailUrl}
+                        src={getImageUrl(party.themeThumbnailUrl)}
                         alt={party.title}
                         fill
                         sizes="(max-width: 96px) 100vw, 96px"

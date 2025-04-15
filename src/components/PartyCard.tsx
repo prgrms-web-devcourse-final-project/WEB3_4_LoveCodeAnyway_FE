@@ -16,6 +16,17 @@ export function PartyCard({ room, onClick }: PartyCardProps) {
     }
   };
 
+  // 이미지 URL이 유효한지 확인하는 함수
+  const isValidImageUrl = (url: string) => {
+    // 내부 이미지 경로인 경우
+    if (url.startsWith('/')) return true;
+    
+    // postimg.cc 또는 postimages.org 도메인 이미지인 경우
+    if (url.includes('postimg.cc') || url.includes('postimages.org')) return true;
+    
+    return false;
+  };
+
   return (
     <div
       className="bg-white rounded-2xl border border-gray-200 overflow-hidden cursor-pointer hover:shadow-sm transition-shadow"
@@ -23,7 +34,7 @@ export function PartyCard({ room, onClick }: PartyCardProps) {
     >
       {/* 이미지 섹션 */}
       <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
-        {room.image && !room.image.startsWith("/images/") ? (
+        {room.image && isValidImageUrl(room.image) ? (
           <Image
             src={room.image}
             alt={room.title}

@@ -56,7 +56,9 @@ export default function PartiesPage() {
       partyId: index + 1,
       title: `방탈출 모임 ${index + 1}`,
       themeName: ["좀비 연구소", "비밀의 방", "사망 이스케이프", "유령의 저택"][index % 4],
-      themeThumbnailUrl: "https://i.postimg.cc/PJNVr12v/theme.jpg",
+      themeThumbnailUrl: index % 2 === 0 
+        ? "https://i.postimg.cc/PJNVr12v/theme.jpg" 
+        : "https://i.postimages.org/PJNVr12v/theme.jpg",
       storeName: ["이스케이프 홍대점", "솔버 강남점", "마스터키 명동점", "키이스케이프 건대점"][index % 4],
       scheduledAt: new Date(Date.now() + (index % 3) * 2 * 24 * 60 * 60 * 1000).toISOString(),
       acceptedParticipantCount: Math.floor(Math.random() * 3) + 2,
@@ -174,12 +176,28 @@ export default function PartiesPage() {
   };
 
   const renderPartyCard = (party: PartyMainResponse) => {
+    // 이미지 URL 처리 함수
+    const getImageUrl = (url?: string) => {
+      if (!url) return "https://i.postimg.cc/PJNVr12v/theme.jpg";
+      
+      // postimages.org 또는 postimg.cc 도메인의 이미지는 그대로 사용
+      if (url.includes("postimg.cc") || url.includes("postimages.org")) {
+        return url;
+      }
+      
+      // 외부 이미지 URL이 아닌 경우 기본 이미지 사용
+      if (url.startsWith("/")) {
+        return url; // 내부 경로는 그대로 유지
+      }
+      
+      // 다른 모든 경우에 기본 이미지 사용
+      return "https://i.postimg.cc/PJNVr12v/theme.jpg";
+    };
+    
     // PartyCard 컴포넌트에 필요한 데이터 구조로 변환
     const cardData = {
       id: (party.id || party.partyId)?.toString() || "",
-      image: party.themeThumbnailUrl 
-        ? party.themeThumbnailUrl 
-        : "https://i.postimg.cc/PJNVr12v/theme.jpg",
+      image: getImageUrl(party.themeThumbnailUrl),
       title: party.title || "제목 없음",
       category: "모임",
       date: party.scheduledAt

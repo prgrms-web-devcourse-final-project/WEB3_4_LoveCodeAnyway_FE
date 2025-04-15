@@ -9,7 +9,15 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ["www.roomlescape.com", "api.ddobang.site"],
+    domains: [
+      "www.roomlescape.com", 
+      "api.ddobang.site", 
+      "i.postimg.cc", 
+      "i.postimages.org",
+      "postimg.cc",
+      "postimages.org"
+    ],
+    unoptimized: true, // 외부 이미지에 대한 최적화 비활성화
   },
   async rewrites() {
     return [
