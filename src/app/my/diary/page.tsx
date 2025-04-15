@@ -130,6 +130,8 @@ export default function DiaryPage() {
   ) => {
     setLoading(true);
     try {
+      // API 호출 코드 주석 처리
+      /*
       const response = await axios.post(
         `${API_BASE_URL}/api/v1/diaries/list`,
         {
@@ -165,6 +167,175 @@ export default function DiaryPage() {
           totalElements: 0,
         });
       }
+      */
+      
+      // 가데이터로 대체 - 테마 목록 형식에 맞춤
+      const mockDiaries: Diary[] = [
+        {
+          id: 1,
+          themeId: 123,
+          themeName: "미스터리 방탈출: 비밀의 문서",
+          storeName: "이스케이프 홍대점",
+          thumbnailUrl: "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
+          escapeDate: "2024-03-15",
+          escapeTime: 3120, // 52분
+          hintCount: 2,
+          escapeResult: true,
+          ratingAvg: 4.8,
+          isPartyDiary: true
+        },
+        {
+          id: 2,
+          themeId: 124,
+          themeName: "좀비 아포칼립스",
+          storeName: "테마월드 강남점",
+          thumbnailUrl: "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
+          escapeDate: "2024-03-22",
+          escapeTime: 3540, // 59분
+          hintCount: 3,
+          escapeResult: false,
+          ratingAvg: 4.2,
+          isPartyDiary: false
+        },
+        {
+          id: 3,
+          themeId: 125,
+          themeName: "마법사의 방",
+          storeName: "원더랜드 신촌점",
+          thumbnailUrl: "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
+          escapeDate: "2024-04-05",
+          escapeTime: 2940, // 49분
+          hintCount: 0,
+          escapeResult: true,
+          ratingAvg: 4.9,
+          isPartyDiary: true
+        },
+        {
+          id: 4,
+          themeId: 126,
+          themeName: "스파이 미션",
+          storeName: "시크릿 에이전트",
+          thumbnailUrl: "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
+          escapeDate: "2024-04-12",
+          escapeTime: 3300, // 55분
+          hintCount: 1,
+          escapeResult: true,
+          ratingAvg: 4.5,
+          isPartyDiary: false
+        },
+        {
+          id: 5,
+          themeId: 127,
+          themeName: "사라진 탐험가의 비밀",
+          storeName: "이스케이프 건대입구점",
+          thumbnailUrl: "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
+          escapeDate: "2024-02-18",
+          escapeTime: 3600, // 60분
+          hintCount: 4,
+          escapeResult: false,
+          ratingAvg: 4.0,
+          isPartyDiary: true
+        },
+        {
+          id: 6,
+          themeId: 128,
+          themeName: "퀸즈 갬빗",
+          storeName: "체스룸 성수점",
+          thumbnailUrl: "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
+          escapeDate: "2024-02-25",
+          escapeTime: 3480, // 58분
+          hintCount: 2,
+          escapeResult: true,
+          ratingAvg: 4.7,
+          isPartyDiary: false
+        },
+        {
+          id: 7,
+          themeId: 129,
+          themeName: "신비한 동굴의 비밀",
+          storeName: "어드벤처 이스케이프 강남점",
+          thumbnailUrl: "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
+          escapeDate: "2024-01-30",
+          escapeTime: 3000, // 50분
+          hintCount: 1,
+          escapeResult: true,
+          ratingAvg: 4.6,
+          isPartyDiary: true
+        },
+        {
+          id: 8,
+          themeId: 130,
+          themeName: "타임워프: 과거로의 여행",
+          storeName: "타임룸 홍대점",
+          thumbnailUrl: "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
+          escapeDate: "2024-01-15",
+          escapeTime: 3780, // 63분
+          hintCount: 5,
+          escapeResult: false,
+          ratingAvg: 3.9,
+          isPartyDiary: false
+        },
+        {
+          id: 9,
+          themeId: 131,
+          themeName: "음모론자의 방",
+          storeName: "미스터리 킹덤 신림점",
+          thumbnailUrl: "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
+          escapeDate: "2023-12-28",
+          escapeTime: 2760, // 46분
+          hintCount: 0,
+          escapeResult: true,
+          ratingAvg: 5.0,
+          isPartyDiary: true
+        },
+        {
+          id: 10,
+          themeId: 132,
+          themeName: "감옥 탈출",
+          storeName: "이스케이프 압구정점",
+          thumbnailUrl: "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
+          escapeDate: "2023-12-10",
+          escapeTime: 3360, // 56분
+          hintCount: 3,
+          escapeResult: true,
+          ratingAvg: 4.3,
+          isPartyDiary: false
+        },
+        {
+          id: 11,
+          themeId: 133,
+          themeName: "유령의 저택",
+          storeName: "호러룸 강남점",
+          thumbnailUrl: "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
+          escapeDate: "2023-11-25",
+          escapeTime: 3660, // 61분
+          hintCount: 4,
+          escapeResult: false,
+          ratingAvg: 4.1,
+          isPartyDiary: true
+        },
+        {
+          id: 12,
+          themeId: 134,
+          themeName: "해적선의 보물",
+          storeName: "어드벤처 이스케이프 명동점",
+          thumbnailUrl: "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
+          escapeDate: "2023-11-11",
+          escapeTime: 2880, // 48분
+          hintCount: 1,
+          escapeResult: true,
+          ratingAvg: 4.7,
+          isPartyDiary: false
+        }
+      ];
+      
+      // 페이지네이션 정보 설정
+      setDiaries(mockDiaries);
+      setPagination({
+        totalPages: 2,
+        currentPage: page,
+        totalElements: mockDiaries.length,
+      });
     } catch (error) {
       console.error("일지 목록을 불러오는 중 오류가 발생했습니다:", error);
       setDiaries([]);
@@ -283,6 +454,32 @@ export default function DiaryPage() {
     );
   };
 
+  // 스켈레톤 카드 렌더링 함수
+  const renderSkeletonCards = () => {
+    return Array(4)
+      .fill(0)
+      .map((_, index) => (
+        <div
+          key={`skeleton-${index}`}
+          className="bg-white rounded-2xl border border-gray-200 overflow-hidden animate-pulse"
+        >
+          <div className="aspect-[4/3] bg-gray-200"></div>
+          <div className="p-5">
+            <div className="h-5 bg-gray-200 rounded w-3/4 mb-3"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2 mb-3"></div>
+            <div className="flex items-center mb-4 gap-4">
+              <div className="h-4 bg-gray-200 rounded w-16"></div>
+              <div className="h-4 bg-gray-200 rounded w-16"></div>
+            </div>
+            <div className="flex gap-2 mb-3">
+              <div className="h-6 bg-gray-200 rounded w-16"></div>
+              <div className="h-6 bg-gray-200 rounded w-16"></div>
+            </div>
+          </div>
+        </div>
+      ));
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation activePage="my-diary" />
@@ -298,62 +495,79 @@ export default function DiaryPage() {
         </div>
 
         {/* 검색 및 필터 섹션 */}
-        <div className="bg-white rounded-xl p-4 shadow-sm">
-          <div className="flex items-center gap-3">
-            {/* 검색창 */}
-            <div className="relative flex-1">
-              <input
-                type="text"
-                placeholder="테마명, 매장명으로 검색"
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
-                ref={searchInputRef}
-                className="w-full py-2 pl-10 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FFB130] focus:border-[#FFB130]"
-              />
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+        <div className="w-full mb-6">
+          <div className="flex justify-between items-center gap-3">
+            <div className="flex-1">
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                fetchDiaries(1, { ...filter, keyword: searchKeyword });
+              }} className="relative">
+                <div className="absolute left-4 top-[14px] pointer-events-none">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="text-gray-400"
+                  >
+                    <path
+                      d="M9 15C12.3137 15 15 12.3137 15 9C15 5.68629 12.3137 3 9 3C5.68629 3 3 5.68629 3 9C3 12.3137 5.68629 15 9 15Z"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M13 13L18 18"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  placeholder="테마명, 매장명으로 검색"
+                  value={searchKeyword}
+                  onChange={(e) => setSearchKeyword(e.target.value)}
+                  ref={searchInputRef}
+                  className="w-full pl-9 pr-4 py-2.5 h-10 border border-black rounded-lg focus:outline-none focus:border-black placeholder:text-gray-400"
+                />
+              </form>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setIsFilterModalOpen(true)}
+                className="px-4 h-10 bg-black text-white text-sm rounded-lg hover:bg-gray-800 flex items-center gap-1.5"
+              >
                 <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 20 20"
                   fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="text-white"
                 >
                   <path
+                    d="M9 15C12.3137 15 15 12.3137 15 9C15 5.68629 12.3137 3 9 3C5.68629 3 3 5.68629 3 9C3 12.3137 5.68629 15 9 15Z"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                  <path
+                    d="M13 13L18 18"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   />
                 </svg>
-              </span>
+                검색필터
+              </button>
             </div>
-
-            {/* 필터 버튼 */}
-            <button
-              onClick={() => setIsFilterModalOpen(true)}
-              className="flex items-center gap-1.5 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-                />
-              </svg>
-              필터
-              {appliedFiltersCount > 0 && (
-                <span className="bg-[#FFB130] text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                  {appliedFiltersCount}
-                </span>
-              )}
-            </button>
           </div>
         </div>
 
@@ -361,7 +575,7 @@ export default function DiaryPage() {
         <PageLoading isLoading={initialLoading} />
 
         {!initialLoading && (
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+          <div className="max-w-7xl mx-auto">
             {/* 중단 - 카드 리스트 영역 */}
             {loading && !initialLoading ? (
               <div className="flex justify-center items-center py-12">
@@ -388,16 +602,17 @@ export default function DiaryPage() {
                     <div
                       key={diary.id}
                       onClick={() => router.push(`/my/diary/${diary.id}`)}
-                      className="bg-white rounded-xl shadow-sm overflow-hidden cursor-pointer h-full flex flex-col hover:shadow-md transition"
+                      className="bg-white rounded-2xl border border-gray-200 overflow-hidden cursor-pointer hover:shadow-sm transition-shadow h-full"
                     >
                       {/* 썸네일 영역 */}
-                      <div className="relative h-[220px] bg-gray-200">
+                      <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
                         {diary.thumbnailUrl ? (
                           <Image
                             src={diary.thumbnailUrl}
                             alt={diary.themeName}
                             fill
                             className="object-cover"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-gray-400">
@@ -440,18 +655,16 @@ export default function DiaryPage() {
                       </div>
 
                       {/* 컨텐츠 영역 */}
-                      <div className="p-5 flex flex-col h-full">
-                        <h3 className="text-lg font-bold text-gray-800 mb-1 line-clamp-1">
-                          {diary.themeName}
-                        </h3>
-                        <p className="text-sm text-gray-600 mb-2">
+                      <div className="p-5">
+                        <h3 className="font-bold text-lg mb-3 line-clamp-1">{diary.themeName}</h3>
+                        <p className="text-gray-600 text-sm mb-3">
                           {diary.storeName}
                         </p>
-                        <div className="flex items-center gap-3 text-sm text-gray-500 mb-2">
-                          <div className="flex items-center gap-1">
+                        <div className="flex items-center mb-4 gap-4">
+                          <div className="flex items-center text-gray-700 text-sm">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
-                              className="h-4 w-4"
+                              className="h-4 w-4 mr-1.5"
                               fill="none"
                               viewBox="0 0 24 24"
                               stroke="currentColor"
@@ -466,10 +679,10 @@ export default function DiaryPage() {
                             {formatDate(diary.escapeDate)}
                           </div>
                           {diary.escapeTime && (
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center text-gray-700 text-sm">
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
-                                className="h-4 w-4"
+                                className="h-4 w-4 mr-1.5"
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
@@ -485,7 +698,7 @@ export default function DiaryPage() {
                             </div>
                           )}
                         </div>
-                        <div className="flex items-center justify-between mt-auto">
+                        <div className="flex justify-between items-center">
                           <div className="flex items-center gap-1">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -500,7 +713,7 @@ export default function DiaryPage() {
                             </span>
                           </div>
                           {diary.hintCount !== undefined && (
-                            <span className="text-sm text-gray-500">
+                            <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
                               힌트 {diary.hintCount}개
                             </span>
                           )}
