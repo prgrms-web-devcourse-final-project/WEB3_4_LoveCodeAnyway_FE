@@ -226,6 +226,7 @@ export default function PartyDetailPage() {
       // 네이버 맵 초기화 호출
       initMap();
     }
+    
   }, [naverMapLoaded, partyData, map]);
 
   // 참가 신청 처리
@@ -365,13 +366,7 @@ export default function PartyDetailPage() {
     <main className="bg-gray-50 min-h-screen">
       <Navigation activePage="parties" />
       
-      {/* 네이버 지도 API 스크립트 */}
-      <Script
-        strategy="afterInteractive"
-        type="text/javascript"
-        src={`https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${process.env.NEXT_PUBLIC_NAVER_MAP_KEY}&submodules=geocoder`}
-        onLoad={() => setNaverMapLoaded(true)}
-      />
+
 
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-8">
         {/* [1단] 모임 기본 정보 */}
@@ -398,9 +393,14 @@ export default function PartyDetailPage() {
                   </div>
                 )}
               </div>
-              <span className="text-gray-900 font-medium">
-                {partyData.hostNickname || "모임장"}
-              </span>
+              <div className="flex flex-col">
+                <div className="flex items-center">
+                  <span className="text-gray-900 font-medium">
+                    {partyData.hostNickname || "모임장"}
+                  </span>
+                  <span className="ml-2 px-2 py-0.5 text-xs bg-[#FFB130] text-white rounded-full">모임장</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -458,7 +458,12 @@ export default function PartyDetailPage() {
                               </div>
                             )}
                           </div>
-                          <span className="text-sm font-medium">{member.nickname}</span>
+                          <div className="flex items-center">
+                            <span className="text-sm font-medium">{member.nickname}</span>
+                            {member.id === partyData.hostId && (
+                              <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-[#FFB130] text-white rounded-full">모임장</span>
+                            )}
+                          </div>
                         </div>
                         <Link 
                           href={`/profile/${member.id}`} 
@@ -552,7 +557,12 @@ export default function PartyDetailPage() {
                         )}
                       </div>
                       <div className="flex flex-col">
-                        <span className="font-medium">{member.nickname}</span>
+                        <div className="flex items-center">
+                          <span className="font-medium">{member.nickname}</span>
+                          {member.id === partyData.hostId && (
+                            <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-[#FFB130] text-white rounded-full">모임장</span>
+                          )}
+                        </div>
                         <Link 
                           href={`/profile/${member.id}`}
                           className="text-sm text-blue-600 hover:underline"
