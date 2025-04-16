@@ -13,10 +13,12 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: '**',
+        pathname: '/**',  // 모든 경로 허용
       },
       {
         protocol: 'http',
         hostname: '**',
+        pathname: '/**',  // 모든 경로 허용
       }
     ],
     unoptimized: true, // 외부 이미지에 대한 최적화 비활성화

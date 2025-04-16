@@ -396,7 +396,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
                         통계
                       </Link>
                       <Link
-                        href="/my/inquiry"
+                        href="/my/stat"
                         className="block px-4 py-3 text-base font-medium text-gray-500 hover:bg-[#FFFCF7]"
                       >
                         1:1 문의
