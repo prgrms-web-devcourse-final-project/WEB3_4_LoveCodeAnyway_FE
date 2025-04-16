@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     apple: "/favicon.svg",
   },
   other: {
-    "Content-Security-Policy": "img-src 'self' data: https: http:; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline';",
+    "Content-Security-Policy": "img-src 'self' data: https: http:; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://dapi.kakao.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://dapi.kakao.com;",
     "Referrer-Policy": "no-referrer",
   },
 };
@@ -44,16 +44,15 @@ export default function RootLayout({
       <head>
         <meta
           httpEquiv="Content-Security-Policy"
-          content="img-src 'self' data: https: http:; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline';"
+          content="img-src 'self' data: https: http:; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://dapi.kakao.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://dapi.kakao.com;"
         />
         <meta name="referrer" content="no-referrer" />
         <meta httpEquiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
         <meta httpEquiv="Pragma" content="no-cache" />
         <meta httpEquiv="Expires" content="0" />
         <Script 
-          type="text/javascript" 
-          src="//dapi.kakao.com/v2/maps/sdk.js?appkey=77ce24857d8f159f2e489d04af098480&libraries=services"
           strategy="beforeInteractive"
+          src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=77ce24857d8f159f2e489d04af098480&libraries=services"
         />
       </head>
       <body

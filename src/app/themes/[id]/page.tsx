@@ -342,7 +342,7 @@ export default function ThemeDetailPage() {
             {themeDetail.storeInfo && (
               <div className="w-full md:w-1/2">
                 <h2 className="text-2xl font-bold mb-4">매장 위치</h2>
-                <div className="h-64 bg-gray-200 rounded-lg mb-4">
+                <div className="h-64 bg-gray-200 rounded-lg mb-4 relative">
                   <KakaoMap address={themeDetail.storeInfo.address || ""} />
                 </div>
                 <div className="space-y-2">

@@ -49,7 +49,7 @@ const nextConfig = {
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 60,
     dangerouslyAllowSVG: true,
-    contentSecurityPolicy: "default-src 'self'; img-src 'self' data: https: http:; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline';",
+    contentSecurityPolicy: "default-src 'self'; img-src 'self' data: https: http:; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://dapi.kakao.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://dapi.kakao.com;",
   },
   async rewrites() {
     return [
@@ -61,6 +61,11 @@ const nextConfig = {
       {
         source: "/img-proxy/:path*",
         destination: "http://xn--vh3bn2thtas7l8te.com/:path*",
+      },
+      // 카카오맵 API 프록시 추가
+      {
+        source: "/kakao-api/:path*",
+        destination: "https://dapi.kakao.com/:path*",
       },
     ];
   },
@@ -85,6 +90,10 @@ const nextConfig = {
           {
             key: 'X-XSS-Protection',
             value: '1; mode=block',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: "default-src 'self'; img-src 'self' data: https: http:; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://dapi.kakao.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://dapi.kakao.com",
           },
         ],
       },
