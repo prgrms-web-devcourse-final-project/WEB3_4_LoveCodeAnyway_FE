@@ -480,7 +480,7 @@ export default function MyPage() {
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold">나의 모임 히스토리</h2>
             <Link
-              href="/my/parties"
+              href="/my/history"
               className="text-[#FFB130] hover:text-[#F0A120] transition-colors"
             >
               전체보기
@@ -494,17 +494,20 @@ export default function MyPage() {
               >
                 <div className="p-6">
                   <div className="flex gap-4">
-                    <div className="w-24 h-24 bg-gray-200 rounded-lg flex-shrink-0">
-                      <div key={item} className="space-y-2">
-                        <div className="aspect-video relative rounded-lg overflow-hidden">
-                          <Image
-                            src={`/favicon.svg`}
-                            alt="Party thumbnail"
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                      </div>
+                    <div className="w-24 h-24 bg-gray-200 rounded-lg flex-shrink-0 relative">
+                      <Image
+                        src={`https://i.postimg.cc/PJNVr12v/theme.jpg`}
+                        alt="Party thumbnail"
+                        fill
+                        className="object-cover rounded-lg"
+                        unoptimized
+                        onError={(e) => {
+                          // 이미지 로드 오류 시 기본 이미지(Base64 데이터 URL)로 대체
+                          const fallbackImage = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgZmlsbD0iI2VlZWVlZSIvPjxwYXRoIGQ9Ik00NSA0NUgzMFY3NUg5MFY0NUg3NVYzMEg0NVY0NVpNNzUgOTBIMzBWNzVIOTBWNDVINzVWOTBaIiBmaWxsPSIjOTk5OTk5Ii8+PC9zdmc+";
+                          (e.target as HTMLImageElement).src = fallbackImage;
+                          (e.target as HTMLImageElement).onerror = null; // 이중 호출 방지
+                        }}
+                      />
                     </div>
                     <div className="flex-1">
                       <h3 className="font-medium mb-1">

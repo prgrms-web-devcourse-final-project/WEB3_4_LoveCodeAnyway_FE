@@ -86,10 +86,6 @@ const nextConfig = {
             key: 'X-XSS-Protection',
             value: '1; mode=block',
           },
-          {
-            key: 'Content-Security-Policy',
-            value: "default-src 'self'; img-src 'self' data: https: http:; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://dapi.kakao.com; script-src-elem 'self' 'unsafe-inline' https://dapi.kakao.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.ddobang.site http://localhost:8080 https://dapi.kakao.com;",
-          },
         ],
       },
     ];

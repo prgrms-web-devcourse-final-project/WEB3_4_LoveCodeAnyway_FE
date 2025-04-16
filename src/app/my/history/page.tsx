@@ -52,7 +52,7 @@ export default function HistoryPage() {
           location: "이스케이프 홍대점",
           participantsNeeded: 5,
           totalParticipants: 6,
-          themeThumbnailUrl: "https://i.postimages.org/PJNVr12v/theme.jpg",
+          themeThumbnailUrl: "https://i.postimg.cc/rs2bByH8/interior-2505229-640.jpg", // 1번 이미지
           themeTitle: "좀비 연구소",
           role: "HOST" as const,
           reviewStatus: "WRITABLE" as const,
@@ -64,7 +64,7 @@ export default function HistoryPage() {
           location: "플레이포인트 강남점",
           participantsNeeded: 4,
           totalParticipants: 4,
-          themeThumbnailUrl: "https://i.postimg.cc/305Ft0M3/theme.jpg",
+          themeThumbnailUrl: "https://i.postimg.cc/7hL7Y0dX/interior-2505229-640.jpg", // 2번 이미지
           themeTitle: "심야 병동",
           role: "MEMBER" as const,
           reviewStatus: "COMPLETED" as const,
@@ -76,7 +76,7 @@ export default function HistoryPage() {
           location: "솔버 강남점",
           participantsNeeded: 3,
           totalParticipants: 6,
-          themeThumbnailUrl: "https://i.postimages.org/PJNVr12v/theme.jpg",
+          themeThumbnailUrl: "https://i.postimg.cc/fT3s132T/image.jpg", // 3번 이미지
           themeTitle: "타임루프",
           role: "MEMBER" as const,
           reviewStatus: "NOT_WRITABLE" as const,
@@ -88,7 +88,7 @@ export default function HistoryPage() {
           location: "키이스케이프 건대점",
           participantsNeeded: 4,
           totalParticipants: 4,
-          themeThumbnailUrl: "https://i.postimg.cc/305Ft0M3/theme.jpg",
+          themeThumbnailUrl: "https://i.postimg.cc/bJHXqpxr/image.jpg", // 4번 이미지
           themeTitle: "마술사의 집",
           role: "HOST" as const,
           reviewStatus: "COMPLETED" as const,
@@ -100,7 +100,7 @@ export default function HistoryPage() {
           location: "비트포비아 홍대점",
           participantsNeeded: 4,
           totalParticipants: 6,
-          themeThumbnailUrl: "https://i.postimg.cc/305Ft0M3/theme.jpg",
+          themeThumbnailUrl: "https://naverbooking-phinf.pstatic.net/20230612_144/1686513263098ppWzR_JPEG/%C7%EF%B8%AE%C4%DF%C5%CD_%B4%BA_%C6%F7%BD%BA%C5%CD.jpg", // 5번 이미지
           themeTitle: "자살 사건 추리",
           role: "MEMBER" as const,
           reviewStatus: "NOT_WRITABLE" as const,
@@ -112,7 +112,7 @@ export default function HistoryPage() {
           location: "셜록홈즈 신촌점",
           participantsNeeded: 3,
           totalParticipants: 4,
-          themeThumbnailUrl: "https://i.postimg.cc/305Ft0M3/theme.jpg",
+          themeThumbnailUrl: "https://i.postimg.cc/rs2bByH8/interior-2505229-640.jpg", // 1번 이미지
           themeTitle: "공포체험",
           role: "HOST" as const,
           reviewStatus: "COMPLETED" as const,
@@ -124,7 +124,7 @@ export default function HistoryPage() {
           location: "비밀의 방 강남점",
           participantsNeeded: 4,
           totalParticipants: 5,
-          themeThumbnailUrl: "https://i.postimg.cc/305Ft0M3/theme.jpg",
+          themeThumbnailUrl: "https://i.postimg.cc/7hL7Y0dX/interior-2505229-640.jpg", // 2번 이미지
           themeTitle: "비밀의 방",
           role: "HOST" as const,
           reviewStatus: "NOT_WRITABLE" as const,
@@ -261,19 +261,18 @@ export default function HistoryPage() {
   };
 
   // 이미지 URL 처리 함수
-  const getImageUrl = (url: string) => {
-    // URL이 없는 경우 기본 이미지 반환
-    if (!url) {
-      return "https://i.postimg.cc/PJNVr12v/theme.jpg";
-    }
+  const getImageUrl = (url: string, partyId: number) => {
+    // 5개의 이미지를 번갈아가며 표시
+    const imageUrls = [
+      "https://i.postimg.cc/rs2bByH8/interior-2505229-640.jpg",
+      "https://i.postimg.cc/7hL7Y0dX/interior-2505229-640.jpg",
+      "https://i.postimg.cc/fT3s132T/image.jpg",
+      "https://i.postimg.cc/bJHXqpxr/image.jpg",
+      "https://naverbooking-phinf.pstatic.net/20230612_144/1686513263098ppWzR_JPEG/%C7%EF%B8%AE%C4%DF%C5%CD_%B4%BA_%C6%F7%BD%BA%C5%CD.jpg"
+    ];
     
-    // 내부 경로는 그대로 사용
-    if (url.startsWith("/")) {
-      return url;
-    }
-    
-    // 외부 URL은 그대로 사용
-    return url;
+    // 모임 ID를 기준으로 이미지 선택
+    return imageUrls[partyId % 5];
   };
 
   // 리뷰 버튼 표시 여부 및 스타일 결정 함수
@@ -327,7 +326,7 @@ export default function HistoryPage() {
               >
                 <div className="relative h-48">
                   <Image
-                    src={getImageUrl(party.themeThumbnailUrl)}
+                    src={getImageUrl(party.themeThumbnailUrl, party.id)}
                     alt={party.title}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -493,14 +492,18 @@ export default function HistoryPage() {
                   {party.themeThumbnailUrl ? (
                     <div className="w-24 h-24 bg-gray-100 rounded overflow-hidden relative flex-shrink-0">
                       <Image
-                        src={getImageUrl(party.themeThumbnailUrl)}
+                        src={getImageUrl(party.themeThumbnailUrl, party.id)}
                         alt={party.title}
                         fill
                         sizes="(max-width: 96px) 100vw, 96px"
                         className="object-cover"
                         unoptimized
-                        priority
-                        loading="eager"
+                        onError={(e) => {
+                          // 이미지 로드 오류 시 기본 이미지(Base64 데이터 URL)로 대체
+                          const fallbackImage = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgZmlsbD0iI2VlZWVlZSIvPjxwYXRoIGQ9Ik00NSA0NUgzMFY3NUg5MFY0NUg3NVYzMEg0NVY0NVpNNzUgOTBIMzBWNzVIOTBWNDVINzVWOTBaIiBmaWxsPSIjOTk5OTk5Ii8+PC9zdmc+";
+                          (e.target as HTMLImageElement).src = fallbackImage;
+                          (e.target as HTMLImageElement).onerror = null; // 이중 호출 방지
+                        }}
                       />
                     </div>
                   ) : (
