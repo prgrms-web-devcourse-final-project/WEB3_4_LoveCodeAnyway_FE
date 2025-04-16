@@ -35,6 +35,7 @@ export default function HistoryPage() {
   const [parties, setParties] = useState<PartyType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedMapParty, setSelectedMapParty] = useState<number | null>(null);
 
   // 모임 데이터 가져오기 (실제로는 API 요청)
   useEffect(() => {
@@ -310,6 +311,43 @@ export default function HistoryPage() {
     }
   };
 
+  // 지도 토글 함수
+  const toggleMap = (partyId: number) => {
+    if (selectedMapParty === partyId) {
+      setSelectedMapParty(null);
+    } else {
+      setSelectedMapParty(partyId);
+    }
+  };
+  
+  // OpenStreetMap 정적 지도 URL 생성 함수
+  const getMapImageUrl = (location: string) => {
+    // 서울 중심 좌표로 기본 설정 (실제로는 위치에 따라 달라져야 함)
+    let lat = 37.5665;
+    let lon = 126.9780;
+    
+    // 위치에 따라 좌표 조정 (샘플용)
+    if (location.includes('홍대')) {
+      lat = 37.557;
+      lon = 126.923;
+    } else if (location.includes('강남')) {
+      lat = 37.498;
+      lon = 127.027;
+    } else if (location.includes('건대')) {
+      lat = 37.540;
+      lon = 127.069;
+    } else if (location.includes('신촌')) {
+      lat = 37.555;
+      lon = 126.936;
+    } else if (location.includes('종로')) {
+      lat = 37.570;
+      lon = 126.981;
+    }
+    
+    // OpenStreetMap 기반 정적 이미지 URL
+    return `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lon}&zoom=14&size=600x400&maptype=mapnik&markers=${lat},${lon},lightblue`;
+  };
+
   return (
     <main className="min-h-screen bg-white">
       <Navigation activePage="my" />
@@ -529,7 +567,21 @@ export default function HistoryPage() {
                     <div className="space-y-1 text-sm text-gray-600">
                       <p>{formatDate(party.dateTime)}</p>
                       <p>테마: {party.themeTitle}</p>
-                      <p>장소: {party.location}</p>
+                      <div className="flex items-center">
+                        <p className="flex items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          장소: {party.location}
+                        </p>
+                        <button 
+                          className="ml-2 text-sm text-blue-500 hover:text-blue-700 flex items-center"
+                          onClick={() => toggleMap(party.id)}
+                        >
+                          {selectedMapParty === party.id ? "지도 닫기" : "지도 보기"}
+                        </button>
+                      </div>
                       <p>
                         인원: {party.participantsNeeded} /{" "}
                         {party.totalParticipants}명
@@ -537,6 +589,22 @@ export default function HistoryPage() {
                     </div>
                   </div>
                 </div>
+                
+                {/* 지도 이미지 영역 - 고정 이미지 사용 */}
+                {selectedMapParty === party.id && (
+                  <div className="mt-4 w-full h-64 bg-gray-100 rounded-lg overflow-hidden relative">
+                    <Image
+                      src="https://i.postimg.cc/L5Q5s78R/image.png"
+                      alt={`${party.location} 지도`}
+                      fill
+                      className="object-cover"
+                      unoptimized
+                    />
+                    <div className="absolute bottom-2 right-2 bg-white px-2 py-1 rounded shadow text-xs">
+                      {party.location}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>

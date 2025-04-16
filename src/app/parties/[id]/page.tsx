@@ -8,7 +8,6 @@ import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import { LoginMemberContext } from "@/stores/auth/loginMember";
 import Script from "next/script";
-import { KakaoMap } from "@/components/KakaoMap";
 
 // 기본 이미지 경로
 const DEFAULT_PROFILE_IMAGE = "/profile_default.jpg";
@@ -249,6 +248,36 @@ export default function PartyDetailPage() {
       console.error("모임 취소 중 오류:", error);
       alert("모임 취소 중 오류가 발생했습니다.");
     }
+  };
+
+  // OpenStreetMap 정적 지도 URL 생성 함수
+  const getMapImageUrl = (address?: string) => {
+    if (!address) return "";
+    
+    // 서울 중심 좌표로 기본 설정 (실제로는 위치에 따라 달라져야 함)
+    let lat = 37.5665;
+    let lon = 126.9780;
+    
+    // 위치에 따라 좌표 조정 (샘플용)
+    if (address.includes('홍대')) {
+      lat = 37.557;
+      lon = 126.923;
+    } else if (address.includes('강남')) {
+      lat = 37.498;
+      lon = 127.027;
+    } else if (address.includes('건대')) {
+      lat = 37.540;
+      lon = 127.069;
+    } else if (address.includes('신촌')) {
+      lat = 37.555;
+      lon = 126.936;
+    } else if (address.includes('종로')) {
+      lat = 37.570;
+      lon = 126.981;
+    }
+    
+    // OpenStreetMap 기반 정적 이미지 URL
+    return `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lon}&zoom=14&size=600x400&maptype=mapnik&markers=${lat},${lon},lightblue`;
   };
 
   // 로딩 중 표시
@@ -584,9 +613,18 @@ export default function PartyDetailPage() {
               <h3 className="text-lg font-medium mb-2">{partyData.storeName}</h3>
               <p className="text-gray-600 mb-4">{partyData.storeAddress}</p>
               
-              {/* 카카오 지도 */}
-              <div className="w-full h-80 bg-gray-200 rounded-lg">
-                <KakaoMap address={partyData.storeAddress || ""} />
+              {/* 고정 지도 이미지 사용 */}
+              <div className="w-full h-80 bg-gray-200 rounded-lg relative">
+                <Image
+                  src="https://i.postimg.cc/L5Q5s78R/image.png"
+                  alt={`${partyData.storeName} 지도`}
+                  fill
+                  className="object-cover rounded-lg"
+                  unoptimized
+                />
+                <div className="absolute bottom-2 right-2 bg-white px-2 py-1 rounded shadow text-xs">
+                  {partyData.storeName || ""}
+                </div>
               </div>
             </div>
           </div>
