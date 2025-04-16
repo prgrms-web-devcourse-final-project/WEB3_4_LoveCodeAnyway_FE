@@ -25,7 +25,7 @@ export function ThemeCard({ room }: { room: EscapeRoom }) {
               className="object-cover"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               onError={() => setImageError(true)}
-              unoptimized={!room.image.startsWith("/")} // 외부 이미지는 최적화하지 않음
+              unoptimized={true}
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">

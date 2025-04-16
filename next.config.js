@@ -12,6 +12,14 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
+        hostname: 'cafefiles.pstatic.net',
+      },
+      {
+        protocol: 'https',
+        hostname: 'naverbooking-phinf.pstatic.net',
+      },
+      {
+        protocol: 'https',
         hostname: '**',
         pathname: '/**',  // 모든 경로 허용
       },
