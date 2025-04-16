@@ -288,9 +288,6 @@ export default function StatPage() {
           <div className="bg-white p-6 rounded-xl shadow-sm">
             <h3 className="text-lg font-semibold mb-6">성향 분석 <span className="text-gray-400 text-sm">ⓘ</span></h3>
             <div className="relative h-64">
-              <div className="absolute top-0 left-0 right-0 text-center text-xs text-red-500 font-light">
-                그래프 위에<br />Hover 필수!
-              </div>
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart cx="50%" cy="50%" outerRadius="70%" data={statData.radarData}>
                   <PolarGrid />
