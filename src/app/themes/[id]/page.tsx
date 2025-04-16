@@ -53,22 +53,30 @@ export default function ThemeDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [liked, setLiked] = useState(false);
-
-  // 인증서 오류 도메인의 이미지를 프록시로 처리하는 함수
-  const getImageUrl = (url?: string) => {
+  
+  // 인증서 오류 도메인 확인
+  const CERTIFICATE_ERROR_DOMAINS = [
+    'xn--vh3bn2thtas7l8te.com',
+    'www.xn--vh3bn2thtas7l8te.com'
+  ];
+  
+  // 이미지 URL 처리 함수
+  const getProxyImageUrl = (url: string | undefined): string => {
     if (!url) return "/images/mystery-room.jpg";
     
-    // 인증서 오류가 있는 도메인 확인
-    const isCertificateErrorDomain = url.includes('xn--vh3bn2thtas7l8te.com');
+    // 인증서 오류 도메인인지 확인
+    const hasErrorDomain = CERTIFICATE_ERROR_DOMAINS.some(domain => 
+      url.includes(domain)
+    );
     
-    if (isCertificateErrorDomain) {
+    if (hasErrorDomain) {
       try {
-        // 원본 URL에서 도메인 이후 경로 추출 (https://domain.com/path -> /path)
-        const urlPath = new URL(url).pathname;
-        // 프록시 URL 생성
-        return `/img-proxy${urlPath}`;
+        // 원본 URL에서 경로만 추출
+        const urlObj = new URL(url);
+        return `/img-proxy${urlObj.pathname}`;
       } catch (e) {
-        return url; // URL 파싱 오류 시 원본 URL 반환
+        console.error('URL 파싱 오류:', e);
+        return url;
       }
     }
     
@@ -261,13 +269,12 @@ export default function ThemeDetailPage() {
           </div>
           <div className="relative w-full h-[400px] bg-gray-100 rounded-2xl overflow-hidden mb-4">
             {themeDetail.thumbnailUrl ? (
-              <Image
-                src={getImageUrl(themeDetail.thumbnailUrl)}
+              <img
+                src={getProxyImageUrl(themeDetail.thumbnailUrl)}
                 alt={themeDetail.name || "테마 이미지"}
-                fill
-                style={{ objectFit: "cover" }}
-                className="rounded-2xl"
-                unoptimized={!getImageUrl(themeDetail.thumbnailUrl).startsWith('/img-proxy')}
+                className="absolute inset-0 w-full h-full object-cover rounded-2xl"
+                referrerPolicy="no-referrer"
+                loading="lazy"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.src = "/images/mystery-room.jpg";
@@ -275,12 +282,11 @@ export default function ThemeDetailPage() {
               />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">
-                <Image
+                <img
                   src="/images/mystery-room.jpg"
                   alt="기본 이미지"
-                  fill
-                  style={{ objectFit: "cover" }}
-                  className="rounded-2xl"
+                  className="w-full h-full object-cover rounded-2xl"
+                  loading="lazy"
                 />
               </div>
             )}

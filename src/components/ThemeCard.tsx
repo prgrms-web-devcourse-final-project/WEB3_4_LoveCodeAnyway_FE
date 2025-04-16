@@ -12,18 +12,30 @@ export function ThemeCard({ room }: { room: EscapeRoom }) {
   // 기본 이미지 URL
   const fallbackImageUrl = "/images/mystery-room.jpg";
   
-  // 인증서 오류 도메인 확인 및 프록시 URL 생성
+  // 인증서 오류 도메인 확인
+  const CERTIFICATE_ERROR_DOMAINS = [
+    'xn--vh3bn2thtas7l8te.com',
+    'www.xn--vh3bn2thtas7l8te.com'
+  ];
+  
+  // 이미지 URL 처리 - 인증서 오류 도메인일 경우 프록시 사용
   const imageUrl = useMemo(() => {
     if (!room.image) return fallbackImageUrl;
     
-    // 인증서 오류가 있는 도메인 확인
-    const isCertificateErrorDomain = room.image.includes('xn--vh3bn2thtas7l8te.com');
+    // 인증서 오류 도메인인지 확인
+    const hasErrorDomain = CERTIFICATE_ERROR_DOMAINS.some(domain => 
+      room.image?.includes(domain)
+    );
     
-    if (isCertificateErrorDomain) {
-      // 원본 URL에서 도메인 이후 경로 추출 (https://domain.com/path -> /path)
-      const urlPath = new URL(room.image).pathname;
-      // 프록시 URL 생성
-      return `/img-proxy${urlPath}`;
+    if (hasErrorDomain) {
+      try {
+        // 원본 URL에서 경로만 추출
+        const urlObj = new URL(room.image);
+        return `/img-proxy${urlObj.pathname}`;
+      } catch (e) {
+        console.error('URL 파싱 오류:', e);
+        return room.image;
+      }
     }
     
     return room.image;
@@ -35,23 +47,21 @@ export function ThemeCard({ room }: { room: EscapeRoom }) {
         {/* 이미지 섹션 */}
         <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
           {!imageError ? (
-            <Image
+            <img
               src={imageUrl}
               alt={room.title}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="absolute inset-0 w-full h-full object-cover"
               onError={() => setImageError(true)}
-              unoptimized={!imageUrl.startsWith('/img-proxy')} // 프록시 이미지는 최적화 사용
+              referrerPolicy="no-referrer"
+              loading="lazy"
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
-              <Image
+              <img
                 src={fallbackImageUrl}
                 alt={room.title}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                className="w-full h-full object-cover"
+                loading="lazy"
               />
             </div>
           )}

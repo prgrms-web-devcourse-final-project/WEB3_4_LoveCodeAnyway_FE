@@ -20,15 +20,19 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'xn--vh3bn2thtas7l8te.com',
-      },
-      {
-        protocol: 'https',
         hostname: 'www.themazex.co.kr',
       },
       {
         protocol: 'https',
         hostname: 'www.thecode06.kr',
+      },
+      {
+        protocol: 'https',
+        hostname: 'xn--vh3bn2thtas7l8te.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.xn--vh3bn2thtas7l8te.com',
       },
       {
         protocol: 'https',
@@ -42,8 +46,10 @@ const nextConfig = {
       }
     ],
     unoptimized: true, // 외부 이미지에 대한 최적화 비활성화
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60,
     dangerouslyAllowSVG: true,
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    contentSecurityPolicy: "default-src 'self'; img-src 'self' data: https: http:; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline';",
   },
   async rewrites() {
     return [
@@ -51,10 +57,36 @@ const nextConfig = {
         source: "/api/v1/:path*",
         destination: "https://api.ddobang.site/api/v1/:path*",
       },
-      // 이미지 프록시 처리
+      // 인증서 오류 도메인 프록시
       {
-        source: "/img-proxy/:url*",
-        destination: "https://xn--vh3bn2thtas7l8te.com/:url*",
+        source: "/img-proxy/:path*",
+        destination: "http://xn--vh3bn2thtas7l8te.com/:path*",
+      },
+    ];
+  },
+  // 웹 보안 설정
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Referrer-Policy',
+            value: 'no-referrer',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+        ],
       },
     ];
   },

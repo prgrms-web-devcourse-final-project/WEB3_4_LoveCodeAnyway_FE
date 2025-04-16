@@ -6,7 +6,16 @@ import { useState, useContext, useEffect, useRef } from "react";
 import { LoginMemberContext } from "@/stores/auth/loginMember";
 import client from "@/lib/backend/client";
 import { useRouter } from "next/navigation";
-import { GetAlarmsResponse, Alarm } from "@/lib/backend/apiV1/schema";
+
+// 알림 데이터 타입 직접 정의
+interface Alarm {
+  id: number;
+  title: string;
+  content: string;
+  createdAt: string;
+  readStatus: boolean;
+  alarmType: "SYSTEM" | "MESSAGE" | "SUBSCRIBE" | string;
+}
 
 export function Navigation({ activePage }: { activePage?: string }) {
   const router = useRouter();
@@ -75,12 +84,29 @@ export function Navigation({ activePage }: { activePage?: string }) {
 
   const fetchNotifications = async () => {
     try {
-      const response = await client.GET("/api/v1/alarms");
-      if (response.data?.data) {
-        setNotifications(response.data.data.items || []);
-      }
+      // 임의의 알림 데이터 사용
+      const mockNotifications: Alarm[] = [
+        {
+          id: 1,
+          title: "새로운 모임이 생성되었습니다",
+          content: "관심 테마의 새로운 모임이 생성되었습니다. 확인해보세요!",
+          createdAt: new Date().toISOString(),
+          readStatus: false,
+          alarmType: "SYSTEM"
+        },
+        {
+          id: 2,
+          title: "새 메시지가 도착했습니다",
+          content: "모임장으로부터 새 메시지가 도착했습니다.",
+          createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+          readStatus: true,
+          alarmType: "MESSAGE"
+        }
+      ];
+      setNotifications(mockNotifications);
     } catch (error) {
       console.error("알림 목록 조회 실패:", error);
+      // 오류 발생 시 기본 데이터 유지
     }
   };
 
@@ -109,7 +135,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
 
   const markAsRead = async (id: number) => {
     try {
-      await client.PATCH(`/alarms/${id}/read`);
+      // API 호출 없이 상태만 업데이트
       setNotifications((prev) =>
         prev.map((notification) =>
           notification.id === id
@@ -124,7 +150,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
 
   const markAllAsRead = async () => {
     try {
-      await client.PATCH("/alarms/read-all");
+      // API 호출 없이 상태만 업데이트
       setNotifications((prev) =>
         prev.map((notification) => ({ ...notification, readStatus: true }))
       );
@@ -359,7 +385,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
                       {loginMember && (
                         <img
                           src={
-                            loginMember.pofilePictureUrl ||
+                            loginMember.profilePictureUrl ||
                             "/default-profile.svg"
                           }
                           alt={loginMember.nickname || "프로필"}
@@ -396,7 +422,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
                         통계
                       </Link>
                       <Link
-                        href="/my/stat"
+                        href="/my/inquiry"
                         className="block px-4 py-3 text-base font-medium text-gray-500 hover:bg-[#FFFCF7]"
                       >
                         1:1 문의
