@@ -8,6 +8,7 @@ import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import { LoginMemberContext } from "@/stores/auth/loginMember";
 import Script from "next/script";
+import { KakaoMap } from "@/components/KakaoMap";
 
 // 기본 이미지 경로
 const DEFAULT_PROFILE_IMAGE = "/profile_default.jpg";
@@ -167,61 +168,6 @@ export default function PartyDetailPage() {
     fetchPartyDetail();
   }, [partyId, baseUrl, isLogin, router, loginMember]);
 
-  // 카카오 지도 초기화
-  useEffect(() => {
-    if (kakaoMapLoaded && partyData?.storeAddress && !map) {
-      const initMap = () => {
-        // 전역 kakao 객체가 있는지 확인
-        if (typeof window.kakao === 'undefined') return;
-
-        try {
-          // 지도를 표시할 div
-          const container = document.getElementById('map');
-          // 지도 옵션 (서울 중심)
-          const options = {
-            center: new window.kakao.maps.LatLng(37.5665, 126.9780),
-            level: 3
-          };
-
-          // 지도 생성
-          const kakaoMap = new window.kakao.maps.Map(container, options);
-          setMap(kakaoMap);
-
-          // 주소-좌표 변환 객체 생성
-          const geocoder = new window.kakao.maps.services.Geocoder();
-
-          // 주소로 좌표 검색
-          geocoder.addressSearch(partyData.storeAddress, function(result: any, status: any) {
-            // 정상적으로 검색이 완료됐으면
-            if (status === window.kakao.maps.services.Status.OK) {
-              const coords = new window.kakao.maps.LatLng(result[0].y, result[0].x);
-
-              // 결과값으로 받은 위치를 마커로 표시
-              const marker = new window.kakao.maps.Marker({
-                map: kakaoMap,
-                position: coords
-              });
-
-              // 인포윈도우로 장소에 대한 설명 표시
-              const infowindow = new window.kakao.maps.InfoWindow({
-                content: `<div style="width:150px;text-align:center;padding:6px 0;">${partyData.storeName || '매장'}</div>`
-              });
-              infowindow.open(kakaoMap, marker);
-
-              // 지도의 중심을 결과값으로 받은 위치로 이동
-              kakaoMap.setCenter(coords);
-            }
-          });
-        } catch (error) {
-          console.error("카카오 지도 초기화 중 오류:", error);
-        }
-      };
-
-      // 카카오 맵 초기화 호출
-      initMap();
-    }
-  }, [kakaoMapLoaded, partyData, map]);
-
   // 참가 신청 처리
   const handleJoinRequest = async () => {
     if (!partyId) return;
@@ -359,14 +305,6 @@ export default function PartyDetailPage() {
     <main className="bg-gray-50 min-h-screen">
       <Navigation activePage="parties" />
       
-      {/* 카카오 지도 API 스크립트 */}
-      <Script
-        strategy="afterInteractive"
-        type="text/javascript"
-        src={`//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_MAP_KEY}&libraries=services`}
-        onLoad={() => setKakaoMapLoaded(true)}
-      />
-
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-8">
         {/* [1단] 모임 기본 정보 */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 mb-6">
@@ -647,10 +585,9 @@ export default function PartyDetailPage() {
               <p className="text-gray-600 mb-4">{partyData.storeAddress}</p>
               
               {/* 카카오 지도 */}
-              <div 
-                id="map" 
-                className="w-full h-80 bg-gray-200 rounded-lg"
-              ></div>
+              <div className="w-full h-80 bg-gray-200 rounded-lg">
+                <KakaoMap address={partyData.storeAddress || ""} />
+              </div>
             </div>
           </div>
         </div>
