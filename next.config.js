@@ -28,6 +28,10 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'www.thecode06.kr',
+      },
+      {
+        protocol: 'https',
         hostname: '**',
         pathname: '/**',  // 모든 경로 허용
       },
