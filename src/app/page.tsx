@@ -302,14 +302,14 @@ export default function HomePage() {
                             </div>
                           </div>
 
-                          <div className="flex justify-center items-center h-40 bg-gray-100 rounded-lg mb-3 flex-shrink-0">
+                          <div className="flex justify-center items-center h-40 bg-gray-100 rounded-lg mb-3 flex-shrink-0 relative overflow-hidden">
                             {party.themeThumbnailUrl ? (
                               <Image
                                 src={party.themeThumbnailUrl}
                                 alt="모임 썸네일"
-                                width={120}
-                                height={120}
+                                fill
                                 className="object-cover"
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                               />
                             ) : (
                               <div className="flex items-center justify-center w-16 h-16 rounded-full bg-gray-200 text-gray-400">
