@@ -20,6 +20,14 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'xn--vh3bn2thtas7l8te.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.themazex.co.kr',
+      },
+      {
+        protocol: 'https',
         hostname: '**',
         pathname: '/**',  // 모든 경로 허용
       },
@@ -30,12 +38,19 @@ const nextConfig = {
       }
     ],
     unoptimized: true, // 외부 이미지에 대한 최적화 비활성화
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   async rewrites() {
     return [
       {
         source: "/api/v1/:path*",
         destination: "https://api.ddobang.site/api/v1/:path*",
+      },
+      // 이미지 프록시 처리
+      {
+        source: "/img-proxy/:url*",
+        destination: "https://xn--vh3bn2thtas7l8te.com/:url*",
       },
     ];
   },

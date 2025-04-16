@@ -3,7 +3,7 @@
 import { EscapeRoom } from "@/types/EscapeRoom";
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 // 인기/최신 테마 카드 컴포넌트
 export function ThemeCard({ room }: { room: EscapeRoom }) {
@@ -11,21 +11,38 @@ export function ThemeCard({ room }: { room: EscapeRoom }) {
 
   // 기본 이미지 URL
   const fallbackImageUrl = "/images/mystery-room.jpg";
+  
+  // 인증서 오류 도메인 확인 및 프록시 URL 생성
+  const imageUrl = useMemo(() => {
+    if (!room.image) return fallbackImageUrl;
+    
+    // 인증서 오류가 있는 도메인 확인
+    const isCertificateErrorDomain = room.image.includes('xn--vh3bn2thtas7l8te.com');
+    
+    if (isCertificateErrorDomain) {
+      // 원본 URL에서 도메인 이후 경로 추출 (https://domain.com/path -> /path)
+      const urlPath = new URL(room.image).pathname;
+      // 프록시 URL 생성
+      return `/img-proxy${urlPath}`;
+    }
+    
+    return room.image;
+  }, [room.image]);
 
   return (
     <Link href={`/themes/${room.id}`}>
       <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden cursor-pointer hover:shadow-sm transition-shadow">
         {/* 이미지 섹션 */}
         <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
-          {room.image && !imageError ? (
+          {!imageError ? (
             <Image
-              src={room.image}
+              src={imageUrl}
               alt={room.title}
               fill
               className="object-cover"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               onError={() => setImageError(true)}
-              unoptimized={true}
+              unoptimized={!imageUrl.startsWith('/img-proxy')} // 프록시 이미지는 최적화 사용
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">

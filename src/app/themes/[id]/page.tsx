@@ -54,6 +54,27 @@ export default function ThemeDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [liked, setLiked] = useState(false);
 
+  // 인증서 오류 도메인의 이미지를 프록시로 처리하는 함수
+  const getImageUrl = (url?: string) => {
+    if (!url) return "/images/mystery-room.jpg";
+    
+    // 인증서 오류가 있는 도메인 확인
+    const isCertificateErrorDomain = url.includes('xn--vh3bn2thtas7l8te.com');
+    
+    if (isCertificateErrorDomain) {
+      try {
+        // 원본 URL에서 도메인 이후 경로 추출 (https://domain.com/path -> /path)
+        const urlPath = new URL(url).pathname;
+        // 프록시 URL 생성
+        return `/img-proxy${urlPath}`;
+      } catch (e) {
+        return url; // URL 파싱 오류 시 원본 URL 반환
+      }
+    }
+    
+    return url;
+  };
+
   useEffect(() => {
     const fetchThemeDetail = async () => {
       setLoading(true);
@@ -241,12 +262,12 @@ export default function ThemeDetailPage() {
           <div className="relative w-full h-[400px] bg-gray-100 rounded-2xl overflow-hidden mb-4">
             {themeDetail.thumbnailUrl ? (
               <Image
-                src={themeDetail.thumbnailUrl}
+                src={getImageUrl(themeDetail.thumbnailUrl)}
                 alt={themeDetail.name || "테마 이미지"}
                 fill
                 style={{ objectFit: "cover" }}
                 className="rounded-2xl"
-                unoptimized={!themeDetail.thumbnailUrl.startsWith("/")}
+                unoptimized={!getImageUrl(themeDetail.thumbnailUrl).startsWith('/img-proxy')}
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.src = "/images/mystery-room.jpg";
