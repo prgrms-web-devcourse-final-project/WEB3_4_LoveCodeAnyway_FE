@@ -3,7 +3,7 @@
 import { EscapeRoom } from "@/types/EscapeRoom";
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 // 인기/최신 테마 카드 컴포넌트
 export function ThemeCard({ room }: { room: EscapeRoom }) {
@@ -11,38 +11,65 @@ export function ThemeCard({ room }: { room: EscapeRoom }) {
 
   // 기본 이미지 URL
   const fallbackImageUrl = "/images/mystery-room.jpg";
+  
+  // 인증서 오류 도메인 확인
+  const CERTIFICATE_ERROR_DOMAINS = [
+    'xn--vh3bn2thtas7l8te.com',
+    'www.xn--vh3bn2thtas7l8te.com'
+  ];
+  
+  // 이미지 URL 처리 - 인증서 오류 도메인일 경우 프록시 사용
+  const imageUrl = useMemo(() => {
+    if (!room.image) return fallbackImageUrl;
+    
+    // 인증서 오류 도메인인지 확인
+    const hasErrorDomain = CERTIFICATE_ERROR_DOMAINS.some(domain => 
+      room.image?.includes(domain)
+    );
+    
+    if (hasErrorDomain) {
+      try {
+        // 원본 URL에서 경로만 추출
+        const urlObj = new URL(room.image);
+        return `/img-proxy${urlObj.pathname}`;
+      } catch (e) {
+        console.error('URL 파싱 오류:', e);
+        return room.image;
+      }
+    }
+    
+    return room.image;
+  }, [room.image]);
 
   return (
     <Link href={`/themes/${room.id}`}>
       <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden cursor-pointer hover:shadow-sm transition-shadow">
         {/* 이미지 섹션 */}
         <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
-          {room.image && !imageError ? (
-            <Image
-              src={room.image}
+          {!imageError ? (
+            <img
+              src={imageUrl}
               alt={room.title}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="absolute inset-0 w-full h-full object-cover"
               onError={() => setImageError(true)}
-              unoptimized={!room.image.startsWith("/")} // 외부 이미지는 최적화하지 않음
+              referrerPolicy="no-referrer"
+              loading="lazy"
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
-              <Image
+              <img
                 src={fallbackImageUrl}
                 alt={room.title}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                className="w-full h-full object-cover"
+                loading="lazy"
               />
             </div>
           )}
         </div>
 
         <div className="p-5">
-          <h3 className="font-bold text-lg mb-3">{room.title}</h3>
-          <p className="text-gray-600 text-sm mb-3">
+          <h3 className="font-bold text-lg mb-3 truncate">{room.title}</h3>
+          <p className="text-gray-600 text-sm mb-3 truncate">
             {room.category || "미스터리 룸 강남점"}
           </p>
           <div className="flex items-center mb-4">
@@ -69,8 +96,8 @@ export function ThemeCard({ room }: { room: EscapeRoom }) {
               <span>{room.participants || "2-4인"}</span>
             </div>
           </div>
-          <div className="flex flex-wrap gap-2 mb-3">
-            {(room.tags || ["공포", "추리"]).map((tag, index) => {
+          <div className="flex flex-wrap gap-2 mb-3 h-[24px] overflow-hidden">
+            {(room.tags || ["공포", "추리"]).slice(0, 3).map((tag, index) => {
               // 태그별 배경색과 텍스트 색상 지정
               let bgColorClass = "";
               let textColorClass = "";
@@ -104,12 +131,17 @@ export function ThemeCard({ room }: { room: EscapeRoom }) {
               return (
                 <span
                   key={index}
-                  className={`px-3 py-1 ${bgColorClass} ${textColorClass} text-xs rounded-sm`}
+                  className={`px-3 py-1 ${bgColorClass} ${textColorClass} text-xs rounded-sm truncate max-w-[120px]`}
                 >
                   {tag}
                 </span>
               );
             })}
+            {(room.tags || []).length > 3 && (
+              <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-sm">
+                +{(room.tags || []).length - 3}
+              </span>
+            )}
           </div>
         </div>
       </div>

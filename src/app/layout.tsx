@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Navigation } from "@/components/Navigation";
 import { ClientLayout } from "@/app/ClientLayout";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,6 +28,10 @@ export const metadata: Metadata = {
     shortcut: "/favicon.svg",
     apple: "/favicon.svg",
   },
+  other: {
+    "Content-Security-Policy": "img-src 'self' data: https: http:; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://dapi.kakao.com; script-src-elem 'self' 'unsafe-inline' https://dapi.kakao.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.ddobang.site http://localhost:8080 https://dapi.kakao.com;",
+    "Referrer-Policy": "no-referrer",
+  },
 };
 
 export default function RootLayout({
@@ -36,6 +41,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
+      <head>
+        <meta name="referrer" content="no-referrer" />
+        <meta httpEquiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta httpEquiv="Pragma" content="no-cache" />
+        <meta httpEquiv="Expires" content="0" />
+        <Script 
+          type="text/javascript" 
+          src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=77ce24857d8f159f2e489d04af098480&libraries=services"
+          strategy="beforeInteractive"
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

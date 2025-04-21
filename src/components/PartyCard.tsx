@@ -16,6 +16,18 @@ export function PartyCard({ room, onClick }: PartyCardProps) {
     }
   };
 
+  // 이미지 URL이 유효한지 확인하는 함수
+  const isValidImageUrl = (url: string) => {
+    // URL이 없는 경우
+    if (!url) return false;
+    
+    // 내부 이미지 경로인 경우
+    if (url.startsWith('/')) return true;
+    
+    // 외부 URL은 모두 허용
+    return true;
+  };
+
   return (
     <div
       className="bg-white rounded-2xl border border-gray-200 overflow-hidden cursor-pointer hover:shadow-sm transition-shadow"
@@ -23,13 +35,15 @@ export function PartyCard({ room, onClick }: PartyCardProps) {
     >
       {/* 이미지 섹션 */}
       <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
-        {room.image && !room.image.startsWith("/images/") ? (
+        {room.image && isValidImageUrl(room.image) ? (
           <Image
             src={room.image}
             alt={room.title}
             className="object-cover"
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            unoptimized
+            priority
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -98,6 +112,7 @@ export function PartyCard({ room, onClick }: PartyCardProps) {
                   fill
                   className="object-cover"
                   sizes="24px"
+                  unoptimized
                 />
               </div>
             ) : (
@@ -108,6 +123,7 @@ export function PartyCard({ room, onClick }: PartyCardProps) {
                   fill
                   className="object-cover"
                   sizes="24px"
+                  unoptimized
                 />
               </div>
             )}

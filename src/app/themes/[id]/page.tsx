@@ -53,6 +53,65 @@ export default function ThemeDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [liked, setLiked] = useState(false);
+  
+  // 인증서 오류 도메인 확인
+  const CERTIFICATE_ERROR_DOMAINS = [
+    'xn--vh3bn2thtas7l8te.com',
+    'www.xn--vh3bn2thtas7l8te.com'
+  ];
+  
+  // 이미지 URL 처리 함수
+  const getProxyImageUrl = (url: string | undefined): string => {
+    if (!url) return "/images/mystery-room.jpg";
+    
+    // 인증서 오류 도메인인지 확인
+    const hasErrorDomain = CERTIFICATE_ERROR_DOMAINS.some(domain => 
+      url.includes(domain)
+    );
+    
+    if (hasErrorDomain) {
+      try {
+        // 원본 URL에서 경로만 추출
+        const urlObj = new URL(url);
+        return `/img-proxy${urlObj.pathname}`;
+      } catch (e) {
+        console.error('URL 파싱 오류:', e);
+        return url;
+      }
+    }
+    
+    return url;
+  };
+
+  // OpenStreetMap 정적 지도 URL 생성 함수
+  const getMapImageUrl = (address?: string) => {
+    if (!address) return "";
+    
+    // 서울 중심 좌표로 기본 설정 (실제로는 위치에 따라 달라져야 함)
+    let lat = 37.5665;
+    let lon = 126.9780;
+    
+    // 위치에 따라 좌표 조정 (샘플용)
+    if (address.includes('홍대')) {
+      lat = 37.557;
+      lon = 126.923;
+    } else if (address.includes('강남')) {
+      lat = 37.498;
+      lon = 127.027;
+    } else if (address.includes('건대')) {
+      lat = 37.540;
+      lon = 127.069;
+    } else if (address.includes('신촌')) {
+      lat = 37.555;
+      lon = 126.936;
+    } else if (address.includes('종로')) {
+      lat = 37.570;
+      lon = 126.981;
+    }
+    
+    // OpenStreetMap 기반 정적 이미지 URL
+    return `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lon}&zoom=14&size=600x400&maptype=mapnik&markers=${lat},${lon},lightblue`;
+  };
 
   useEffect(() => {
     const fetchThemeDetail = async () => {
@@ -240,13 +299,12 @@ export default function ThemeDetailPage() {
           </div>
           <div className="relative w-full h-[400px] bg-gray-100 rounded-2xl overflow-hidden mb-4">
             {themeDetail.thumbnailUrl ? (
-              <Image
-                src={themeDetail.thumbnailUrl}
+              <img
+                src={getProxyImageUrl(themeDetail.thumbnailUrl)}
                 alt={themeDetail.name || "테마 이미지"}
-                fill
-                style={{ objectFit: "cover" }}
-                className="rounded-2xl"
-                unoptimized={!themeDetail.thumbnailUrl.startsWith("/")}
+                className="absolute inset-0 w-full h-full object-cover rounded-2xl"
+                referrerPolicy="no-referrer"
+                loading="lazy"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.src = "/images/mystery-room.jpg";
@@ -254,12 +312,11 @@ export default function ThemeDetailPage() {
               />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">
-                <Image
+                <img
                   src="/images/mystery-room.jpg"
                   alt="기본 이미지"
-                  fill
-                  style={{ objectFit: "cover" }}
-                  className="rounded-2xl"
+                  className="w-full h-full object-cover rounded-2xl"
+                  loading="lazy"
                 />
               </div>
             )}
@@ -315,8 +372,18 @@ export default function ThemeDetailPage() {
             {themeDetail.storeInfo && (
               <div className="w-full md:w-1/2">
                 <h2 className="text-2xl font-bold mb-4">매장 위치</h2>
-                <div className="h-64 bg-gray-200 rounded-lg mb-4">
-                  <KakaoMap address={themeDetail.storeInfo.address || ""} />
+                <div className="h-64 bg-gray-200 rounded-lg mb-4 relative">
+                  {/* 고정 이미지 사용 */}
+                  <Image
+                    src="https://i.postimg.cc/L5Q5s78R/image.png"
+                    alt={`${themeDetail.storeInfo.name} 지도`}
+                    fill
+                    className="object-cover rounded-lg"
+                    unoptimized
+                  />
+                  <div className="absolute bottom-2 right-2 bg-white px-2 py-1 rounded shadow text-xs">
+                    {themeDetail.storeInfo.name || ""}
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <p className="text-gray-600">
@@ -361,9 +428,9 @@ export default function ThemeDetailPage() {
                     />
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">기믹/장치</span>
+                    <span className="text-gray-600">문제</span>
                     <StarRating
-                      rating={themeDetail.diaryBasedThemeStat.deviceRatio || 0}
+                      rating={themeDetail.diaryBasedThemeStat.question || 0}
                       maxRating={5}
                     />
                   </div>
@@ -422,13 +489,13 @@ export default function ThemeDetailPage() {
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">문제 난이도</span>
+                    <span className="text-gray-600">기믹/장치</span>
                     <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-blue-500 rounded-full"
                         style={{
                           width: `${
-                            (themeDetail.diaryBasedThemeStat.question || 0) * 20
+                            (themeDetail.diaryBasedThemeStat.deviceRatio || 0) * 20
                           }%`,
                         }}
                       ></div>
@@ -437,17 +504,8 @@ export default function ThemeDetailPage() {
                 </div>
               </div>
 
-              {/* 방 특성 방사형 차트 */}
-              <div>
-                <h2 className="text-2xl font-bold mb-6">테마 특성</h2>
-                <div className="h-64 flex items-center justify-center">
-                  {radarData.length > 0 ? (
-                    <RadarChart data={radarData} />
-                  ) : (
-                    <p className="text-gray-400">데이터가 없습니다</p>
-                  )}
-                </div>
-              </div>
+              {/* 빈 공간으로 균형 맞추기 */}
+              <div></div>
             </div>
 
             {/* 통계 */}
@@ -468,9 +526,9 @@ export default function ThemeDetailPage() {
                 </div>
                 <div className="bg-gray-50 rounded-lg p-5 text-center">
                   <div className="text-4xl font-bold mb-2">
-                    {themeDetail.diaryBasedThemeStat.escapeTimeAvg || 0}분
+                    {themeDetail.diaryBasedThemeStat.escapeTimeAvg || 0}개
                   </div>
-                  <div className="text-gray-500">평균 탈출 시간</div>
+                  <div className="text-gray-500">평균 힌트</div>
                 </div>
               </div>
             </div>
@@ -498,7 +556,7 @@ export default function ThemeDetailPage() {
               </svg>
               테마 목록으로 돌아가기
             </Link>
-            <Link href={themeDetail.reservationUrl} 
+            <Link href={themeDetail.reservationUrl || "#"} 
                   className="flex-1 px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFA000] transition-colors text-center shadow-sm whitespace-nowrap"
             >
               예약하러 가기
