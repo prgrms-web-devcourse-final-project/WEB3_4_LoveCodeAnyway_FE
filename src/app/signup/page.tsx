@@ -68,7 +68,7 @@ export default function SignupPage() {
     const fetchTags = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`${API_BASE_URL}/api/v1/members/tags`);
+        const response = await fetch(`${API_BASE_URL}/api/v1/themes/tags`);
 
         if (!response.ok) {
           console.error(

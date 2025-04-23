@@ -8,6 +8,7 @@ import { TimePickerModal } from "@/components/TimePickerModal";
 import axios from "axios";
 import { useRouter, useParams } from "next/navigation";
 import { LoginMemberContext } from "@/stores/auth/loginMember";
+import client from "@/lib/backend/client";
 
 interface PartyFormData {
   title: string;
@@ -132,7 +133,7 @@ export default function EditPartyPage() {
           const partyData = response.data.data;
           
           // 모임장인지 확인
-          if (partyData.hostId !== loginMember.id) {
+          if (partyData.hostId !== loginMember.data.id) {
             alert("모임 수정 권한이 없습니다.");
             router.push(`/parties/${partyId}`);
             return;
@@ -223,13 +224,13 @@ export default function EditPartyPage() {
       };
 
       // API 호출 (PUT 메서드로 변경)
-      const response = await axios.put<SuccessResponsePartyDto>(
-        `${baseUrl}/api/v1/parties/${partyId}`,
-        requestData,
-        {
-          withCredentials: true,
-        }
-      );
+
+      const response = await client.PUT("/api/v1/parties/{partyId}", {
+        params: {
+          path: { partyId }
+        },
+        body: requestData
+      });
 
       // 성공시 모임 상세 페이지로 이동
       alert("모임 정보가 수정되었습니다.");
@@ -311,7 +312,6 @@ export default function EditPartyPage() {
   if (loading) {
     return (
       <main className="bg-gray-50 min-h-screen">
-        <Navigation activePage="parties" />
         <div className="max-w-7xl mx-auto px-6 py-12 flex justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
         </div>
@@ -321,7 +321,6 @@ export default function EditPartyPage() {
 
   return (
     <main className="bg-gray-50 min-h-screen">
-      <Navigation activePage="parties" />
 
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-8">
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8">
