@@ -6,6 +6,7 @@ import { ThemeCard } from "@/components/ThemeCard";
 import { ThemeSearch } from "@/components/ThemeSearch";
 import { EscapeRoom } from "@/types/EscapeRoom";
 import { PageLoading } from "@/components/PageLoading";
+import client from "@/lib/backend/client";
 
 export default function ThemesPage() {
   const [themes, setThemes] = useState<EscapeRoom[]>([]);
@@ -38,30 +39,24 @@ export default function ThemesPage() {
 
       const currentPage = reset ? 0 : page;
 
-      const response = await fetch(
-        `${
-          process.env.NODE_ENV === "development"
-            ? "http://localhost:8080"
-            : "https://api.ddobang.site"
-        }/api/v1/themes?page=${currentPage}&size=${ITEMS_PER_PAGE}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+      const response = await client.POST("/api/v1/themes", {
+        params: {
+          query: {
+            page: currentPage,
+            size: ITEMS_PER_PAGE,
           },
-          body: JSON.stringify({
-            regionId: selectedFilters.regionId,
-            tagIds: selectedFilters.tagIds,
-            keyword: searchKeyword,
-            participants: selectedFilters.participants
-              ? parseInt(selectedFilters.participants.replace(/[^0-9]/g, ""))
-              : undefined,
-          }),
-          credentials: "include",
-        }
-      );
+        },
+        body: {
+          regionId: selectedFilters.regionId,
+          tagIds: selectedFilters.tagIds,
+          keyword: searchKeyword,
+          participants: selectedFilters.participants
+            ? parseInt(selectedFilters.participants.replace(/[^0-9]/g, ""))
+            : undefined,
+        },
+      });
 
-      const data = await response.json();
+      const data = response.data;
 
       if (data && data.data) {
         const apiThemes = data.data.content || [];
