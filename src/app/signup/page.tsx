@@ -3,6 +3,7 @@
 import { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useGlobalLoginMember } from "@/stores/auth/loginMember";
 
 // 태그 타입 정의
 interface Tag {
@@ -11,8 +12,9 @@ interface Tag {
 }
 
 export default function SignupPage() {
+  const { loginMember, isLogin } = useGlobalLoginMember();
   const router = useRouter();
-  
+
   // API 기본 URL
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
     ? process.env.NEXT_PUBLIC_API_URL
@@ -26,13 +28,13 @@ export default function SignupPage() {
       try {
         // API를 통해 로그인 상태 확인
         const response = await fetch(`${API_BASE_URL}/api/v1/members/me`, {
-          credentials: 'include', // 쿠키를 포함한 요청
+          credentials: "include", // 쿠키를 포함한 요청
         });
 
         // 응답이 성공(200)이면 로그인된 상태
         if (response.ok) {
           console.log("이미 로그인된 상태입니다. 마이페이지로 이동합니다.");
-          router.replace('/my');
+          router.replace("/my");
           return;
         }
       } catch (error) {
@@ -45,9 +47,7 @@ export default function SignupPage() {
   }, [router, API_BASE_URL]);
 
   // 프로필 상태 관리
-  const [profileImg, setProfileImg] = useState<string>(
-    "/default-profile.svg"
-  );
+  const [profileImg, setProfileImg] = useState<string>("/default-profile.svg");
   const [nickname, setNickname] = useState<string>("");
   const [gender, setGender] = useState<"MALE" | "FEMALE" | "BLIND" | "">("");
   const [introduction, setIntroduction] = useState<string>("");
@@ -69,25 +69,29 @@ export default function SignupPage() {
       try {
         setIsLoading(true);
         const response = await fetch(`${API_BASE_URL}/api/v1/members/tags`);
-        
+
         if (!response.ok) {
-          console.error("태그 API 응답 에러:", response.status, response.statusText);
+          console.error(
+            "태그 API 응답 에러:",
+            response.status,
+            response.statusText
+          );
           setError("태그 데이터를 불러오는데 실패했습니다");
           setIsLoading(false);
           return;
         }
-        
+
         const data = await response.json();
         console.log("태그 데이터 응답:", data);
-        
+
         // API 응답 구조에 맞게 처리 (모든 태그를 단일 배열로 변환)
         if (data && data.data) {
           // API 응답 구조에 따라 적절히 수정
-          // 모든 카테고리의 태그를 하나의 배열로 합치거나, 
+          // 모든 카테고리의 태그를 하나의 배열로 합치거나,
           // 이미 단일 배열로 제공되는 경우 그대로 사용
           if (Array.isArray(data.data)) {
             setTags(data.data);
-          } else if (typeof data.data === 'object') {
+          } else if (typeof data.data === "object") {
             // 객체 형태로 카테고리별로 제공되는 경우 하나의 배열로 합치기
             const allTags: Tag[] = [];
             Object.values(data.data).forEach((categoryTags: any) => {
@@ -135,12 +139,14 @@ export default function SignupPage() {
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/v1/members/check-nickname?nickname=${encodeURIComponent(nickname)}`,
+        `${API_BASE_URL}/api/v1/members/check-nickname?nickname=${encodeURIComponent(
+          nickname
+        )}`,
         {
-          credentials: "include"
+          credentials: "include",
         }
       );
-      
+
       // API 호출 성공 시
       if (response.status === 200) {
         // 상태 코드가 200이면 사용 가능한 닉네임
@@ -153,7 +159,9 @@ export default function SignupPage() {
       } else {
         // 그 외 상태 코드는 오류로 처리
         const data = await response.json();
-        setNicknameMessage(data.message || "닉네임 확인 중 오류가 발생했습니다");
+        setNicknameMessage(
+          data.message || "닉네임 확인 중 오류가 발생했습니다"
+        );
         setIsNicknameValid(false);
       }
     } catch (err) {
@@ -208,32 +216,35 @@ export default function SignupPage() {
 
     try {
       let profileImageUrl = null;
-      
+
       // 프로필 이미지가 기본 이미지가 아닌 경우 업로드
       if (profileImg !== "/default-profile.svg") {
         // 이미지 데이터를 Blob으로 변환
         const response = await fetch(profileImg);
         const blob = await response.blob();
         const file = new File([blob], "profile.jpg", { type: "image/jpeg" });
-        
+
         // FormData 생성 및 파일 추가
         const formData = new FormData();
         formData.append("file", file);
-        
+
         // 임의의 diaryId 생성 (현재 시간 기준)
         const randomDiaryId = Date.now().toString();
-        
+
         // 이미지 업로드 API 호출
-        const uploadResponse = await fetch(`${API_BASE_URL}/api/v1/upload/image/${randomDiaryId}`, {
-          method: "POST",
-          body: formData,
-          credentials: "include"
-        });
-        
+        const uploadResponse = await fetch(
+          `${API_BASE_URL}/api/v1/upload/image/${randomDiaryId}`,
+          {
+            method: "POST",
+            body: formData,
+            credentials: "include",
+          }
+        );
+
         if (!uploadResponse.ok) {
           throw new Error("이미지 업로드에 실패했습니다");
         }
-        
+
         const uploadData = await uploadResponse.json();
         profileImageUrl = uploadData.data.imageUrl;
       }
@@ -244,7 +255,7 @@ export default function SignupPage() {
         gender,
         introduction,
         tags: selectedTags,
-        profilePictureUrl: profileImageUrl
+        profilePictureUrl: profileImageUrl,
       };
 
       const response = await fetch(`${API_BASE_URL}/api/v1/auth/signup`, {
@@ -253,7 +264,7 @@ export default function SignupPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(signupData),
-        credentials: "include"
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -265,12 +276,13 @@ export default function SignupPage() {
 
       // 회원가입 성공 시 브라우저 기록 삭제 및 홈페이지로 리다이렉트
       window.history.replaceState(null, "", "/");
-      
+
       // 페이지 리로드를 통해 네비게이션 바의 로그인 상태 갱신
       window.location.href = "/";
       return;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "회원가입 중 오류가 발생했습니다";
+      const errorMessage =
+        err instanceof Error ? err.message : "회원가입 중 오류가 발생했습니다";
       alert(errorMessage);
       console.error("회원가입 중 오류:", err);
     } finally {
@@ -309,7 +321,9 @@ export default function SignupPage() {
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 py-10">
       <div className="container mx-auto px-4 max-w-2xl">
         <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
-          <h1 className="text-3xl font-bold text-center mb-2 text-gray-800">프로필 설정</h1>
+          <h1 className="text-3xl font-bold text-center mb-2 text-gray-800">
+            프로필 설정
+          </h1>
           <div className="w-20 h-1 bg-[#FFB130] mx-auto mb-6 rounded-full"></div>
           <p className="text-center text-gray-600 mb-8">
             방탈출 모임에서 사용할 프로필을 설정해주세요
@@ -350,7 +364,9 @@ export default function SignupPage() {
                   onChange={handleProfileImgChange}
                 />
               </div>
-              <p className="text-sm text-gray-500">프로필 사진을 등록해주세요 (선택사항)</p>
+              <p className="text-sm text-gray-500">
+                프로필 사진을 등록해주세요 (선택사항)
+              </p>
             </div>
 
             {/* 닉네임 입력 */}
@@ -368,8 +384,8 @@ export default function SignupPage() {
                   }}
                   placeholder="닉네임을 입력해주세요"
                   className={`flex-1 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-all ${
-                    isNicknameValid 
-                      ? "border-green-500 focus:ring-green-200" 
+                    isNicknameValid
+                      ? "border-green-500 focus:ring-green-200"
                       : "border-gray-300 focus:ring-[#FFB130] focus:border-[#FFB130]"
                   }`}
                   minLength={2}
@@ -397,11 +413,21 @@ export default function SignupPage() {
 
             {/* 성별 선택 */}
             <div className="bg-gray-50 p-6 rounded-xl">
-              <label className="block text-gray-800 font-semibold mb-3 text-lg">성별 <span className="text-red-500">*</span></label>
+              <label className="block text-gray-800 font-semibold mb-3 text-lg">
+                성별 <span className="text-red-500">*</span>
+              </label>
               <div className="flex gap-6">
                 <label className="flex items-center cursor-pointer group">
-                  <div className={`w-5 h-5 rounded-full border flex items-center justify-center mr-3 ${gender === "MALE" ? "border-[#FFB130] bg-white" : "border-gray-300"}`}>
-                    {gender === "MALE" && <div className="w-3 h-3 rounded-full bg-[#FFB130]"></div>}
+                  <div
+                    className={`w-5 h-5 rounded-full border flex items-center justify-center mr-3 ${
+                      gender === "MALE"
+                        ? "border-[#FFB130] bg-white"
+                        : "border-gray-300"
+                    }`}
+                  >
+                    {gender === "MALE" && (
+                      <div className="w-3 h-3 rounded-full bg-[#FFB130]"></div>
+                    )}
                   </div>
                   <input
                     type="radio"
@@ -412,11 +438,27 @@ export default function SignupPage() {
                     className="hidden"
                     required
                   />
-                  <span className={`group-hover:text-[#FFB130] transition-colors ${gender === "MALE" ? "text-[#FFB130] font-medium" : "text-gray-700"}`}>남성</span>
+                  <span
+                    className={`group-hover:text-[#FFB130] transition-colors ${
+                      gender === "MALE"
+                        ? "text-[#FFB130] font-medium"
+                        : "text-gray-700"
+                    }`}
+                  >
+                    남성
+                  </span>
                 </label>
                 <label className="flex items-center cursor-pointer group">
-                  <div className={`w-5 h-5 rounded-full border flex items-center justify-center mr-3 ${gender === "FEMALE" ? "border-[#FFB130] bg-white" : "border-gray-300"}`}>
-                    {gender === "FEMALE" && <div className="w-3 h-3 rounded-full bg-[#FFB130]"></div>}
+                  <div
+                    className={`w-5 h-5 rounded-full border flex items-center justify-center mr-3 ${
+                      gender === "FEMALE"
+                        ? "border-[#FFB130] bg-white"
+                        : "border-gray-300"
+                    }`}
+                  >
+                    {gender === "FEMALE" && (
+                      <div className="w-3 h-3 rounded-full bg-[#FFB130]"></div>
+                    )}
                   </div>
                   <input
                     type="radio"
@@ -426,11 +468,27 @@ export default function SignupPage() {
                     onChange={() => setGender("FEMALE")}
                     className="hidden"
                   />
-                  <span className={`group-hover:text-[#FFB130] transition-colors ${gender === "FEMALE" ? "text-[#FFB130] font-medium" : "text-gray-700"}`}>여성</span>
+                  <span
+                    className={`group-hover:text-[#FFB130] transition-colors ${
+                      gender === "FEMALE"
+                        ? "text-[#FFB130] font-medium"
+                        : "text-gray-700"
+                    }`}
+                  >
+                    여성
+                  </span>
                 </label>
                 <label className="flex items-center cursor-pointer group">
-                  <div className={`w-5 h-5 rounded-full border flex items-center justify-center mr-3 ${gender === "BLIND" ? "border-[#FFB130] bg-white" : "border-gray-300"}`}>
-                    {gender === "BLIND" && <div className="w-3 h-3 rounded-full bg-[#FFB130]"></div>}
+                  <div
+                    className={`w-5 h-5 rounded-full border flex items-center justify-center mr-3 ${
+                      gender === "BLIND"
+                        ? "border-[#FFB130] bg-white"
+                        : "border-gray-300"
+                    }`}
+                  >
+                    {gender === "BLIND" && (
+                      <div className="w-3 h-3 rounded-full bg-[#FFB130]"></div>
+                    )}
                   </div>
                   <input
                     type="radio"
@@ -440,7 +498,15 @@ export default function SignupPage() {
                     onChange={() => setGender("BLIND")}
                     className="hidden"
                   />
-                  <span className={`group-hover:text-[#FFB130] transition-colors ${gender === "BLIND" ? "text-[#FFB130] font-medium" : "text-gray-700"}`}>공개안함</span>
+                  <span
+                    className={`group-hover:text-[#FFB130] transition-colors ${
+                      gender === "BLIND"
+                        ? "text-[#FFB130] font-medium"
+                        : "text-gray-700"
+                    }`}
+                  >
+                    공개안함
+                  </span>
                 </label>
               </div>
             </div>
@@ -472,8 +538,14 @@ export default function SignupPage() {
             {/* 태그 선택 영역 */}
             <div className="bg-gray-50 p-6 rounded-xl">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-gray-800">나를 표현하는 태그</h2>
-                <span className={`text-sm font-medium ${selectedTags.length >= 5 ? "text-red-500" : "text-[#FFB130]"}`}>
+                <h2 className="text-xl font-bold text-gray-800">
+                  나를 표현하는 태그
+                </h2>
+                <span
+                  className={`text-sm font-medium ${
+                    selectedTags.length >= 5 ? "text-red-500" : "text-[#FFB130]"
+                  }`}
+                >
                   {selectedTags.length}/5개 선택
                 </span>
               </div>
@@ -495,13 +567,16 @@ export default function SignupPage() {
                   </button>
                 ))}
               </div>
-              
+
               {tags.length === 0 && !isLoading && (
-                <p className="text-center text-gray-500 py-4">태그 정보가 없습니다</p>
+                <p className="text-center text-gray-500 py-4">
+                  태그 정보가 없습니다
+                </p>
               )}
-              
+
               <p className="text-xs text-gray-500 mt-2">
-                나의 성격, 취향, 플레이 스타일 등을 표현할 수 있는 태그를 선택해주세요 (최대 5개)
+                나의 성격, 취향, 플레이 스타일 등을 표현할 수 있는 태그를
+                선택해주세요 (최대 5개)
               </p>
             </div>
 
@@ -511,8 +586,8 @@ export default function SignupPage() {
                 type="submit"
                 disabled={isSubmitting}
                 className={`w-full py-4 text-white rounded-xl text-lg font-bold transition-all ${
-                  isSubmitting 
-                    ? "bg-gray-400 cursor-not-allowed" 
+                  isSubmitting
+                    ? "bg-gray-400 cursor-not-allowed"
                     : "bg-[#FFB130] hover:bg-[#E09D20] shadow-lg hover:shadow-xl"
                 }`}
               >

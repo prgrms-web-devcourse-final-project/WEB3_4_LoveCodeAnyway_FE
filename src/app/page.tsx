@@ -1,28 +1,16 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { Navigation } from "@/components/Navigation";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import axios from "axios";
 import { Swiper, SwiperSlide } from "swiper/react";
-import {
-  Autoplay,
-  Navigation as SwiperNavigation,
-  Pagination,
-} from "swiper/modules";
+import { Autoplay, Navigation as SwiperNavigation } from "swiper/modules";
+import client from "@/lib/backend/client";
 
 // Import Swiper styles
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-
-// API 기본 URL
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
-  ? process.env.NEXT_PUBLIC_API_URL
-  : process.env.NODE_ENV === "development"
-  ? "http://localhost:8080"
-  : "https://api.ddobang.site";
 
 // 테마 태그 목록
 const tags = ["#전체", "#공포", "#추리", "#액션", "#판타지", "#SF"];
@@ -87,15 +75,13 @@ export default function HomePage() {
     setIsLoadingRanking(true);
     try {
       const tagName = tag === "#전체" ? "" : tag ? tag.substring(1) : "";
-      const response = await axios.get(
-        `${API_BASE_URL}/api/v1/themes/popular`,
-        {
-          params: {
+      const response = await client.GET("/api/v1/themes/popular", {
+        params: {
+          query: {
             tagName,
           },
-          withCredentials: true,
-        }
-      );
+        },
+      });
       setRankingThemes(response.data.data || []);
     } catch (error) {
       console.error("랭킹 테마 조회 실패:", error);
@@ -110,16 +96,15 @@ export default function HomePage() {
     setIsLoadingNew(true);
     try {
       const tagName = tag === "#전체" ? "" : tag ? tag.substring(1) : "";
-      const response = await axios.get(`${API_BASE_URL}/api/v1/themes/newest`, {
+      const response = await client.GET("/api/v1/themes/newest", {
         params: {
-          tagName,
+          query: {
+            tagName,
+          },
         },
-        withCredentials: true,
+        baseUrl: process.env.NEXT_PUBLIC_API_URL,
       });
       setNewThemes(response.data.data || []);
-    } catch (error) {
-      console.error("신규 테마 조회 실패:", error);
-      setNewThemes([]);
     } finally {
       setIsLoadingNew(false);
     }
@@ -129,10 +114,9 @@ export default function HomePage() {
   const fetchParties = async () => {
     setIsLoadingParties(true);
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/v1/parties/main`, {
-        withCredentials: true,
+      const response = await client.GET("/api/v1/parties/main", {
+        baseUrl: process.env.NEXT_PUBLIC_API_URL,
       });
-      // 실제 API 응답만 사용
       setParties(response.data.data || []);
     } catch (error) {
       console.error("모임 조회 실패:", error);
@@ -141,25 +125,6 @@ export default function HomePage() {
       setIsLoadingParties(false);
     }
   };
-
-  // 로딩 인디케이터 컴포넌트
-  const LoadingIndicator = () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-      {[...Array(4)].map((_, index) => (
-        <div key={index} className="bg-gray-50 rounded-lg overflow-hidden">
-          <div className="p-5">
-            <div className="flex items-center justify-between mb-3">
-              <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
-              <div className="h-4 w-12 bg-gray-200 rounded animate-pulse"></div>
-            </div>
-            <div className="h-32 bg-gray-200 rounded-lg mb-3 animate-pulse"></div>
-            <div className="h-6 w-3/4 bg-gray-200 rounded mb-1 animate-pulse"></div>
-            <div className="h-4 w-1/2 bg-gray-200 rounded animate-pulse"></div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
 
   // 테마 스켈레톤 UI
   const ThemeSkeleton = () => (
@@ -194,7 +159,6 @@ export default function HomePage() {
     <main className="min-h-screen bg-white">
       {/* Section 1: 메인 배너 */}
       <section className="w-full h-[450px] relative bg-gray-800">
-        <Navigation activePage="home" />
         <div className="max-w-7xl mx-auto h-full relative flex flex-col items-center justify-start text-center pt-20">
           <Image
             src="/logo.svg"

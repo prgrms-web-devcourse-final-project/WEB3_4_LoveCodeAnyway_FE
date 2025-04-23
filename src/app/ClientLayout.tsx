@@ -5,6 +5,10 @@ import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { LoginMemberContext, useLoginMember } from "@/stores/auth/loginMember";
 import client from "@/lib/backend/client";
 import { PageLoading } from "@/components/PageLoading";
+import { Navigation } from "@/components/Navigation";
+import { components } from "@/lib/backend/apiV1/schema";
+
+type Member = components["schemas"]["Member"];
 
 export function ClientLayout({
   children,
@@ -29,26 +33,25 @@ export function ClientLayout({
     logoutAndHome,
   };
 
-  useEffect(() => {
-    const fetchMember = () => {
-      client
-        .GET("/api/v1/members/me", {})
-        .then((res) => {
-          if (res.error) {
-            // 로그인되지 않은 상태로 처리
-            setNoLoginMember();
-            return;
-          }
-          setLoginMember(res.data);
-        })
-        .catch((error) => {
-          // 에러 발생 시 (302 포함) 로그인되지 않은 상태로 처리
+  const fetchMember = () => {
+    client
+      .GET("/api/v1/members/me", {})
+      .then((res) => {
+        if (res.error) {
+          // 로그인되지 않은 상태로 처리
           setNoLoginMember();
-        });
-    };
+          return;
+        }
+        setLoginMember(res.data);
+      })
+      .catch((error) => {
+        // 에러 발생 시 (302 포함) 로그인되지 않은 상태로 처리
+        setNoLoginMember();
+      });
+  };
 
+  useEffect(() => {
     fetchMember();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (isLoginMemberPending) {
@@ -63,6 +66,7 @@ export function ClientLayout({
       disableTransitionOnChange
     >
       <LoginMemberContext value={loginMemberContextValue}>
+        <Navigation />
         <main>{children}</main>
       </LoginMemberContext>
     </NextThemesProvider>

@@ -49,11 +49,14 @@ export default function HistoryPage() {
         {
           id: 1,
           title: "좀비 연구소 모집합니다",
-          dateTime: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(), // 15일 후
+          dateTime: new Date(
+            Date.now() + 15 * 24 * 60 * 60 * 1000
+          ).toISOString(), // 15일 후
           location: "이스케이프 홍대점",
           participantsNeeded: 5,
           totalParticipants: 6,
-          themeThumbnailUrl: "https://i.postimg.cc/rs2bByH8/interior-2505229-640.jpg", // 1번 이미지
+          themeThumbnailUrl:
+            "https://i.postimg.cc/rs2bByH8/interior-2505229-640.jpg", // 1번 이미지
           themeTitle: "좀비 연구소",
           role: "HOST" as const,
           reviewStatus: "WRITABLE" as const,
@@ -61,11 +64,14 @@ export default function HistoryPage() {
         {
           id: 2,
           title: "심야 병동 같이 가실 분",
-          dateTime: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5일 전
+          dateTime: new Date(
+            Date.now() - 5 * 24 * 60 * 60 * 1000
+          ).toISOString(), // 5일 전
           location: "플레이포인트 강남점",
           participantsNeeded: 4,
           totalParticipants: 4,
-          themeThumbnailUrl: "https://i.postimg.cc/7hL7Y0dX/interior-2505229-640.jpg", // 2번 이미지
+          themeThumbnailUrl:
+            "https://i.postimg.cc/7hL7Y0dX/interior-2505229-640.jpg", // 2번 이미지
           themeTitle: "심야 병동",
           role: "MEMBER" as const,
           reviewStatus: "COMPLETED" as const,
@@ -73,7 +79,9 @@ export default function HistoryPage() {
         {
           id: 3,
           title: "타임루프 도전하실 분 모집해요",
-          dateTime: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(), // 10일 후
+          dateTime: new Date(
+            Date.now() + 10 * 24 * 60 * 60 * 1000
+          ).toISOString(), // 10일 후
           location: "솔버 강남점",
           participantsNeeded: 3,
           totalParticipants: 6,
@@ -85,7 +93,9 @@ export default function HistoryPage() {
         {
           id: 4,
           title: "마술사의 집 모임 모집",
-          dateTime: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(), // 15일 전
+          dateTime: new Date(
+            Date.now() - 15 * 24 * 60 * 60 * 1000
+          ).toISOString(), // 15일 전
           location: "키이스케이프 건대점",
           participantsNeeded: 4,
           totalParticipants: 4,
@@ -97,11 +107,14 @@ export default function HistoryPage() {
         {
           id: 5,
           title: "자살 사건 추리 모임",
-          dateTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // 3일 후
+          dateTime: new Date(
+            Date.now() + 3 * 24 * 60 * 60 * 1000
+          ).toISOString(), // 3일 후
           location: "비트포비아 홍대점",
           participantsNeeded: 4,
           totalParticipants: 6,
-          themeThumbnailUrl: "https://naverbooking-phinf.pstatic.net/20230612_144/1686513263098ppWzR_JPEG/%C7%EF%B8%AE%C4%DF%C5%CD_%B4%BA_%C6%F7%BD%BA%C5%CD.jpg", // 5번 이미지
+          themeThumbnailUrl:
+            "https://naverbooking-phinf.pstatic.net/20230612_144/1686513263098ppWzR_JPEG/%C7%EF%B8%AE%C4%DF%C5%CD_%B4%BA_%C6%F7%BD%BA%C5%CD.jpg", // 5번 이미지
           themeTitle: "자살 사건 추리",
           role: "MEMBER" as const,
           reviewStatus: "NOT_WRITABLE" as const,
@@ -109,11 +122,14 @@ export default function HistoryPage() {
         {
           id: 6,
           title: "공포체험 좋아하시는 분",
-          dateTime: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(), // 20일 전
+          dateTime: new Date(
+            Date.now() - 20 * 24 * 60 * 60 * 1000
+          ).toISOString(), // 20일 전
           location: "셜록홈즈 신촌점",
           participantsNeeded: 3,
           totalParticipants: 4,
-          themeThumbnailUrl: "https://i.postimg.cc/rs2bByH8/interior-2505229-640.jpg", // 1번 이미지
+          themeThumbnailUrl:
+            "https://i.postimg.cc/rs2bByH8/interior-2505229-640.jpg", // 1번 이미지
           themeTitle: "공포체험",
           role: "HOST" as const,
           reviewStatus: "COMPLETED" as const,
@@ -121,11 +137,14 @@ export default function HistoryPage() {
         {
           id: 7,
           title: "미스터리 방 탈출 도전",
-          dateTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7일 후
+          dateTime: new Date(
+            Date.now() + 7 * 24 * 60 * 60 * 1000
+          ).toISOString(), // 7일 후
           location: "비밀의 방 강남점",
           participantsNeeded: 4,
           totalParticipants: 5,
-          themeThumbnailUrl: "https://i.postimg.cc/7hL7Y0dX/interior-2505229-640.jpg", // 2번 이미지
+          themeThumbnailUrl:
+            "https://i.postimg.cc/7hL7Y0dX/interior-2505229-640.jpg", // 2번 이미지
           themeTitle: "비밀의 방",
           role: "HOST" as const,
           reviewStatus: "NOT_WRITABLE" as const,
@@ -133,7 +152,9 @@ export default function HistoryPage() {
         {
           id: 8,
           title: "유령의 저택 공략 모임",
-          dateTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // 2일 후
+          dateTime: new Date(
+            Date.now() + 2 * 24 * 60 * 60 * 1000
+          ).toISOString(), // 2일 후
           location: "이스케이프 종로점",
           participantsNeeded: 5,
           totalParticipants: 6,
@@ -145,7 +166,9 @@ export default function HistoryPage() {
         {
           id: 9,
           title: "초급자만! 쉬운 테마 함께해요",
-          dateTime: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // 5일 후
+          dateTime: new Date(
+            Date.now() + 5 * 24 * 60 * 60 * 1000
+          ).toISOString(), // 5일 후
           location: "마스터키 명동점",
           participantsNeeded: 3,
           totalParticipants: 4,
@@ -157,7 +180,9 @@ export default function HistoryPage() {
         {
           id: 10,
           title: "범죄자의 하우스 도전하실 분",
-          dateTime: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(), // 10일 전
+          dateTime: new Date(
+            Date.now() - 10 * 24 * 60 * 60 * 1000
+          ).toISOString(), // 10일 전
           location: "룸이스케이프 신림점",
           participantsNeeded: 6,
           totalParticipants: 6,
@@ -169,7 +194,9 @@ export default function HistoryPage() {
         {
           id: 11,
           title: "초특급 난이도! 지하실 탈출",
-          dateTime: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5일 전
+          dateTime: new Date(
+            Date.now() - 5 * 24 * 60 * 60 * 1000
+          ).toISOString(), // 5일 전
           location: "키이스케이프 홍대점",
           participantsNeeded: 4,
           totalParticipants: 5,
@@ -181,7 +208,9 @@ export default function HistoryPage() {
         {
           id: 12,
           title: "마지막 기회, 사망 이스케이프",
-          dateTime: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 7일 전
+          dateTime: new Date(
+            Date.now() - 7 * 24 * 60 * 60 * 1000
+          ).toISOString(), // 7일 전
           location: "넥스트에디션 강남점",
           participantsNeeded: 4,
           totalParticipants: 4,
@@ -199,7 +228,7 @@ export default function HistoryPage() {
       const now = new Date();
       // 날짜 표시를 위해 시간 부분 제거
       now.setHours(0, 0, 0, 0);
-      
+
       if (activeTab === "upcoming") {
         filteredData = filteredData.filter((party) => {
           const partyDate = new Date(party.dateTime);
@@ -229,12 +258,12 @@ export default function HistoryPage() {
 
       // 전체 데이터 설정
       setTotalPages(Math.ceil(filteredData.length / 6));
-      
+
       // 현재 페이지에 해당하는 데이터만 선택
       const startIndex = (currentPage - 1) * 6;
       const endIndex = startIndex + 6;
       const paginatedData = filteredData.slice(startIndex, endIndex);
-      
+
       setParties(paginatedData);
       setIsLoading(false);
     }, 500);
@@ -269,9 +298,9 @@ export default function HistoryPage() {
       "https://i.postimg.cc/7hL7Y0dX/interior-2505229-640.jpg",
       "https://i.postimg.cc/fT3s132T/image.jpg",
       "https://i.postimg.cc/bJHXqpxr/image.jpg",
-      "https://naverbooking-phinf.pstatic.net/20230612_144/1686513263098ppWzR_JPEG/%C7%EF%B8%AE%C4%DF%C5%CD_%B4%BA_%C6%F7%BD%BA%C5%CD.jpg"
+      "https://naverbooking-phinf.pstatic.net/20230612_144/1686513263098ppWzR_JPEG/%C7%EF%B8%AE%C4%DF%C5%CD_%B4%BA_%C6%F7%BD%BA%C5%CD.jpg",
     ];
-    
+
     // 모임 ID를 기준으로 이미지 선택
     return imageUrls[partyId % 5];
   };
@@ -297,14 +326,14 @@ export default function HistoryPage() {
     } else if (party.reviewStatus === "COMPLETED") {
       // 리뷰 작성 완료된 경우
       return (
-        <button className="px-3 py-1 bg-gray-200 text-gray-600 text-xs rounded cursor-default">
+        <button className="px-3 py-1 bg-gray-700 text-gray-300 text-xs rounded cursor-default">
           작성완료
         </button>
       );
     } else {
       // 리뷰 작성 불가능한 경우
       return (
-        <button className="px-3 py-1 bg-gray-200 text-gray-600 text-xs rounded cursor-default">
+        <button className="px-3 py-1 bg-gray-700 text-gray-300 text-xs rounded cursor-default">
           작성불가
         </button>
       );
@@ -319,48 +348,50 @@ export default function HistoryPage() {
       setSelectedMapParty(partyId);
     }
   };
-  
+
   // OpenStreetMap 정적 지도 URL 생성 함수
   const getMapImageUrl = (location: string) => {
     // 서울 중심 좌표로 기본 설정 (실제로는 위치에 따라 달라져야 함)
     let lat = 37.5665;
-    let lon = 126.9780;
-    
+    let lon = 126.978;
+
     // 위치에 따라 좌표 조정 (샘플용)
-    if (location.includes('홍대')) {
+    if (location.includes("홍대")) {
       lat = 37.557;
       lon = 126.923;
-    } else if (location.includes('강남')) {
+    } else if (location.includes("강남")) {
       lat = 37.498;
       lon = 127.027;
-    } else if (location.includes('건대')) {
-      lat = 37.540;
+    } else if (location.includes("건대")) {
+      lat = 37.54;
       lon = 127.069;
-    } else if (location.includes('신촌')) {
+    } else if (location.includes("신촌")) {
       lat = 37.555;
       lon = 126.936;
-    } else if (location.includes('종로')) {
-      lat = 37.570;
+    } else if (location.includes("종로")) {
+      lat = 37.57;
       lon = 126.981;
     }
-    
+
     // OpenStreetMap 기반 정적 이미지 URL
     return `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lon}&zoom=14&size=600x400&maptype=mapnik&markers=${lat},${lon},lightblue`;
   };
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-gray-900 text-gray-100">
       <Navigation activePage="my" />
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* 마감 임박 모임 섹션 추가 */}
         <div className="mb-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">마감 임박 모임</h2>
+          <h2 className="text-xl font-bold text-gray-100 mb-4">
+            마감 임박 모임
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* 마감 임박 모임 카드 */}
             {parties.slice(0, 3).map((party) => (
               <div
                 key={`deadline-${party.id}`}
-                className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+                className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
               >
                 <div className="relative h-48">
                   <Image
@@ -368,38 +399,71 @@ export default function HistoryPage() {
                     alt={party.title}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    className="object-cover"
+                    className="object-cover opacity-80"
                     unoptimized
                     priority
                   />
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
-                    <h3 className="text-white font-bold text-lg">{party.title}</h3>
+                    <h3 className="text-white font-bold text-lg">
+                      {party.title}
+                    </h3>
                     <div className="flex justify-between items-center mt-1">
-                      <span className="text-white text-sm">{party.themeTitle}</span>
+                      <span className="text-gray-200 text-sm">
+                        {party.themeTitle}
+                      </span>
                       <span className="bg-[#FFB130] text-white text-xs px-2 py-1 rounded-full">
-                        D-{Math.floor((new Date(party.dateTime).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))}
+                        D-
+                        {Math.floor(
+                          (new Date(party.dateTime).getTime() -
+                            new Date().getTime()) /
+                            (1000 * 60 * 60 * 24)
+                        )}
                       </span>
                     </div>
                   </div>
                 </div>
                 <div className="p-4">
-                  <div className="flex justify-between items-center text-gray-600 text-sm mb-2">
+                  <div className="flex justify-between items-center text-gray-300 text-sm mb-2">
                     <div className="flex items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 mr-1"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                       <span>{party.location}</span>
                     </div>
                     <div className="flex items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 mr-1"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                          clipRule="evenodd"
+                        />
                       </svg>
-                      <span>{new Date(party.dateTime).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</span>
+                      <span>
+                        {new Date(party.dateTime).toLocaleTimeString("ko-KR", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
-                    <div className="text-sm text-gray-600">
-                      인원: {party.participantsNeeded} / {party.totalParticipants}명
+                    <div className="text-sm text-gray-300">
+                      인원: {party.participantsNeeded} /{" "}
+                      {party.totalParticipants}명
                     </div>
                     <Link
                       href={`/parties/detail/${party.id}`}
@@ -417,7 +481,7 @@ export default function HistoryPage() {
         {/* 상단 - 타이틀 + 필터 영역 */}
         <div className="mb-8">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-gray-100">
               나의 모임 히스토리
             </h1>
             <Link
@@ -429,12 +493,12 @@ export default function HistoryPage() {
           </div>
 
           {/* 탭 필터 */}
-          <div className="flex mb-4 border-b border-gray-200">
+          <div className="flex mb-4 border-b border-gray-700">
             <button
               className={`px-4 py-2 text-sm font-medium ${
                 activeTab === "upcoming"
                   ? "text-[#FFB230] border-b-2 border-[#FFB230]"
-                  : "text-gray-500 hover:text-gray-700"
+                  : "text-gray-400 hover:text-gray-200"
               }`}
               onClick={() => setActiveTab("upcoming")}
             >
@@ -444,7 +508,7 @@ export default function HistoryPage() {
               className={`px-4 py-2 text-sm font-medium ${
                 activeTab === "past"
                   ? "text-[#FFB230] border-b-2 border-[#FFB230]"
-                  : "text-gray-500 hover:text-gray-700"
+                  : "text-gray-400 hover:text-gray-200"
               }`}
               onClick={() => setActiveTab("past")}
             >
@@ -456,11 +520,11 @@ export default function HistoryPage() {
           <div className="flex items-center justify-between">
             <div className="flex space-x-4">
               <div className="flex items-center space-x-2">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm font-medium text-gray-300">
                   리뷰 상태:
                 </label>
                 <select
-                  className="rounded-md border-gray-300 shadow-sm px-3 py-1.5 text-sm"
+                  className="rounded-md bg-gray-800 border-gray-700 text-gray-200 shadow-sm px-3 py-1.5 text-sm"
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value as any)}
                 >
@@ -471,11 +535,11 @@ export default function HistoryPage() {
                 </select>
               </div>
               <div className="flex items-center space-x-2">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm font-medium text-gray-300">
                   내 역할:
                 </label>
                 <select
-                  className="rounded-md border-gray-300 shadow-sm px-3 py-1.5 text-sm"
+                  className="rounded-md bg-gray-800 border-gray-700 text-gray-200 shadow-sm px-3 py-1.5 text-sm"
                   value={roleFilter}
                   onChange={(e) => setRoleFilter(e.target.value as any)}
                 >
@@ -486,7 +550,7 @@ export default function HistoryPage() {
               </div>
             </div>
             <button
-              className="text-sm text-gray-600 hover:text-gray-900"
+              className="text-sm text-gray-400 hover:text-gray-200"
               onClick={resetFilters}
             >
               필터 초기화
@@ -496,13 +560,13 @@ export default function HistoryPage() {
 
         {/* 중단 - 카드 리스트 영역 */}
         {isLoading ? (
-          <div className="flex justify-center py-12">
+          <div className="flex justify-center py-12 text-gray-300">
             <p>모임 정보를 불러오는 중...</p>
           </div>
         ) : error ? (
-          <div className="bg-red-50 text-red-600 p-4 rounded-md">{error}</div>
+          <div className="bg-red-900 text-red-200 p-4 rounded-md">{error}</div>
         ) : parties.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12 text-gray-400">
             <p>조건에 맞는 모임이 없습니다.</p>
           </div>
         ) : (
@@ -510,15 +574,15 @@ export default function HistoryPage() {
             {parties.map((party) => (
               <div
                 key={party.id}
-                className="bg-white rounded-lg border border-gray-200 p-4"
+                className="bg-gray-800 rounded-lg border border-gray-700 p-4"
               >
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-2">
                     <span
                       className={`px-2 py-0.5 text-xs rounded-full ${
                         party.role === "HOST"
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-gray-100 text-gray-800"
+                          ? "bg-blue-900 text-blue-200"
+                          : "bg-gray-700 text-gray-300"
                       }`}
                     >
                       {party.role === "HOST" ? "모임장" : "모임원"}
@@ -528,27 +592,28 @@ export default function HistoryPage() {
                 </div>
                 <div className="flex mt-3 gap-4">
                   {party.themeThumbnailUrl ? (
-                    <div className="w-24 h-24 bg-gray-100 rounded overflow-hidden relative flex-shrink-0">
+                    <div className="w-24 h-24 bg-gray-700 rounded overflow-hidden relative flex-shrink-0">
                       <Image
                         src={getImageUrl(party.themeThumbnailUrl, party.id)}
                         alt={party.title}
                         fill
                         sizes="(max-width: 96px) 100vw, 96px"
-                        className="object-cover"
+                        className="object-cover opacity-90"
                         unoptimized
                         onError={(e) => {
                           // 이미지 로드 오류 시 기본 이미지(Base64 데이터 URL)로 대체
-                          const fallbackImage = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgZmlsbD0iI2VlZWVlZSIvPjxwYXRoIGQ9Ik00NSA0NUgzMFY3NUg5MFY0NUg3NVYzMEg0NVY0NVpNNzUgOTBIMzBWNzVIOTBWNDVINzVWOTBaIiBmaWxsPSIjOTk5OTk5Ii8+PC9zdmc+";
+                          const fallbackImage =
+                            "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgZmlsbD0iIzMzMzMzMyIvPjxwYXRoIGQ9Ik00NSA0NUgzMFY3NUg5MFY0NUg3NVYzMEg0NVY0NVpNNzUgOTBIMzBWNzVIOTBWNDVINzVWOTBaIiBmaWxsPSIjNjY2NjY2Ii8+PC9zdmc+";
                           (e.target as HTMLImageElement).src = fallbackImage;
                           (e.target as HTMLImageElement).onerror = null; // 이중 호출 방지
                         }}
                       />
                     </div>
                   ) : (
-                    <div className="w-24 h-24 bg-gray-100 rounded flex-shrink-0 flex items-center justify-center">
+                    <div className="w-24 h-24 bg-gray-700 rounded flex-shrink-0 flex items-center justify-center">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className="h-10 w-10 text-gray-400"
+                        className="h-10 w-10 text-gray-500"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -563,23 +628,43 @@ export default function HistoryPage() {
                     </div>
                   )}
                   <div className="flex-1">
-                    <h3 className="font-bold mb-1">{party.title}</h3>
-                    <div className="space-y-1 text-sm text-gray-600">
+                    <h3 className="font-bold mb-1 text-gray-100">
+                      {party.title}
+                    </h3>
+                    <div className="space-y-1 text-sm text-gray-300">
                       <p>{formatDate(party.dateTime)}</p>
                       <p>테마: {party.themeTitle}</p>
                       <div className="flex items-center">
                         <p className="flex items-center">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4 mr-1 text-gray-400"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                            />
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                            />
                           </svg>
                           장소: {party.location}
                         </p>
-                        <button 
-                          className="ml-2 text-sm text-blue-500 hover:text-blue-700 flex items-center"
+                        <button
+                          className="ml-2 text-sm text-[#FFB130] hover:text-[#FFA000] flex items-center"
                           onClick={() => toggleMap(party.id)}
                         >
-                          {selectedMapParty === party.id ? "지도 닫기" : "지도 보기"}
+                          {selectedMapParty === party.id
+                            ? "지도 닫기"
+                            : "지도 보기"}
                         </button>
                       </div>
                       <p>
@@ -589,18 +674,18 @@ export default function HistoryPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* 지도 이미지 영역 - 고정 이미지 사용 */}
                 {selectedMapParty === party.id && (
-                  <div className="mt-4 w-full h-64 bg-gray-100 rounded-lg overflow-hidden relative">
+                  <div className="mt-4 w-full h-64 bg-gray-700 rounded-lg overflow-hidden relative">
                     <Image
                       src="https://i.postimg.cc/L5Q5s78R/image.png"
                       alt={`${party.location} 지도`}
                       fill
-                      className="object-cover"
+                      className="object-cover opacity-90"
                       unoptimized
                     />
-                    <div className="absolute bottom-2 right-2 bg-white px-2 py-1 rounded shadow text-xs">
+                    <div className="absolute bottom-2 right-2 bg-gray-800 text-gray-200 px-2 py-1 rounded shadow text-xs">
                       {party.location}
                     </div>
                   </div>
@@ -619,8 +704,8 @@ export default function HistoryPage() {
                 disabled={currentPage === 1}
                 className={`mx-1 p-2 rounded ${
                   currentPage === 1
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "text-gray-600 hover:text-gray-900"
+                    ? "text-gray-600 cursor-not-allowed"
+                    : "text-gray-400 hover:text-gray-200"
                 }`}
               >
                 &lt; 이전
@@ -633,7 +718,7 @@ export default function HistoryPage() {
                   className={`mx-1 px-3 py-1 rounded ${
                     currentPage === index + 1
                       ? "bg-[#FFB230] text-white"
-                      : "text-gray-600 hover:bg-gray-100"
+                      : "text-gray-400 hover:bg-gray-700"
                   }`}
                 >
                   {index + 1}
@@ -647,8 +732,8 @@ export default function HistoryPage() {
                 disabled={currentPage === totalPages}
                 className={`mx-1 p-2 rounded ${
                   currentPage === totalPages
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "text-gray-600 hover:text-gray-900"
+                    ? "text-gray-600 cursor-not-allowed"
+                    : "text-gray-400 hover:text-gray-200"
                 }`}
               >
                 다음 &gt;
