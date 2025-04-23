@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useContext } from "react";
-import { Navigation } from "@/components/Navigation";
+import { Navigation } from "@/components/layout/Navigation";
 import Link from "next/link";
 import { ThemeSearchModal } from "@/components/ThemeSearchModal";
 import { TimePickerModal } from "@/components/TimePickerModal";
@@ -147,8 +147,7 @@ export default function CreatePartyPage() {
         {
           withCredentials: true,
         }
-      )
-   
+      );
 
       // 성공시 모임 상세 페이지로 이동
       if (response.data.data?.id) {

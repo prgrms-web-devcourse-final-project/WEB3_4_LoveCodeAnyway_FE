@@ -5,10 +5,7 @@ import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { LoginMemberContext, useLoginMember } from "@/stores/auth/loginMember";
 import client from "@/lib/backend/client";
 import { PageLoading } from "@/components/PageLoading";
-import { Navigation } from "@/components/Navigation";
-import { components } from "@/lib/backend/apiV1/schema";
-
-type Member = components["schemas"]["Member"];
+import { Navigation } from "@/components/layout/Navigation";
 
 export function ClientLayout({
   children,

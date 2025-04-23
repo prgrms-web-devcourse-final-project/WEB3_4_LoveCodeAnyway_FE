@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useContext } from "react";
-import { Navigation } from "@/components/Navigation";
+import { Navigation } from "@/components/layout/Navigation";
 import { PartyCard } from "@/components/PartyCard";
 import { ThemeSearch } from "@/components/ThemeSearch";
 import Link from "next/link";
@@ -51,19 +51,34 @@ export default function PartiesPage() {
 
   // 더미 데이터 생성 함수
   const generateDummyParties = () => {
-    return Array(8).fill(0).map((_, index) => ({
-      id: index + 1,
-      partyId: index + 1,
-      title: `방탈출 모임 ${index + 1}`,
-      themeName: ["좀비 연구소", "비밀의 방", "사망 이스케이프", "유령의 저택"][index % 4],
-      themeThumbnailUrl: index % 2 === 0 
-        ? "https://i.postimg.cc/PJNVr12v/theme.jpg" 
-        : "https://i.postimages.org/PJNVr12v/theme.jpg",
-      storeName: ["이스케이프 홍대점", "솔버 강남점", "마스터키 명동점", "키이스케이프 건대점"][index % 4],
-      scheduledAt: new Date(Date.now() + (index % 3) * 2 * 24 * 60 * 60 * 1000).toISOString(),
-      acceptedParticipantCount: Math.floor(Math.random() * 3) + 2,
-      totalParticipants: 6
-    }));
+    return Array(8)
+      .fill(0)
+      .map((_, index) => ({
+        id: index + 1,
+        partyId: index + 1,
+        title: `방탈출 모임 ${index + 1}`,
+        themeName: [
+          "좀비 연구소",
+          "비밀의 방",
+          "사망 이스케이프",
+          "유령의 저택",
+        ][index % 4],
+        themeThumbnailUrl:
+          index % 2 === 0
+            ? "https://i.postimg.cc/PJNVr12v/theme.jpg"
+            : "https://i.postimages.org/PJNVr12v/theme.jpg",
+        storeName: [
+          "이스케이프 홍대점",
+          "솔버 강남점",
+          "마스터키 명동점",
+          "키이스케이프 건대점",
+        ][index % 4],
+        scheduledAt: new Date(
+          Date.now() + (index % 3) * 2 * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        acceptedParticipantCount: Math.floor(Math.random() * 3) + 2,
+        totalParticipants: 6,
+      }));
   };
 
   // 모임 데이터 로드 (무한 스크롤 대신 한 번에 데이터 로드)
@@ -92,7 +107,10 @@ export default function PartiesPage() {
         // 데이터 타입에 따라 처리
         if (Array.isArray(response)) {
           partyData = response;
-        } else if (response.data?.content && Array.isArray(response.data.content)) {
+        } else if (
+          response.data?.content &&
+          Array.isArray(response.data.content)
+        ) {
           partyData = response.data.content;
         }
 
@@ -179,16 +197,16 @@ export default function PartiesPage() {
     // 이미지 URL 처리 함수
     const getImageUrl = (url?: string) => {
       if (!url) return "https://i.postimg.cc/PJNVr12v/theme.jpg";
-      
+
       // 내부 경로인 경우 그대로 사용
       if (url.startsWith("/")) {
         return url;
       }
-      
+
       // 외부 이미지 URL은 그대로 사용
       return url;
     };
-    
+
     // PartyCard 컴포넌트에 필요한 데이터 구조로 변환
     const cardData = {
       id: (party.id || party.partyId)?.toString() || "",
@@ -199,7 +217,9 @@ export default function PartiesPage() {
         ? new Date(party.scheduledAt).toLocaleDateString()
         : "날짜 정보 없음",
       location: party.storeName || "위치 정보 없음",
-      participants: `${party.acceptedParticipantCount || 0}/${party.totalParticipants || 0}`,
+      participants: `${party.acceptedParticipantCount || 0}/${
+        party.totalParticipants || 0
+      }`,
       tags: party.themeName ? [party.themeName] : ["테마 정보 없음"],
       host: {
         name: "모임장",
@@ -208,8 +228,8 @@ export default function PartiesPage() {
     };
 
     return (
-      <div 
-        key={`party-${party.id || party.partyId}`} 
+      <div
+        key={`party-${party.id || party.partyId}`}
         onClick={() => handleCardClick(party)}
         className="cursor-pointer"
       >

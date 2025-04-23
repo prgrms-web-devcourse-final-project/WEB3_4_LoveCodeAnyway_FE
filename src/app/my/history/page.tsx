@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Navigation } from "@/components/Navigation";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
@@ -379,7 +378,6 @@ export default function HistoryPage() {
 
   return (
     <main className="min-h-screen bg-gray-900 text-gray-100">
-      <Navigation activePage="my" />
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* 마감 임박 모임 섹션 추가 */}
         <div className="mb-8">
