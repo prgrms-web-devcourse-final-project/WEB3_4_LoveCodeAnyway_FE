@@ -2,9 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Navigation } from "@/components/Navigation";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import Image from "next/image";
 import { PageLoading } from "@/components/PageLoading";
 
@@ -168,7 +166,7 @@ export default function DiaryPage() {
         });
       }
       */
-      
+
       // 가데이터로 대체 - 테마 목록 형식에 맞춤
       const mockDiaries: Diary[] = [
         {
@@ -176,159 +174,171 @@ export default function DiaryPage() {
           themeId: 123,
           themeName: "미스터리 방탈출: 비밀의 문서",
           storeName: "이스케이프 홍대점",
-          thumbnailUrl: "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
+          thumbnailUrl:
+            "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
           escapeDate: "2024-03-15",
           escapeTime: 3120, // 52분
           hintCount: 2,
           escapeResult: true,
           ratingAvg: 4.8,
-          isPartyDiary: true
+          isPartyDiary: true,
         },
         {
           id: 2,
           themeId: 124,
           themeName: "좀비 아포칼립스",
           storeName: "테마월드 강남점",
-          thumbnailUrl: "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
+          thumbnailUrl:
+            "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
           escapeDate: "2024-03-22",
           escapeTime: 3540, // 59분
           hintCount: 3,
           escapeResult: false,
           ratingAvg: 4.2,
-          isPartyDiary: false
+          isPartyDiary: false,
         },
         {
           id: 3,
           themeId: 125,
           themeName: "마법사의 방",
           storeName: "원더랜드 신촌점",
-          thumbnailUrl: "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
+          thumbnailUrl:
+            "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
           escapeDate: "2024-04-05",
           escapeTime: 2940, // 49분
           hintCount: 0,
           escapeResult: true,
           ratingAvg: 4.9,
-          isPartyDiary: true
+          isPartyDiary: true,
         },
         {
           id: 4,
           themeId: 126,
           themeName: "스파이 미션",
           storeName: "시크릿 에이전트",
-          thumbnailUrl: "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
+          thumbnailUrl:
+            "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
           escapeDate: "2024-04-12",
           escapeTime: 3300, // 55분
           hintCount: 1,
           escapeResult: true,
           ratingAvg: 4.5,
-          isPartyDiary: false
+          isPartyDiary: false,
         },
         {
           id: 5,
           themeId: 127,
           themeName: "사라진 탐험가의 비밀",
           storeName: "이스케이프 건대입구점",
-          thumbnailUrl: "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
+          thumbnailUrl:
+            "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
           escapeDate: "2024-02-18",
           escapeTime: 3600, // 60분
           hintCount: 4,
           escapeResult: false,
           ratingAvg: 4.0,
-          isPartyDiary: true
+          isPartyDiary: true,
         },
         {
           id: 6,
           themeId: 128,
           themeName: "퀸즈 갬빗",
           storeName: "체스룸 성수점",
-          thumbnailUrl: "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
+          thumbnailUrl:
+            "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
           escapeDate: "2024-02-25",
           escapeTime: 3480, // 58분
           hintCount: 2,
           escapeResult: true,
           ratingAvg: 4.7,
-          isPartyDiary: false
+          isPartyDiary: false,
         },
         {
           id: 7,
           themeId: 129,
           themeName: "신비한 동굴의 비밀",
           storeName: "어드벤처 이스케이프 강남점",
-          thumbnailUrl: "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
+          thumbnailUrl:
+            "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
           escapeDate: "2024-01-30",
           escapeTime: 3000, // 50분
           hintCount: 1,
           escapeResult: true,
           ratingAvg: 4.6,
-          isPartyDiary: true
+          isPartyDiary: true,
         },
         {
           id: 8,
           themeId: 130,
           themeName: "타임워프: 과거로의 여행",
           storeName: "타임룸 홍대점",
-          thumbnailUrl: "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
+          thumbnailUrl:
+            "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
           escapeDate: "2024-01-15",
           escapeTime: 3780, // 63분
           hintCount: 5,
           escapeResult: false,
           ratingAvg: 3.9,
-          isPartyDiary: false
+          isPartyDiary: false,
         },
         {
           id: 9,
           themeId: 131,
           themeName: "음모론자의 방",
           storeName: "미스터리 킹덤 신림점",
-          thumbnailUrl: "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
+          thumbnailUrl:
+            "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
           escapeDate: "2023-12-28",
           escapeTime: 2760, // 46분
           hintCount: 0,
           escapeResult: true,
           ratingAvg: 5.0,
-          isPartyDiary: true
+          isPartyDiary: true,
         },
         {
           id: 10,
           themeId: 132,
           themeName: "감옥 탈출",
           storeName: "이스케이프 압구정점",
-          thumbnailUrl: "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
+          thumbnailUrl:
+            "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
           escapeDate: "2023-12-10",
           escapeTime: 3360, // 56분
           hintCount: 3,
           escapeResult: true,
           ratingAvg: 4.3,
-          isPartyDiary: false
+          isPartyDiary: false,
         },
         {
           id: 11,
           themeId: 133,
           themeName: "유령의 저택",
           storeName: "호러룸 강남점",
-          thumbnailUrl: "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
+          thumbnailUrl:
+            "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
           escapeDate: "2023-11-25",
           escapeTime: 3660, // 61분
           hintCount: 4,
           escapeResult: false,
           ratingAvg: 4.1,
-          isPartyDiary: true
+          isPartyDiary: true,
         },
         {
           id: 12,
           themeId: 134,
           themeName: "해적선의 보물",
           storeName: "어드벤처 이스케이프 명동점",
-          thumbnailUrl: "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
+          thumbnailUrl:
+            "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
           escapeDate: "2023-11-11",
           escapeTime: 2880, // 48분
           hintCount: 1,
           escapeResult: true,
           ratingAvg: 4.7,
-          isPartyDiary: false
-        }
+          isPartyDiary: false,
+        },
       ];
-      
+
       // 페이지네이션 정보 설정
       setDiaries(mockDiaries);
       setPagination({
@@ -482,7 +492,6 @@ export default function DiaryPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navigation activePage="my-diary" />
       <main className="container mx-auto px-4 py-10">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800">나의 탈출일지</h1>
@@ -498,10 +507,13 @@ export default function DiaryPage() {
         <div className="w-full mb-6">
           <div className="flex justify-between items-center gap-3">
             <div className="flex-1">
-              <form onSubmit={(e) => {
-                e.preventDefault();
-                fetchDiaries(1, { ...filter, keyword: searchKeyword });
-              }} className="relative">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  fetchDiaries(1, { ...filter, keyword: searchKeyword });
+                }}
+                className="relative"
+              >
                 <div className="absolute left-4 top-[14px] pointer-events-none">
                   <svg
                     width="16"
@@ -636,9 +648,7 @@ export default function DiaryPage() {
                         <div className="absolute top-3 right-3">
                           <div
                             className={`${
-                              diary.escapeResult
-                                ? "bg-green-500"
-                                : "bg-red-500"
+                              diary.escapeResult ? "bg-green-500" : "bg-red-500"
                             } text-white text-xs font-bold px-2 py-1 rounded-full`}
                           >
                             {diary.escapeResult ? "성공" : "실패"}
@@ -656,7 +666,9 @@ export default function DiaryPage() {
 
                       {/* 컨텐츠 영역 */}
                       <div className="p-5">
-                        <h3 className="font-bold text-lg mb-3 line-clamp-1">{diary.themeName}</h3>
+                        <h3 className="font-bold text-lg mb-3 line-clamp-1">
+                          {diary.themeName}
+                        </h3>
                         <p className="text-gray-600 text-sm mb-3">
                           {diary.storeName}
                         </p>

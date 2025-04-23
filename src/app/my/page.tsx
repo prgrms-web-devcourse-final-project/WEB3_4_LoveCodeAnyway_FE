@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Navigation } from "@/components/Navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Calendar } from "@/components/Calendar";
@@ -79,8 +78,8 @@ export default function MyPage() {
         stats: {
           successRate: 85,
           averageClear: 45,
-          totalRooms: 12
-        }
+          totalRooms: 12,
+        },
       };
       setUserProfile(mockUserProfile);
     } catch (error) {
@@ -108,21 +107,23 @@ export default function MyPage() {
         {
           id: 1,
           name: "미스터리 박스",
-          thumbnailUrl: "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
+          thumbnailUrl:
+            "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
           storeName: "이스케이프 룸",
           difficulty: 3,
           genre: "미스터리",
-          rating: 4.5
+          rating: 4.5,
         },
         {
           id: 2,
           name: "좀비 아포칼립스",
-          thumbnailUrl: "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
+          thumbnailUrl:
+            "https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif",
           storeName: "테마월드",
           difficulty: 4,
           genre: "공포",
-          rating: 4.2
-        }
+          rating: 4.2,
+        },
       ];
       setWishThemes(mockWishThemes);
     } catch (error) {
@@ -151,14 +152,14 @@ export default function MyPage() {
           date: "2023-06-15",
           themeName: "미스터리 박스",
           storeName: "이스케이프 룸",
-          escapeResult: true
+          escapeResult: true,
         },
         {
           date: "2023-06-20",
           themeName: "좀비 아포칼립스",
           storeName: "테마월드",
-          escapeResult: false
-        }
+          escapeResult: false,
+        },
       ];
       setCalendarDiaries(mockCalendarDiaries);
     } catch (error) {
@@ -213,8 +214,6 @@ export default function MyPage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <Navigation activePage="my" />
-
       {/* Section 1: 사용자 프로필 */}
       <section className="bg-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 py-10">
@@ -261,10 +260,21 @@ export default function MyPage() {
                 </h1>
                 <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-4">
                   <span className="inline-flex items-center text-sm bg-gray-100 px-3 py-1 rounded-full">
-                    <svg className="w-4 h-4 text-[#FFB130] mr-1" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    <svg
+                      className="w-4 h-4 text-[#FFB130] mr-1"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
                     </svg>
-                    매너점수 <span className="font-semibold ml-1">{userProfile.mannerScore}</span>
+                    매너점수{" "}
+                    <span className="font-semibold ml-1">
+                      {userProfile.mannerScore}
+                    </span>
                   </span>
                 </div>
                 <div className="flex flex-wrap justify-center md:justify-start gap-2">
@@ -283,8 +293,18 @@ export default function MyPage() {
               href="/my/edit"
               className="px-6 py-2.5 bg-black text-white rounded-full hover:bg-gray-800 transition-colors font-medium text-sm shadow-sm flex items-center gap-2"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                />
               </svg>
               프로필 수정
             </Link>
@@ -293,8 +313,18 @@ export default function MyPage() {
             <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-[#FFB130]/10 flex items-center justify-center">
-                  <svg className="w-6 h-6 text-[#FFB130]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <svg
+                    className="w-6 h-6 text-[#FFB130]"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   </svg>
                 </div>
                 <div>
@@ -308,14 +338,25 @@ export default function MyPage() {
             <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-[#FFB130]/10 flex items-center justify-center">
-                  <svg className="w-6 h-6 text-[#FFB130]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <svg
+                    className="w-6 h-6 text-[#FFB130]"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   </svg>
                 </div>
                 <div>
                   <div className="text-sm text-gray-500 mb-1">평균 클리어</div>
                   <div className="text-3xl font-bold text-gray-800">
-                    {userProfile.stats.averageClear}<span className="text-lg font-medium">분</span>
+                    {userProfile.stats.averageClear}
+                    <span className="text-lg font-medium">분</span>
                   </div>
                 </div>
               </div>
@@ -323,14 +364,25 @@ export default function MyPage() {
             <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-[#FFB130]/10 flex items-center justify-center">
-                  <svg className="w-6 h-6 text-[#FFB130]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  <svg
+                    className="w-6 h-6 text-[#FFB130]"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                    />
                   </svg>
                 </div>
                 <div>
                   <div className="text-sm text-gray-500 mb-1">누적 방 수</div>
                   <div className="text-3xl font-bold text-gray-800">
-                    {userProfile.stats.totalRooms}<span className="text-lg font-medium">개</span>
+                    {userProfile.stats.totalRooms}
+                    <span className="text-lg font-medium">개</span>
                   </div>
                 </div>
               </div>
@@ -344,15 +396,27 @@ export default function MyPage() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-between items-center mb-8">
             <div>
-              <h2 className="text-2xl font-bold text-gray-800">모임 희망 테마</h2>
+              <h2 className="text-2xl font-bold text-gray-800">
+                모임 희망 테마
+              </h2>
               <p className="text-gray-500 mt-1">내가 참여하고 싶은 테마들</p>
             </div>
             <Link
               href="/themes"
               className="px-6 py-2.5 bg-[#FFB130] text-white rounded-full hover:bg-[#F0A120] transition-colors font-medium text-sm shadow-sm flex items-center gap-2"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
               </svg>
               테마 추가
             </Link>
@@ -373,26 +437,46 @@ export default function MyPage() {
                   />
                 </div>
                 <div className="p-5">
-                  <h3 className="font-bold text-lg text-gray-800 mb-2 line-clamp-1">{theme.title || theme.name}</h3>
+                  <h3 className="font-bold text-lg text-gray-800 mb-2 line-clamp-1">
+                    {theme.title || theme.name}
+                  </h3>
                   <p className="text-sm text-gray-600 mb-3 line-clamp-1">
                     {theme.storeName}
                   </p>
                   <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <span className="px-2 py-1 bg-gray-100 rounded-md">{theme.genre}</span>
+                    <span className="px-2 py-1 bg-gray-100 rounded-md">
+                      {theme.genre}
+                    </span>
                     <span>•</span>
-                    <span className="px-2 py-1 bg-gray-100 rounded-md">{theme.playTime}</span>
+                    <span className="px-2 py-1 bg-gray-100 rounded-md">
+                      {theme.playTime}
+                    </span>
                   </div>
                 </div>
               </Link>
             ))}
             <div className="bg-gray-100 rounded-2xl overflow-hidden border border-dashed border-gray-300 flex flex-col items-center justify-center p-6 min-h-[300px]">
               <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mb-4 shadow-sm">
-                <svg className="w-8 h-8 text-[#FFB130]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                <svg
+                  className="w-8 h-8 text-[#FFB130]"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  />
                 </svg>
               </div>
-              <p className="text-gray-600 font-medium mb-2">새로운 테마 추가하기</p>
-              <p className="text-gray-500 text-sm text-center mb-4">관심있는 테마를 찾아보세요</p>
+              <p className="text-gray-600 font-medium mb-2">
+                새로운 테마 추가하기
+              </p>
+              <p className="text-gray-500 text-sm text-center mb-4">
+                관심있는 테마를 찾아보세요
+              </p>
               <Link
                 href="/themes"
                 className="px-4 py-2 bg-black text-white rounded-full text-sm hover:bg-gray-800 transition-colors"
@@ -503,7 +587,8 @@ export default function MyPage() {
                         unoptimized
                         onError={(e) => {
                           // 이미지 로드 오류 시 기본 이미지(Base64 데이터 URL)로 대체
-                          const fallbackImage = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgZmlsbD0iI2VlZWVlZSIvPjxwYXRoIGQ9Ik00NSA0NUgzMFY3NUg5MFY0NUg3NVYzMEg0NVY0NVpNNzUgOTBIMzBWNzVIOTBWNDVINzVWOTBaIiBmaWxsPSIjOTk5OTk5Ii8+PC9zdmc+";
+                          const fallbackImage =
+                            "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgZmlsbD0iI2VlZWVlZSIvPjxwYXRoIGQ9Ik00NSA0NUgzMFY3NUg5MFY0NUg3NVYzMEg0NVY0NVpNNzUgOTBIMzBWNzVIOTBWNDVINzVWOTBaIiBmaWxsPSIjOTk5OTk5Ii8+PC9zdmc+";
                           (e.target as HTMLImageElement).src = fallbackImage;
                           (e.target as HTMLImageElement).onerror = null; // 이중 호출 방지
                         }}

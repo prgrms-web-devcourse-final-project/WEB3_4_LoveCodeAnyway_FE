@@ -1,10 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Navigation } from "@/components/Navigation";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 
 // API 기본 URL 설정
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
@@ -37,7 +35,7 @@ export default function InquiryPage() {
   const fetchInquiries = async () => {
     try {
       setIsLoading(true);
-      
+
       // API 호출 코드 주석 처리
       /*
       const response = await axios.get(`${API_BASE_URL}/api/v1/boards`, {
@@ -61,7 +59,7 @@ export default function InquiryPage() {
           title: "회원가입 관련 문의드립니다",
           nickname: "사용자1",
           createdAt: "2023-06-15",
-          status: "답변완료"
+          status: "답변완료",
         },
         {
           id: 2,
@@ -69,7 +67,7 @@ export default function InquiryPage() {
           title: "페이지 로딩이 느려요",
           nickname: "사용자2",
           createdAt: "2023-06-14",
-          status: "대기중"
+          status: "대기중",
         },
         {
           id: 3,
@@ -77,7 +75,7 @@ export default function InquiryPage() {
           title: "새로운 테마 등록 요청드립니다",
           nickname: "사용자3",
           createdAt: "2023-06-12",
-          status: "답변완료"
+          status: "답변완료",
         },
         {
           id: 4,
@@ -85,7 +83,7 @@ export default function InquiryPage() {
           title: "비밀번호 변경 방법이 궁금합니다",
           nickname: "사용자4",
           createdAt: "2023-06-10",
-          status: "대기중"
+          status: "대기중",
         },
         {
           id: 5,
@@ -93,24 +91,26 @@ export default function InquiryPage() {
           title: "모바일에서 접속 시 오류가 발생합니다",
           nickname: "사용자5",
           createdAt: "2023-06-08",
-          status: "답변완료"
-        }
+          status: "답변완료",
+        },
       ];
 
       // 검색 및 필터링 적용
       let filteredInquiries = mockInquiries;
-      
+
       // 문의 유형 필터링
       if (inquiryType !== "전체") {
-        filteredInquiries = filteredInquiries.filter(inquiry => inquiry.type === inquiryType);
+        filteredInquiries = filteredInquiries.filter(
+          (inquiry) => inquiry.type === inquiryType
+        );
       }
-      
+
       // 검색어 필터링
       if (searchKeyword) {
         const keyword = searchKeyword.toLowerCase();
         filteredInquiries = filteredInquiries.filter(
-          inquiry => 
-            inquiry.title.toLowerCase().includes(keyword) || 
+          (inquiry) =>
+            inquiry.title.toLowerCase().includes(keyword) ||
             inquiry.nickname.toLowerCase().includes(keyword)
         );
       }
@@ -148,8 +148,6 @@ export default function InquiryPage() {
 
   return (
     <main className="min-h-screen bg-white">
-      <Navigation activePage="my" />
-
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-2xl font-bold mb-2">1:1 문의</h1>

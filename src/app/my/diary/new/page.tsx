@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Navigation } from "@/components/Navigation";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { XMarkIcon } from "@heroicons/react/24/outline";
@@ -349,8 +347,6 @@ export default function NewDiaryPage() {
   // ==================== 렌더링 ====================
   return (
     <main className="min-h-screen bg-gray-50">
-      <Navigation activePage="my-diary" />
-
       <div className="max-w-3xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold mb-8 text-center">탈출일지 작성</h1>
 

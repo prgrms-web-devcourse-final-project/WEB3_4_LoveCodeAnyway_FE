@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useContext } from "react";
-import { Navigation } from "@/components/Navigation";
+import { Navigation } from "@/components/layout/Navigation";
 import Link from "next/link";
 import { ThemeSearchModal } from "@/components/ThemeSearchModal";
 import { TimePickerModal } from "@/components/TimePickerModal";

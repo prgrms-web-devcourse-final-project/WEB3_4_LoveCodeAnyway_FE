@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Navigation } from "@/components/Navigation";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -108,8 +107,6 @@ export default function NewInquiryPage() {
 
   return (
     <main className="min-h-screen bg-white">
-      <Navigation activePage="my" />
-
       <div className="max-w-3xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold mb-8">문의하기</h1>
         <p className="text-gray-600 mb-8">

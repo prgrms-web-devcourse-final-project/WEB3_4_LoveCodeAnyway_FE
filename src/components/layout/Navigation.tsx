@@ -18,7 +18,7 @@ interface Alarm {
 
 export function Navigation({ activePage }: { activePage?: string }) {
   const router = useRouter();
-  const { isLogin, loginMember, logout, logoutAndHome } =
+  const { isLogin, loginMember, logoutAndHome } =
     useGlobalLoginMember();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
@@ -166,11 +166,6 @@ export function Navigation({ activePage }: { activePage?: string }) {
   const toggleNotification = () => {
     setIsNotificationOpen(!isNotificationOpen);
     if (isProfileMenuOpen) setIsProfileMenuOpen(false);
-  };
-
-  const handleLogout = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    logoutAndHome();
   };
 
   if (!mounted) {
@@ -387,7 +382,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
                             loginMember.profilePictureUrl ||
                             "/default-profile.svg"
                           }
-                          alt={loginMember.nickname || "프로필"}
+                          alt={loginMember.nickname}
                           className="w-full h-full object-cover"
                           width={32}
                           height={32}
@@ -395,7 +390,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
                       )}
                     </div>
                     <span className="text-gray-300 text-sm">
-                      {loginMember?.nickname || "또방이"}
+                      {loginMember.nickname}
                     </span>
                   </button>
 
@@ -430,7 +425,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
                       </Link>
                       <div className="border-t border-gray-100">
                         <button
-                          onClick={handleLogout}
+                          onClick={logoutAndHome}
                           className="block w-full text-left px-4 py-3 text-base font-medium text-gray-500 hover:bg-[#FFFCF7]"
                         >
                           로그아웃

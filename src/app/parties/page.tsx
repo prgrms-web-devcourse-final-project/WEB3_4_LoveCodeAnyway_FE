@@ -215,7 +215,9 @@ export default function PartiesPage() {
         ? new Date(party.scheduledAt).toLocaleDateString()
         : "날짜 정보 없음",
       location: party.storeName || "위치 정보 없음",
-      participants: `${party.acceptedParticipantCount || 0}/${party.totalParticipants || 0}`,
+      participants: `${party.acceptedParticipantCount || 0}/${
+        party.totalParticipants || 0
+      }`,
       tags: party.themeName ? [party.themeName] : ["테마 정보 없음"],
       host: {
         name: "모임장",
