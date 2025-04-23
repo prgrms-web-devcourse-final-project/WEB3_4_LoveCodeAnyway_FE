@@ -2,11 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Navigation } from "@/components/Navigation";
 import { useParams, useRouter } from "next/navigation";
 import { StarRating } from "@/components/StarRating";
-import { RadarChart } from "@/components/RadarChart";
-import { KakaoMap } from "@/components/KakaoMap";
 import Image from "next/image";
 import { PageLoading } from "@/components/PageLoading";
 
@@ -53,62 +50,62 @@ export default function ThemeDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [liked, setLiked] = useState(false);
-  
+
   // 인증서 오류 도메인 확인
   const CERTIFICATE_ERROR_DOMAINS = [
-    'xn--vh3bn2thtas7l8te.com',
-    'www.xn--vh3bn2thtas7l8te.com'
+    "xn--vh3bn2thtas7l8te.com",
+    "www.xn--vh3bn2thtas7l8te.com",
   ];
-  
+
   // 이미지 URL 처리 함수
   const getProxyImageUrl = (url: string | undefined): string => {
     if (!url) return "/images/mystery-room.jpg";
-    
+
     // 인증서 오류 도메인인지 확인
-    const hasErrorDomain = CERTIFICATE_ERROR_DOMAINS.some(domain => 
+    const hasErrorDomain = CERTIFICATE_ERROR_DOMAINS.some((domain) =>
       url.includes(domain)
     );
-    
+
     if (hasErrorDomain) {
       try {
         // 원본 URL에서 경로만 추출
         const urlObj = new URL(url);
         return `/img-proxy${urlObj.pathname}`;
       } catch (e) {
-        console.error('URL 파싱 오류:', e);
+        console.error("URL 파싱 오류:", e);
         return url;
       }
     }
-    
+
     return url;
   };
 
   // OpenStreetMap 정적 지도 URL 생성 함수
   const getMapImageUrl = (address?: string) => {
     if (!address) return "";
-    
+
     // 서울 중심 좌표로 기본 설정 (실제로는 위치에 따라 달라져야 함)
     let lat = 37.5665;
-    let lon = 126.9780;
-    
+    let lon = 126.978;
+
     // 위치에 따라 좌표 조정 (샘플용)
-    if (address.includes('홍대')) {
+    if (address.includes("홍대")) {
       lat = 37.557;
       lon = 126.923;
-    } else if (address.includes('강남')) {
+    } else if (address.includes("강남")) {
       lat = 37.498;
       lon = 127.027;
-    } else if (address.includes('건대')) {
-      lat = 37.540;
+    } else if (address.includes("건대")) {
+      lat = 37.54;
       lon = 127.069;
-    } else if (address.includes('신촌')) {
+    } else if (address.includes("신촌")) {
       lat = 37.555;
       lon = 126.936;
-    } else if (address.includes('종로')) {
-      lat = 37.570;
+    } else if (address.includes("종로")) {
+      lat = 37.57;
       lon = 126.981;
     }
-    
+
     // OpenStreetMap 기반 정적 이미지 URL
     return `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lon}&zoom=14&size=600x400&maptype=mapnik&markers=${lat},${lon},lightblue`;
   };
@@ -160,7 +157,6 @@ export default function ThemeDetailPage() {
   if (loading) {
     return (
       <main className="bg-gray-50 min-h-screen">
-        <Navigation activePage="themes" />
         <PageLoading isLoading={loading} />
       </main>
     );
@@ -169,7 +165,6 @@ export default function ThemeDetailPage() {
   if (error || !themeDetail) {
     return (
       <main className="bg-gray-50 min-h-screen">
-        <Navigation activePage="themes" />
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-8">
           <div className="bg-white rounded-2xl p-8 shadow-sm text-center">
             <h1 className="text-2xl font-bold mb-4">오류 발생</h1>
@@ -216,8 +211,6 @@ export default function ThemeDetailPage() {
 
   return (
     <main className="bg-gray-50 min-h-screen">
-      <Navigation activePage="themes" />
-
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-8">
         {/* 섹션 1: 테마 정보 */}
         <div className="mb-8">
@@ -495,7 +488,8 @@ export default function ThemeDetailPage() {
                         className="h-full bg-blue-500 rounded-full"
                         style={{
                           width: `${
-                            (themeDetail.diaryBasedThemeStat.deviceRatio || 0) * 20
+                            (themeDetail.diaryBasedThemeStat.deviceRatio || 0) *
+                            20
                           }%`,
                         }}
                       ></div>
@@ -556,21 +550,28 @@ export default function ThemeDetailPage() {
               </svg>
               테마 목록으로 돌아가기
             </Link>
-            <Link href={themeDetail.reservationUrl || "#"} 
-                  className="flex-1 px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFA000] transition-colors text-center shadow-sm whitespace-nowrap"
+            <Link
+              href={themeDetail.reservationUrl || "#"}
+              className="flex-1 px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFA000] transition-colors text-center shadow-sm whitespace-nowrap"
             >
               예약하러 가기
             </Link>
-            <Link href="/my/" 
-            className="flex-1 px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFA000] transition-colors text-center shadow-sm whitespace-nowrap">
+            <Link
+              href="/my/"
+              className="flex-1 px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFA000] transition-colors text-center shadow-sm whitespace-nowrap"
+            >
               희망 테마 설정
             </Link>
-            <Link href="/par" 
-            className="flex-1 px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFA000] transition-colors text-center shadow-sm whitespace-nowrap">
+            <Link
+              href="/par"
+              className="flex-1 px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFA000] transition-colors text-center shadow-sm whitespace-nowrap"
+            >
               모임 만들기
             </Link>
-            <Link href="/themes" 
-            className="flex-1 px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFA000] transition-colors text-center shadow-sm whitespace-nowrap">
+            <Link
+              href="/themes"
+              className="flex-1 px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFA000] transition-colors text-center shadow-sm whitespace-nowrap"
+            >
               모임찾기
             </Link>
           </div>

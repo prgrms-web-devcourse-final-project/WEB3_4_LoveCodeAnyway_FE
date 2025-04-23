@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect, useContext } from "react";
-import { Navigation } from "@/components/Navigation";
+import { Navigation } from "@/components/layout/Navigation";
 import Link from "next/link";
 import { ThemeSearchModal } from "@/components/ThemeSearchModal";
 import { TimePickerModal } from "@/components/TimePickerModal";
 import axios from "axios";
 import { useRouter, useParams } from "next/navigation";
 import { LoginMemberContext } from "@/stores/auth/loginMember";
+import client from "@/lib/backend/client";
 
 interface PartyFormData {
   title: string;
@@ -75,7 +76,7 @@ export default function EditPartyPage() {
   const router = useRouter();
   const params = useParams();
   const { isLogin, loginMember } = useContext(LoginMemberContext);
-  
+
   const [formData, setFormData] = useState<PartyFormData>({
     title: "",
     themeName: "",
@@ -116,10 +117,10 @@ export default function EditPartyPage() {
   useEffect(() => {
     // 로그인되지 않은 경우 API 호출하지 않음
     if (!isLogin || !partyId) return;
-    
+
     const fetchPartyDetail = async () => {
       setLoading(true);
-      
+
       try {
         const response = await axios.get(
           `${baseUrl}/api/v1/parties/${partyId}`,
@@ -130,19 +131,22 @@ export default function EditPartyPage() {
 
         if (response.data.data) {
           const partyData = response.data.data;
-          
+
           // 모임장인지 확인
-          if (partyData.hostId !== loginMember.id) {
+          if (partyData.hostId !== loginMember.data.id) {
             alert("모임 수정 권한이 없습니다.");
             router.push(`/parties/${partyId}`);
             return;
           }
-          
+
           // 날짜와 시간 분리
           const scheduledAt = new Date(partyData.scheduledAt || "");
-          const date = scheduledAt.toISOString().split('T')[0];
-          const time = `${String(scheduledAt.getHours()).padStart(2, '0')}:${String(scheduledAt.getMinutes()).padStart(2, '0')}`;
-          
+          const date = scheduledAt.toISOString().split("T")[0];
+          const time = `${String(scheduledAt.getHours()).padStart(
+            2,
+            "0"
+          )}:${String(scheduledAt.getMinutes()).padStart(2, "0")}`;
+
           // 폼 데이터 초기화
           setFormData({
             title: partyData.title || "",
@@ -223,13 +227,13 @@ export default function EditPartyPage() {
       };
 
       // API 호출 (PUT 메서드로 변경)
-      const response = await axios.put<SuccessResponsePartyDto>(
-        `${baseUrl}/api/v1/parties/${partyId}`,
-        requestData,
-        {
-          withCredentials: true,
-        }
-      );
+
+      const response = await client.PUT("/api/v1/parties/{partyId}", {
+        params: {
+          path: { partyId }
+        },
+        body: requestData
+      });
 
       // 성공시 모임 상세 페이지로 이동
       alert("모임 정보가 수정되었습니다.");
@@ -311,7 +315,6 @@ export default function EditPartyPage() {
   if (loading) {
     return (
       <main className="bg-gray-50 min-h-screen">
-        <Navigation activePage="parties" />
         <div className="max-w-7xl mx-auto px-6 py-12 flex justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
         </div>
@@ -321,7 +324,6 @@ export default function EditPartyPage() {
 
   return (
     <main className="bg-gray-50 min-h-screen">
-      <Navigation activePage="parties" />
 
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-8">
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8">
@@ -593,4 +595,4 @@ export default function EditPartyPage() {
       />
     </main>
   );
-} 
+}

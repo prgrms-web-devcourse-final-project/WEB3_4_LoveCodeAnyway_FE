@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useContext, useEffect, useRef } from "react";
-import { LoginMemberContext } from "@/stores/auth/loginMember";
-import client from "@/lib/backend/client";
+import { useState, useEffect, useRef } from "react";
+import { useGlobalLoginMember } from "@/stores/auth/loginMember";
 import { useRouter } from "next/navigation";
 
 // 알림 데이터 타입 직접 정의
@@ -19,8 +18,8 @@ interface Alarm {
 
 export function Navigation({ activePage }: { activePage?: string }) {
   const router = useRouter();
-  const { isLogin, loginMember, logout, logoutAndHome } =
-    useContext(LoginMemberContext);
+  const { isLogin, loginMember, logoutAndHome } =
+    useGlobalLoginMember();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [notifications, setNotifications] = useState<Alarm[]>([]);
@@ -92,7 +91,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
           content: "관심 테마의 새로운 모임이 생성되었습니다. 확인해보세요!",
           createdAt: new Date().toISOString(),
           readStatus: false,
-          alarmType: "SYSTEM"
+          alarmType: "SYSTEM",
         },
         {
           id: 2,
@@ -100,8 +99,8 @@ export function Navigation({ activePage }: { activePage?: string }) {
           content: "모임장으로부터 새 메시지가 도착했습니다.",
           createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
           readStatus: true,
-          alarmType: "MESSAGE"
-        }
+          alarmType: "MESSAGE",
+        },
       ];
       setNotifications(mockNotifications);
     } catch (error) {
@@ -167,11 +166,6 @@ export function Navigation({ activePage }: { activePage?: string }) {
   const toggleNotification = () => {
     setIsNotificationOpen(!isNotificationOpen);
     if (isProfileMenuOpen) setIsProfileMenuOpen(false);
-  };
-
-  const handleLogout = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    logoutAndHome();
   };
 
   if (!mounted) {
@@ -383,18 +377,20 @@ export function Navigation({ activePage }: { activePage?: string }) {
                   >
                     <div className="w-8 h-8 rounded-full overflow-hidden relative bg-gray-700 flex items-center justify-center">
                       {loginMember && (
-                        <img
+                        <Image
                           src={
                             loginMember.profilePictureUrl ||
                             "/default-profile.svg"
                           }
-                          alt={loginMember.nickname || "프로필"}
+                          alt={loginMember.nickname}
                           className="w-full h-full object-cover"
+                          width={32}
+                          height={32}
                         />
                       )}
                     </div>
                     <span className="text-gray-300 text-sm">
-                      {loginMember?.nickname || "또방이"}
+                      {loginMember.nickname}
                     </span>
                   </button>
 
@@ -429,7 +425,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
                       </Link>
                       <div className="border-t border-gray-100">
                         <button
-                          onClick={handleLogout}
+                          onClick={logoutAndHome}
                           className="block w-full text-left px-4 py-3 text-base font-medium text-gray-500 hover:bg-[#FFFCF7]"
                         >
                           로그아웃

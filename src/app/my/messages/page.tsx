@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Navigation } from "@/components/Navigation";
 
 // 임시 쪽지 데이터
 const mockMessages = [
@@ -67,7 +66,6 @@ export default function MessagesPage() {
 
   return (
     <main className="min-h-screen" style={{ backgroundColor: "#F9FAFB" }}>
-      <Navigation activePage="my" />
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex">
           {/* 왼쪽 사이드 메뉴 */}

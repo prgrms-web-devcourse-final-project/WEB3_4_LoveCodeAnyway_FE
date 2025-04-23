@@ -8,7 +8,9 @@ import client from "@/lib/backend/client";
 
 import { components } from "@/lib/backend/apiV1/schema";
 
-type Member = components["schemas"]["Member"];
+type Member = components["schemas"]["BasicProfileResponse"] & {
+  id: number;
+};
 
 export const LoginMemberContext = createContext<{
   loginMember: Member;
@@ -18,21 +20,29 @@ export const LoginMemberContext = createContext<{
   logout: (callback: () => void) => void;
   logoutAndHome: () => void;
 }>({
-  loginMember: createEmptyMember(),
+  loginMember: {
+    id: 0,
+    nickname: "",
+    gender: "BLIND",
+    introduction: "",
+    profilePictureUrl: "",
+    mannerScore: 0,
+  },
   setLoginMember: () => {},
   isLoginMemberPending: true,
   isLogin: false,
-  logout: () => {},
+  logout: (callback: () => void) => {},
   logoutAndHome: () => {},
 });
 
 function createEmptyMember(): Member {
   return {
     id: 0,
-    createdAt: "",
-    modifiedAt: "",
     nickname: "",
+    gender: "BLIND",
+    introduction: "",
     profilePictureUrl: "",
+    mannerScore: 0,
   };
 }
 

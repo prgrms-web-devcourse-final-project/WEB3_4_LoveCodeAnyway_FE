@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useInView } from "react-intersection-observer";
-import { Navigation } from "@/components/Navigation";
 import { ThemeCard } from "@/components/ThemeCard";
 import { ThemeSearch } from "@/components/ThemeSearch";
 import { EscapeRoom } from "@/types/EscapeRoom";
@@ -167,7 +166,6 @@ export default function ThemesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navigation activePage="themes" />
       <main className="container mx-auto px-4 py-10">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800">방탈출 테마</h1>
