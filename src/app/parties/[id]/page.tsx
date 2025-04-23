@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import { LoginMemberContext } from "@/stores/auth/loginMember";
+import client from "@/lib/backend/client";
 import Script from "next/script";
 
 // 기본 이미지 경로
@@ -83,6 +84,7 @@ export default function PartyDetailPage() {
   const router = useRouter();
   const { isLogin, loginMember } = useContext(LoginMemberContext);
 
+
   // 디버깅: loginMember 객체 확인
   useEffect(() => {
     console.log("LoginMemberContext:", { isLogin, loginMember });
@@ -108,8 +110,8 @@ export default function PartyDetailPage() {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL
     ? process.env.NEXT_PUBLIC_API_URL
     : process.env.NODE_ENV === "development"
-    ? "http://localhost:8080"
-    : "https://api.ddobang.site";
+      ? "http://localhost:8080"
+      : "https://api.ddobang.site";
 
   // 모임 ID 가져오기
   const partyId = params?.id;
@@ -119,26 +121,27 @@ export default function PartyDetailPage() {
     // 로그인되지 않은 경우 API 호출하지 않음
     if (!isLogin) return;
 
+
     const fetchPartyDetail = async () => {
       if (!partyId) return;
 
       setLoading(true);
       try {
-        console.log("로그인된 사용자 ID:", loginMember.id);
-        const response = await axios.get<SuccessResponsePartyDetailResponse>(
-          `${baseUrl}/api/v1/parties/${partyId}`,
-          {
-            withCredentials: true,
+        console.log("로그인된 사용자 ID:", loginMember);
+
+        const response = await client.GET("/api/v1/parties/{partyId}", {
+          params: {
+            path: { partyId }  // 경로 파라미터는 'path' 객체 안에 넣어야 할 수 있음
           }
-        );
+        });
 
         if (response.data.data) {
           console.log("모임 데이터:", response.data.data);
           console.log("모임장 ID:", response.data.data.hostId);
+          console.log("로그인된 사용자 ID:", loginMember.data.id);
           setPartyData(response.data.data);
-
           // 사용자 역할 설정
-          if (response.data.data.hostId === loginMember.id) {
+          if (response.data.data.hostId === loginMember.data.id) {
             console.log("사용자 역할: 모임장");
             setUserRole("host");
           } else if (
@@ -171,17 +174,38 @@ export default function PartyDetailPage() {
   }, [partyId, baseUrl, isLogin, router, loginMember]);
 
   // 참가 신청 처리
+  // // 예전코드
+  // const handleJoinRequest = async () => {
+  //   if (!partyId) return;
+
+  //   try {
+  //     await axios.post(
+  //       `${baseUrl}/api/v1/parties/${partyId}/apply`,
+  //       {},
+  //       {
+  //         withCredentials: true,
+  //       }
+  //     );
+  //     alert("참가 신청이 완료되었습니다.");
+  //     // 페이지 새로고침
+  //     window.location.reload();
+  //   } catch (error) {
+  //     console.error("참가 신청 중 오류:", error);
+  //     alert("참가 신청 중 오류가 발생했습니다.");
+  //   }
+  // };
   const handleJoinRequest = async () => {
     if (!partyId) return;
 
     try {
-      await axios.post(
-        `${baseUrl}/api/v1/parties/${partyId}/apply`,
-        {},
-        {
-          withCredentials: true,
+      await client.POST(`/api/v1/parties/{partyId}/apply`, {
+        params: {
+          path: {
+            partyId: partyId
+          }
         }
-      );
+      });
+
       alert("참가 신청이 완료되었습니다.");
       // 페이지 새로고침
       window.location.reload();
@@ -192,13 +216,37 @@ export default function PartyDetailPage() {
   };
 
   // 참가 취소 처리
+  //예전코드
+  // const handleCancelJoin = async () => {
+  //   if (!partyId) return;
+
+  //   try {
+  //     await axios.delete(
+  //       `${baseUrl}/api/v1/parties/${partyId}/join`,
+  //       {
+  //         withCredentials: true,
+  //       }
+  //     );
+  //     alert("참가가 취소되었습니다.");
+  //     // 페이지 새로고침
+  //     window.location.reload();
+  //   } catch (error) {
+  //     console.error("참가 취소 중 오류:", error);
+  //     alert("참가 취소 중 오류가 발생했습니다.");
+  //   }
+  // };
   const handleCancelJoin = async () => {
     if (!partyId) return;
 
     try {
-      await axios.delete(`${baseUrl}/api/v1/parties/${partyId}/join`, {
-        withCredentials: true,
+      await client.DELETE(`/api/v1/parties/{partyId}/cancel`, {
+        params: {
+          path: {
+            partyId: partyId
+          }
+        }
       });
+
       alert("참가가 취소되었습니다.");
       // 페이지 새로고침
       window.location.reload();
@@ -213,19 +261,46 @@ export default function PartyDetailPage() {
     if (!partyId || !memberId) return;
 
     try {
-      await axios.post(
-        `${baseUrl}/api/v1/parties/${partyId}/approve/${memberId}`,
-        {},
-        {
-          withCredentials: true,
-        }
-      );
-      alert("참가 요청이 승인되었습니다.");
-      // 페이지 새로고침
-      window.location.reload();
+        await client.POST(`/api/v1/parties/{partyId}/accept/{memberId}`, {
+            params: {
+                path: {
+                    partyId: partyId,
+                    memberId: memberId
+                }
+            }
+        });
+        
+        alert("참가 요청이 승인되었습니다.");
+        // 페이지 새로고침
+        window.location.reload();
     } catch (error) {
-      console.error("참가 요청 승인 중 오류:", error);
-      alert("참가 요청 승인 중 오류가 발생했습니다.");
+        console.error("참가 요청 승인 중 오류:", error);
+        alert("참가 요청 승인 중 오류가 발생했습니다.");
+    }
+  };
+
+  // 참가 요청 거절 처리
+  const handleRejectRequest = async (memberId: number | undefined) => {
+    if (!partyId || !memberId) return;
+
+    if (!confirm("정말로 참가 요청을 거절하시겠습니까?")) return;
+
+    try {
+        await client.POST(`/api/v1/parties/{partyId}/reject/{memberId}`, {
+            params: {
+                path: {
+                    partyId: partyId,
+                    memberId: memberId
+                }
+            }
+        });
+        
+        alert("참가 요청이 거절되었습니다.");
+        // 페이지 새로고침
+        window.location.reload();
+    } catch (error) {
+        console.error("참가 요청 거절 중 오류:", error);
+        alert("참가 요청 거절 중 오류가 발생했습니다.");
     }
   };
 
@@ -253,7 +328,7 @@ export default function PartyDetailPage() {
 
     // 서울 중심 좌표로 기본 설정 (실제로는 위치에 따라 달라져야 함)
     let lat = 37.5665;
-    let lon = 126.978;
+    let lon = 126.9780;
 
     // 위치에 따라 좌표 조정 (샘플용)
     if (address.includes("홍대")) {
@@ -272,6 +347,7 @@ export default function PartyDetailPage() {
       lat = 37.57;
       lon = 126.981;
     }
+
 
     // OpenStreetMap 기반 정적 이미지 URL
     return `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lon}&zoom=14&size=600x400&maptype=mapnik&markers=${lat},${lon},lightblue`;
@@ -306,31 +382,33 @@ export default function PartyDetailPage() {
   // scheduledAt을 날짜와 시간으로 분리
   const formattedDate = partyData.scheduledAt
     ? new Date(partyData.scheduledAt)
-        .toLocaleDateString("ko-KR", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-        })
-        .replace(/\. /g, "-")
-        .replace(/\.$/, "")
+      .toLocaleDateString("ko-KR", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      })
+      .replace(/\. /g, "-")
+      .replace(/\.$/, "")
     : "";
 
   const formattedTime = partyData.scheduledAt
     ? new Date(partyData.scheduledAt).toLocaleTimeString("ko-KR", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      })
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    })
     : "";
 
   // 참가자 목록에 모임장 포함 여부 확인
-  const acceptedMembersCount = partyData.acceptedPartyMembers?.length || 0;
-  const totalRemainingCount =
-    (partyData.totalParticipants || 0) - acceptedMembersCount;
+  const acceptedMembersCount = (partyData.acceptedPartyMembers?.length + partyData.acceptedParticipantsCount) || 0;
+  // const acceptedMembersCount = partyData.acceptedParticipantsCount || 0;
+  console.log("acceptedMembersCount", acceptedMembersCount);
+  const totalRemainingCount = (partyData.totalParticipants || 0) - acceptedMembersCount;
+  console.log("remainingCount", totalRemainingCount);
 
   return (
     <main className="bg-gray-50 min-h-screen">
-      <Navigation activePage="parties" />
+      {/* <Navigation activePage="parties" /> */}
 
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-8">
         {/* [1단] 모임 기본 정보 */}
@@ -380,11 +458,10 @@ export default function PartyDetailPage() {
                 초심자
               </span>
               <span
-                className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  partyData.rookieAvailable
-                    ? "bg-green-100 text-green-800"
-                    : "bg-red-100 text-red-800"
-                }`}
+                className={`px-3 py-1 rounded-full text-sm font-medium ${partyData.rookieAvailable
+                  ? "bg-green-100 text-green-800"
+                  : "bg-red-100 text-red-800"
+                  }`}
               >
                 {partyData.rookieAvailable ? "가능" : "불가능"}
               </span>
@@ -451,6 +528,8 @@ export default function PartyDetailPage() {
                         </div>
                         <Link
                           href={`/profile/${member.id}`}
+                        <Link
+                          href={`/profile/${member.id}`}
                           className="text-xs text-blue-600 hover:underline"
                         >
                           프로필 보기
@@ -458,9 +537,9 @@ export default function PartyDetailPage() {
                       </div>
                     </div>
                   ))}
-                  {acceptedMembersCount > 3 && (
+                  {acceptedMembersCount > 0 && (
                     <div className="w-8 h-8 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center text-xs text-gray-700 hover:bg-gray-300 transition">
-                      +{acceptedMembersCount - 3}
+                      +{acceptedMembersCount}
                     </div>
                   )}
                   {totalRemainingCount > 0 && (
@@ -488,83 +567,79 @@ export default function PartyDetailPage() {
         </div>
 
         {/* [2단] 참가 신청 목록 (모임장 권한) */}
-        {userRole === "host" &&
-          partyData.AppliedPartyMembers &&
-          partyData.AppliedPartyMembers.length > 0 && (
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 mb-6">
-              <button
-                onClick={() => setIsRequestsOpen(!isRequestsOpen)}
-                className="w-full flex justify-between items-center text-left"
-              >
-                <h2 className="text-xl font-bold">
-                  참가 신청 목록{" "}
-                  <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5 ml-2">
-                    {partyData.AppliedPartyMembers.length}
-                  </span>
-                </h2>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className={`h-5 w-5 transition-transform ${
-                    isRequestsOpen ? "transform rotate-180" : ""
+        {userRole === "host" && partyData.AppliedPartyMembers && partyData.AppliedPartyMembers.length > 0 && (
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 mb-6">
+            <button
+              onClick={() => setIsRequestsOpen(!isRequestsOpen)}
+              className="w-full flex justify-between items-center text-left"
+            >
+              <h2 className="text-xl font-bold">
+                참가 신청 목록{" "}
+                <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5 ml-2">
+                  {partyData.AppliedPartyMembers.length}
+                </span>
+              </h2>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className={`h-5 w-5 transition-transform ${isRequestsOpen ? "transform rotate-180" : ""
                   }`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </button>
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </button>
 
-              {isRequestsOpen && (
-                <div className="mt-4 space-y-4">
-                  {partyData.AppliedPartyMembers.map((member) => (
-                    <div
-                      key={member.id}
-                      className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
-                    >
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 rounded-full overflow-hidden relative mr-3 bg-gray-200">
-                          {member.profilePictureUrl &&
-                          isValidImageUrl(member.profilePictureUrl) ? (
-                            <Image
-                              src={getSafeImageUrl(
-                                member.profilePictureUrl,
-                                DEFAULT_PROFILE_IMAGE
-                              )}
-                              alt={member.nickname || "신청자"}
-                              fill
-                              className="object-cover"
-                            />
-                          ) : (
-                            <div className="flex items-center justify-center h-full">
-                              <span className="text-gray-400">🧑</span>
-                            </div>
+            {isRequestsOpen && (
+              <div className="mt-4 space-y-4">
+                {partyData.AppliedPartyMembers.map((member) => (
+                  <div
+                    key={member.id}
+                    className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+                  >
+                    <div className="flex items-center">
+                      <div className="w-10 h-10 rounded-full overflow-hidden relative mr-3 bg-gray-200">
+                        {member.profilePictureUrl && isValidImageUrl(member.profilePictureUrl) ? (
+                          <Image
+                            src={getSafeImageUrl(member.profilePictureUrl, DEFAULT_PROFILE_IMAGE)}
+                            alt={member.nickname || "신청자"}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="flex items-center justify-center h-full">
+                            <span className="text-gray-400">🧑</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-col">
+                        <div className="flex items-center">
+                          <span className="font-medium">{member.nickname}</span>
+                          {member.id === partyData.hostId && (
+                            <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-[#FFB130] text-white rounded-full">모임장</span>
                           )}
                         </div>
-                        <div className="flex flex-col">
-                          <div className="flex items-center">
-                            <span className="font-medium">
-                              {member.nickname}
-                            </span>
-                            {member.id === partyData.hostId && (
-                              <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-[#FFB130] text-white rounded-full">
-                                모임장
-                              </span>
-                            )}
-                          </div>
-                          <Link
-                            href={`/profile/${member.id}`}
-                            className="text-sm text-blue-600 hover:underline"
-                          >
-                            프로필 보기
-                          </Link>
-                        </div>
+                        <Link
+                          href={`/profile/${member.id}`}
+                          className="text-sm text-blue-600 hover:underline"
+                        >
+                          프로필 보기
+                        </Link>
                       </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleRejectRequest(member.id)}
+                        className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition"
+                      >
+                        거절
+                      </button>
                       <button
                         onClick={() => handleApproveRequest(member.id)}
                         className="bg-[#FFB130] hover:bg-[#F0A420] text-white px-4 py-2 rounded-lg transition"
@@ -572,11 +647,12 @@ export default function PartyDetailPage() {
                         승인
                       </button>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* [3단] 테마 정보 */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 mb-6">

@@ -8,6 +8,8 @@ import { TimePickerModal } from "@/components/TimePickerModal";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { LoginMemberContext } from "@/stores/auth/loginMember";
+import client from "@/lib/backend/client";
+import { components } from "@/lib/backend/apiV1/schema";
 
 interface PartyFormData {
   title: string;
@@ -33,12 +35,9 @@ interface PartyRequest {
 
 interface SuccessResponsePartyDto {
   message?: string;
-  data?: {
-    id?: number;
-    title?: string;
-    // 나머지 필드들...
-  };
+  data?: components["schemas"]["PartyDto"];
 }
+
 
 interface ThemeInfo {
   themeName: string;
@@ -88,8 +87,8 @@ export default function CreatePartyPage() {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL
     ? process.env.NEXT_PUBLIC_API_URL
     : process.env.NODE_ENV === "development"
-    ? "http://localhost:8080"
-    : "https://api.ddobang.site";
+      ? "http://localhost:8080"
+      : "https://api.ddobang.site";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -139,15 +138,12 @@ export default function CreatePartyPage() {
         totalParticipants: totalParticipants,
         rookieAvailable: formData.rookieAvailable,
       };
-
       // API 호출
-      const response = await axios.post<SuccessResponsePartyDto>(
-        `${baseUrl}/api/v1/parties`,
-        requestData,
-        {
-          withCredentials: true,
-        }
-      );
+      const response = await client.POST("/api/v1/parties", {
+        body: requestData,
+        credentials: "include"
+      });
+
 
       // 성공시 모임 상세 페이지로 이동
       if (response.data.data?.id) {
@@ -230,7 +226,6 @@ export default function CreatePartyPage() {
 
   return (
     <main className="bg-gray-50 min-h-screen">
-      <Navigation activePage="parties" />
 
       <div className="max-w-4xl mx-auto px-6 sm:px-8 lg:px-10 py-8">
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8">
@@ -410,11 +405,10 @@ export default function CreatePartyPage() {
                       rookieAvailable: !prev.rookieAvailable,
                     }));
                   }}
-                  className={`w-5 h-5 border rounded flex items-center justify-center cursor-pointer ${
-                    formData.rookieAvailable
+                  className={`w-5 h-5 border rounded flex items-center justify-center cursor-pointer ${formData.rookieAvailable
                       ? "bg-[#FFB130] border-[#FFB130]"
                       : "bg-white border-gray-300"
-                  }`}
+                    }`}
                 >
                   {formData.rookieAvailable && (
                     <svg
@@ -477,9 +471,8 @@ export default function CreatePartyPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`flex-1 px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFB130]/90 ${
-                  isSubmitting ? "opacity-70 cursor-not-allowed" : ""
-                }`}
+                className={`flex-1 px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFB130]/90 ${isSubmitting ? "opacity-70 cursor-not-allowed" : ""
+                  }`}
               >
                 {isSubmitting ? "등록 중..." : "등록하기"}
               </button>

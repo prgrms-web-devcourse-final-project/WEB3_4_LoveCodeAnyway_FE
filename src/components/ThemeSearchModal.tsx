@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import axios from "axios";
+import { client } from "@/lib/api/client";
 
 interface ThemeSearchModalProps {
   isOpen: boolean;
@@ -11,15 +11,10 @@ interface ThemeSearchModalProps {
 }
 
 interface ThemeForPartyResponse {
-  id?: number;
+  themeId: number;
   name: string;
-  storeId?: number;
-  storeName?: string;
-  themeTagMappingResponses?: {
-    themeId?: number;
-    themeTagId?: number;
-    tagName?: string;
-  }[];
+  storeName: string;
+  tags: string[];
 }
 
 interface SuccessResponseListThemeForPartyResponse {
@@ -53,23 +48,15 @@ export function ThemeSearchModal({
       setError(null);
 
       try {
-        const response =
-          await axios.get<SuccessResponseListThemeForPartyResponse>(
-            `${baseUrl}/api/v1/themes/search-for-party`,
-            {
-              params: {
-                keyword: searchTerm,
-              },
-            }
-          );
+        const response = await client.get("/api/v1/themes/search-for-party", {
+          params: {
+            keyword: searchTerm,
+          },
+        });
+        console.log("테마 검색 결과:", response.data);
 
         if (response.data.data && response.data.data.length > 0) {
-          // 중복된 ID가 있는지 확인하고 고유한 theme 목록만 설정
-          const uniqueThemes = response.data.data.filter(
-            (theme, index, self) =>
-              index === self.findIndex((t) => t.id === theme.id)
-          );
-          setThemes(uniqueThemes);
+          setThemes(response.data.data);
         } else {
           setThemes([]);
         }
@@ -83,46 +70,10 @@ export function ThemeSearchModal({
     };
 
     fetchThemes();
-  }, [isOpen, searchTerm, baseUrl]);
-
-  // 테마 객체에서 ID를 추출하는 함수
-  const getThemeId = (theme: any): number | undefined => {
-    // 테마 ID를 조회하려는 가능한 필드 이름 목록
-    const possibleIdFields = [
-      "id",
-      "themeId",
-      "theme_id",
-      "ID",
-      "Id",
-      "themeCode",
-      "code",
-    ];
-
-    // 가능한 모든 필드 검사
-    for (const field of possibleIdFields) {
-      if (theme[field] !== undefined) {
-        const id = Number(theme[field]);
-        if (!isNaN(id) && id > 0) {
-          return id;
-        }
-      }
-    }
-
-    return undefined;
-  };
+  }, [isOpen, searchTerm]);
 
   const handleThemeSelect = (theme: ThemeForPartyResponse) => {
-    // 테마 ID 추출
-    const themeId = getThemeId(theme);
-
-    // 테마 ID가 존재하고 유효한지 확인
-    if (themeId === undefined) {
-      setError("유효하지 않은 테마입니다. 다른 테마를 선택해주세요.");
-      return;
-    }
-
-    // 테마 ID가 유효한 경우에만 선택 처리
-    onSelect(theme.name, themeId);
+    onSelect(theme.name, theme.themeId);
     onClose();
   };
 
@@ -189,24 +140,23 @@ export function ThemeSearchModal({
         )}
 
         <div className="space-y-2 max-h-60 overflow-y-auto">
-          {themes.map((theme, index) => {
-            const themeId = getThemeId(theme);
-            const themeName = theme.name || "이름 없음";
-            const storeInfo = theme.storeName || "";
-
-            return (
-              <button
-                key={`theme-${index}`}
-                onClick={() => handleThemeSelect(theme)}
-                className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg"
-              >
-                <div className="font-medium">{themeName}</div>
-                {storeInfo && (
-                  <div className="text-sm text-gray-600">{storeInfo}</div>
-                )}
-              </button>
-            );
-          })}
+          {themes.map((theme) => (
+            <button
+              key={`theme-${theme.themeId}`}
+              onClick={() => handleThemeSelect(theme)}
+              className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg"
+            >
+              <div className="font-medium">{theme.name}</div>
+              {theme.storeName && (
+                <div className="text-sm text-gray-600">{theme.storeName}</div>
+              )}
+              {theme.tags && theme.tags.length > 0 && (
+                <div className="text-xs text-gray-500 mt-1">
+                  {theme.tags.join(", ")}
+                </div>
+              )}
+            </button>
+          ))}
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useContext } from "react";
-import { Navigation } from "@/components/layout/Navigation";
+import { useState, useEffect, useContext, useRef, useCallback } from "react";
+import { Navigation } from "@/components/Navigation";
 import { PartyCard } from "@/components/PartyCard";
 import { ThemeSearch } from "@/components/ThemeSearch";
 import Link from "next/link";
@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { getParties } from "@/lib/api/party";
 import { PageLoading } from "@/components/PageLoading";
 import { LoginMemberContext } from "@/stores/auth/loginMember";
+import client from "@/lib/backend/client";
 
 // API에서 받는 모임 데이터 타입
 interface PartyMainResponse {
@@ -42,101 +43,98 @@ export default function PartiesPage() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [filterRegion, setFilterRegion] = useState("");
-  const ITEMS_PER_PAGE = 30; // 한 번에 많은 데이터 로드
+  const [hasMore, setHasMore] = useState(true);
+  const observer = useRef<IntersectionObserver | null>(null);
+  const ITEMS_PER_PAGE = 30;
 
-  // 초기 데이터 로드
-  useEffect(() => {
-    loadParties();
-  }, []);
-
-  // 더미 데이터 생성 함수
-  const generateDummyParties = () => {
-    return Array(8)
-      .fill(0)
-      .map((_, index) => ({
-        id: index + 1,
-        partyId: index + 1,
-        title: `방탈출 모임 ${index + 1}`,
-        themeName: [
-          "좀비 연구소",
-          "비밀의 방",
-          "사망 이스케이프",
-          "유령의 저택",
-        ][index % 4],
-        themeThumbnailUrl:
-          index % 2 === 0
-            ? "https://i.postimg.cc/PJNVr12v/theme.jpg"
-            : "https://i.postimages.org/PJNVr12v/theme.jpg",
-        storeName: [
-          "이스케이프 홍대점",
-          "솔버 강남점",
-          "마스터키 명동점",
-          "키이스케이프 건대점",
-        ][index % 4],
-        scheduledAt: new Date(
-          Date.now() + (index % 3) * 2 * 24 * 60 * 60 * 1000
-        ).toISOString(),
-        acceptedParticipantCount: Math.floor(Math.random() * 3) + 2,
-        totalParticipants: 6,
-      }));
-  };
-
-  // 모임 데이터 로드 (무한 스크롤 대신 한 번에 데이터 로드)
-  const loadParties = async (reset = false) => {
+  // 마지막 요소 관찰을 위한 ref callback
+  const lastPartyElementRef = useCallback((node: HTMLDivElement) => {
     if (loading) return;
+    if (observer.current) observer.current.disconnect();
+    
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        loadParties(false);
+      }
+    });
+
+    if (node) observer.current.observe(node);
+  }, [loading, hasMore]);
+
+  // 모임 데이터 로드
+  const loadParties = async (reset = false) => {
+    if (loading || (!hasMore && !reset)) return;
 
     setLoading(true);
     try {
       if (reset) {
         setParties([]);
+        setHasMore(true); // 리셋할 때 hasMore도 초기화
       }
 
-      // API 요청 (regionIds 배열로 수정)
-      const response = await getParties(
-        {
-          keyword: searchKeyword,
-          regionIds: filterRegion ? [parseInt(filterRegion)] : undefined,
+      const lastParty = parties[parties.length - 1];
+      const lastId = reset ? undefined : lastParty?.partyId;
+
+      const searchCondition = {
+        keyword: searchKeyword,
+        regionIds: filterRegion ? [parseInt(filterRegion)] : undefined,
+      };
+
+      const response = await client.POST("/api/v1/parties/search", {
+        params: {
+          query: {
+            lastId: lastId,
+            size: ITEMS_PER_PAGE
+          }
         },
-        undefined,
-        ITEMS_PER_PAGE
-      );
+        body: searchCondition
+      });
 
-      if (response) {
-        let partyData: PartyMainResponse[] = [];
-
-        // 데이터 타입에 따라 처리
-        if (Array.isArray(response)) {
-          partyData = response;
-        } else if (
-          response.data?.content &&
-          Array.isArray(response.data.content)
-        ) {
-          partyData = response.data.content;
+      if (response?.data?.data) {
+        const newParties = response.data.data.content || [];
+        const hasNext = response.data.data.hasNext || false;
+        
+        // 새로운 데이터가 없거나 기존 데이터와 동일한 경우 hasMore를 false로 설정
+        if (newParties.length === 0 || (newParties[0]?.partyId === lastId)) {
+          setHasMore(false);
+        } else {
+          setHasMore(hasNext);
         }
-
-        // API에서 데이터가 없는 경우 더미 데이터 사용
-        if (partyData.length === 0) {
-          partyData = generateDummyParties();
-        }
-
-        setParties(partyData);
-        console.log("파티 데이터 로드 완료:", partyData);
-      } else {
-        // API 응답이 없는 경우 더미 데이터 사용
-        const dummyData = generateDummyParties();
-        setParties(dummyData);
-        console.log("더미 데이터 사용:", dummyData);
+        
+        setParties(prev => reset ? newParties : [...prev, ...newParties]);
+        
+        console.log("파티 데이터 로드 완료:", newParties);
+        console.log("다음 페이지 존재 여부:", hasNext);
       }
     } catch (error) {
       console.error("모임 데이터 로드 중 오류 발생:", error);
-      // 오류 시 더미 데이터 사용
-      const dummyData = generateDummyParties();
-      setParties(dummyData);
-      console.log("오류 발생, 더미 데이터 사용:", dummyData);
+      setHasMore(false); // 에러 발생 시 더 이상 로드하지 않도록 설정
     } finally {
       setLoading(false);
       setInitialLoading(false);
     }
+  };
+
+  // 초기 데이터 로드
+  useEffect(() => {
+    loadParties(true);
+  }, []);
+
+  // 더미 데이터 생성 함수
+  const generateDummyParties = () => {
+    return Array(8).fill(0).map((_, index) => ({
+      id: index + 1,
+      partyId: index + 1,
+      title: `방탈출 모임 ${index + 1}`,
+      themeName: ["좀비 연구소", "비밀의 방", "사망 이스케이프", "유령의 저택"][index % 4],
+      themeThumbnailUrl: index % 2 === 0
+        ? "https://i.postimg.cc/PJNVr12v/theme.jpg"
+        : "https://i.postimages.org/PJNVr12v/theme.jpg",
+      storeName: ["이스케이프 홍대점", "솔버 강남점", "마스터키 명동점", "키이스케이프 건대점"][index % 4],
+      scheduledAt: new Date(Date.now() + (index % 3) * 2 * 24 * 60 * 60 * 1000).toISOString(),
+      acceptedParticipantCount: Math.floor(Math.random() * 3) + 2,
+      totalParticipants: 6
+    }));
   };
 
   // 검색 처리
@@ -193,7 +191,7 @@ export default function PartiesPage() {
       ));
   };
 
-  const renderPartyCard = (party: PartyMainResponse) => {
+  const renderPartyCard = (party: PartyMainResponse, index: number) => {
     // 이미지 URL 처리 함수
     const getImageUrl = (url?: string) => {
       if (!url) return "https://i.postimg.cc/PJNVr12v/theme.jpg";
@@ -229,7 +227,7 @@ export default function PartiesPage() {
 
     return (
       <div
-        key={`party-${party.id || party.partyId}`}
+        key={`party-${party.id || party.partyId}-${index}`}
         onClick={() => handleCardClick(party)}
         className="cursor-pointer"
       >
@@ -240,7 +238,7 @@ export default function PartiesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navigation />
+
       <main className="container mx-auto px-4 py-10">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800">모임 목록</h1>
@@ -265,7 +263,14 @@ export default function PartiesPage() {
         ) : (
           <div className="mt-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {parties.map((party) => renderPartyCard(party))}
+              {parties.map((party, index) => (
+                <div
+                  key={`party-${party.id || party.partyId}-${index}`}
+                  ref={index === parties.length - 1 ? lastPartyElementRef : undefined}
+                >
+                  {renderPartyCard(party, index)}
+                </div>
+              ))}
               {loading && renderSkeletonCards()}
             </div>
             {parties.length === 0 && !loading && (
