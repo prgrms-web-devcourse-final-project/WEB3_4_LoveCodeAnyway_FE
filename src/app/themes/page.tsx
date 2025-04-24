@@ -22,18 +22,21 @@ export default function ThemesPage() {
   const ITEMS_PER_PAGE = 8;
 
   // 마지막 요소 관찰을 위한 ref callback
-  const lastThemeElementRef = useCallback((node: HTMLDivElement) => {
-    if (loading) return;
-    if (observer.current) observer.current.disconnect();
-    
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
-        loadMoreThemes(false);
-      }
-    });
+  const lastThemeElementRef = useCallback(
+    (node: HTMLDivElement) => {
+      if (loading) return;
+      if (observer.current) observer.current.disconnect();
 
-    if (node) observer.current.observe(node);
-  }, [loading, hasMore]);
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          loadMoreThemes(false);
+        }
+      });
+
+      if (node) observer.current.observe(node);
+    },
+    [loading, hasMore]
+  );
 
   const loadMoreThemes = async (reset = false) => {
     if (loading || (!hasMore && !reset)) return;
@@ -52,8 +55,8 @@ export default function ThemesPage() {
         params: {
           query: {
             page: reset ? 0 : themes.length / ITEMS_PER_PAGE,
-            size: ITEMS_PER_PAGE
-          }
+            size: ITEMS_PER_PAGE,
+          },
         },
         body: {
           regionId: selectedFilters.regionId,
@@ -62,14 +65,14 @@ export default function ThemesPage() {
           participants: selectedFilters.participants
             ? parseInt(selectedFilters.participants.replace(/[^0-9]/g, ""))
             : undefined,
-        }
+        },
       });
 
       if (response?.data?.data) {
         const apiThemes = response.data.data.content || [];
         const hasNext = response.data.data.hasNext || false;
 
-        if (apiThemes.length === 0 || (apiThemes[0]?.id === lastId)) {
+        if (apiThemes.length === 0 || apiThemes[0]?.id === lastId) {
           setHasMore(false);
         } else {
           setHasMore(hasNext);
@@ -89,7 +92,7 @@ export default function ThemesPage() {
           rating: "80",
         }));
 
-        setThemes(prev => reset ? newThemes : [...prev, ...newThemes]);
+        setThemes((prev) => (reset ? newThemes : [...prev, ...newThemes]));
       } else {
         setHasMore(false);
       }
@@ -170,7 +173,11 @@ export default function ThemesPage() {
               {themes.map((theme, index) => (
                 <div
                   key={`theme-${theme.id}-${index}`}
-                  ref={index === themes.length - 1 ? lastThemeElementRef : undefined}
+                  ref={
+                    index === themes.length - 1
+                      ? lastThemeElementRef
+                      : undefined
+                  }
                 >
                   <ThemeCard room={theme} />
                 </div>

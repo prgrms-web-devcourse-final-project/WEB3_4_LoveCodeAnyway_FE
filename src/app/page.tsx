@@ -131,15 +131,15 @@ export default function HomePage() {
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       {[...Array(4)].map((_, index) => (
         <div key={index} className="relative">
-          <div className="aspect-[3/4] bg-gray-200 rounded-lg animate-pulse">
-            <div className="absolute top-4 left-4 h-6 w-12 bg-gray-300 rounded-lg animate-pulse"></div>
+          <div className="aspect-[3/4] bg-gray-700 rounded-lg animate-pulse">
+            <div className="absolute top-4 left-4 h-6 w-12 bg-gray-600 rounded-lg animate-pulse"></div>
             <div className="absolute bottom-0 left-0 right-0 p-4">
-              <div className="h-6 w-3/4 bg-gray-300 rounded mb-2 animate-pulse"></div>
-              <div className="h-4 w-1/2 bg-gray-300 rounded mb-2 animate-pulse"></div>
+              <div className="h-6 w-3/4 bg-gray-600 rounded mb-2 animate-pulse"></div>
+              <div className="h-4 w-1/2 bg-gray-600 rounded mb-2 animate-pulse"></div>
               <div className="flex gap-2">
-                <div className="h-4 w-16 bg-gray-300 rounded animate-pulse"></div>
-                <div className="h-4 w-16 bg-gray-300 rounded animate-pulse"></div>
-                <div className="h-4 w-16 bg-gray-300 rounded animate-pulse"></div>
+                <div className="h-4 w-16 bg-gray-600 rounded animate-pulse"></div>
+                <div className="h-4 w-16 bg-gray-600 rounded animate-pulse"></div>
+                <div className="h-4 w-16 bg-gray-600 rounded animate-pulse"></div>
               </div>
             </div>
           </div>
@@ -151,12 +151,12 @@ export default function HomePage() {
   // 테마 없음 컴포넌트
   const EmptyState = () => (
     <div className="text-center py-12 min-h-[400px] flex items-center justify-center">
-      <p className="text-gray-500">해당 태그의 테마가 없습니다.</p>
+      <p className="text-gray-400">해당 태그의 테마가 없습니다.</p>
     </div>
   );
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-gray-900">
       {/* Section 1: 메인 배너 */}
       <section className="w-full h-[450px] relative bg-gray-800">
         <div className="max-w-7xl mx-auto h-full relative flex flex-col items-center justify-start text-center pt-20">
@@ -180,9 +180,9 @@ export default function HomePage() {
       </section>
 
       {/* Section 2: 마감 임박 모임 */}
-      <section className="py-12 bg-white">
+      <section className="py-12 bg-gray-900">
         <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-2xl font-bold text-center mb-8">
+          <h2 className="text-2xl font-bold text-center mb-8 text-white">
             마감 임박 모임
           </h2>
 
@@ -469,137 +469,79 @@ export default function HomePage() {
       </section>
 
       {/* Section 4: 신규 테마 */}
-      <section className="py-12">
+      <section className="py-12 bg-gray-800">
         <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-2xl font-bold text-center mb-8">최신 테마</h2>
-          <div className="flex justify-center gap-4 mb-8 flex-wrap">
+          <h2 className="text-2xl font-bold text-center mb-8 text-white">
+            신규 테마
+          </h2>
+
+          {/* 태그 필터 */}
+          <div className="flex flex-wrap justify-center gap-2 mb-8">
             {tags.map((tag) => (
               <button
                 key={tag}
-                className={`px-4 py-2 rounded-full text-sm ${
-                  newActiveTag === tag
-                    ? "bg-blue-500 text-white"
-                    : "bg-white text-gray-600 hover:bg-blue-100"
-                }`}
                 onClick={() => setNewActiveTag(tag)}
+                className={`px-4 py-2 rounded-full transition-colors ${
+                  newActiveTag === tag
+                    ? "bg-[#FFB130] text-white"
+                    : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                }`}
               >
                 {tag}
               </button>
             ))}
           </div>
 
-          <div className="min-h-[400px]">
-            {isLoadingNew ? (
-              <ThemeSkeleton />
-            ) : newThemes.length === 0 ? (
-              <EmptyState />
-            ) : (
-              <div className="relative">
-                <Swiper
-                  modules={[Autoplay, SwiperNavigation]}
-                  spaceBetween={20}
-                  slidesPerView={1}
-                  centeredSlides={false}
-                  autoplay={{
-                    delay: 3000,
-                    disableOnInteraction: false,
-                    pauseOnMouseEnter: true,
-                  }}
-                  navigation
-                  breakpoints={{
-                    640: {
-                      slidesPerView: 2,
-                    },
-                    768: {
-                      slidesPerView: 3,
-                    },
-                    1024: {
-                      slidesPerView: 4,
-                    },
-                  }}
-                  className="py-4"
+          {/* 테마 그리드 */}
+          {isLoadingNew ? (
+            <ThemeSkeleton />
+          ) : newThemes.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {newThemes.map((theme) => (
+                <Link
+                  key={theme.id}
+                  href={`/themes/${theme.id}`}
+                  className="group"
                 >
-                  {newThemes.map((theme) => (
-                    <SwiperSlide key={theme.id}>
-                      <Link
-                        href={`/themes/${theme.id}`}
-                        className="relative block group h-full"
-                      >
-                        <div className="aspect-[3/4] bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center relative">
-                          {theme.thumbnailUrl ? (
-                            <Image
-                              src={theme.thumbnailUrl}
-                              alt={theme.name}
-                              fill
-                              className="object-cover"
-                            />
-                          ) : (
-                            <svg
-                              width="64"
-                              height="64"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="#FFB230"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className="theme-image"
-                            >
-                              <rect
-                                x="3"
-                                y="3"
-                                width="18"
-                                height="18"
-                                rx="2"
-                              ></rect>
-                              <path d="M3 9h18"></path>
-                              <path d="M9 21V9"></path>
-                              <path d="m12 6 1.5-1.5"></path>
-                              <path d="M12 6 10.5 4.5"></path>
-                            </svg>
-                          )}
-
-                          {/* NEW 뱃지 */}
-                          <div className="absolute top-4 left-4">
-                            <span className="bg-blue-500 text-white px-3 py-1 rounded-lg text-sm font-bold">
-                              NEW
-                            </span>
-                          </div>
-
-                          {/* 오버레이 정보 */}
-                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 text-white">
-                            <h3 className="font-medium mb-1 text-lg">
-                              {theme.name}
-                            </h3>
-                            <p className="text-sm">{theme.storeName}</p>
-                            <div className="flex items-center mt-2 text-xs">
-                              <span>{theme.playTime || "60분"}</span>
-                              <span className="mx-2">•</span>
-                              <span>{theme.recommendedPlayers || "2-4인"}</span>
-                              <span className="mx-2">•</span>
-                              <span>
-                                {theme.genre || newActiveTag.replace("#", "")}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </Link>
-                    </SwiperSlide>
-                  ))}
-                </Swiper>
-
-                {/* 신규 테마 더보기 버튼 */}
-                <div className="flex justify-center mt-8">
-                  <Link
-                    href="/themes"
-                    className="px-6 py-2 border border-blue-500 text-blue-500 rounded-full hover:bg-blue-500 hover:text-white transition-colors"
-                  >
-                    더보기
-                  </Link>
-                </div>
-              </div>
-            )}
-          </div>
+                  <div className="relative aspect-[3/4] bg-gray-800 rounded-lg overflow-hidden">
+                    {theme.thumbnailUrl ? (
+                      <Image
+                        src={theme.thumbnailUrl}
+                        alt={theme.name}
+                        fill
+                        className="object-cover transition-transform group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-700">
+                        <span className="text-gray-400">이미지 없음</span>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <div className="absolute bottom-0 left-0 right-0 p-4">
+                      <h3 className="text-lg font-bold text-white mb-1">
+                        {theme.name}
+                      </h3>
+                      <p className="text-sm text-gray-300 mb-2">
+                        {theme.storeName}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {theme.tags?.map((tag, index) => (
+                          <span
+                            key={index}
+                            className="px-2 py-1 text-xs bg-gray-700/80 text-gray-300 rounded-full"
+                          >
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <EmptyState />
+          )}
         </div>
       </section>
     </main>
