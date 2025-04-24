@@ -292,10 +292,10 @@ export default function SignupPage() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gradient-to-b from-white to-gray-50">
+      <div className="flex justify-center items-center min-h-screen bg-gray-900">
         <div className="animate-pulse flex flex-col items-center">
           <div className="w-12 h-12 border-4 border-[#FFB130] border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-gray-600">로딩 중...</p>
+          <p className="text-gray-400">로딩 중...</p>
         </div>
       </div>
     );
@@ -303,8 +303,8 @@ export default function SignupPage() {
 
   if (error) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-screen bg-gradient-to-b from-white to-gray-50">
-        <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+      <div className="flex flex-col justify-center items-center min-h-screen bg-gray-900">
+        <div className="bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full border border-gray-700">
           <p className="text-red-500 mb-4 text-center">{error}</p>
           <button
             onClick={() => window.location.reload()}
@@ -318,14 +318,14 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 py-10">
+    <div className="min-h-screen bg-gray-900 py-10">
       <div className="container mx-auto px-4 max-w-2xl">
-        <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
-          <h1 className="text-3xl font-bold text-center mb-2 text-gray-800">
+        <div className="bg-gray-800 rounded-2xl shadow-lg p-8 mb-8 border border-gray-700">
+          <h1 className="text-3xl font-bold text-center mb-2 text-white">
             프로필 설정
           </h1>
           <div className="w-20 h-1 bg-[#FFB130] mx-auto mb-6 rounded-full"></div>
-          <p className="text-center text-gray-600 mb-8">
+          <p className="text-center text-gray-400 mb-8">
             방탈출 모임에서 사용할 프로필을 설정해주세요
           </p>
 
@@ -333,7 +333,7 @@ export default function SignupPage() {
             {/* 프로필 이미지 영역 */}
             <div className="flex flex-col items-center mb-8">
               <div className="relative w-36 h-36 mb-4">
-                <div className="w-36 h-36 rounded-full overflow-hidden bg-gray-100 border-4 border-[#FFB130] shadow-lg">
+                <div className="w-36 h-36 rounded-full overflow-hidden bg-gray-700 border-4 border-[#FFB130] shadow-lg">
                   <Image
                     src={profileImg}
                     alt="프로필 이미지"
@@ -364,14 +364,14 @@ export default function SignupPage() {
                   onChange={handleProfileImgChange}
                 />
               </div>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-400">
                 프로필 사진을 등록해주세요 (선택사항)
               </p>
             </div>
 
             {/* 닉네임 입력 */}
-            <div className="bg-gray-50 p-6 rounded-xl">
-              <label className="block text-gray-800 font-semibold mb-3 text-lg">
+            <div className="bg-gray-700 p-6 rounded-xl">
+              <label className="block text-white font-semibold mb-3 text-lg">
                 닉네임 <span className="text-red-500">*</span>
               </label>
               <div className="flex gap-2">
@@ -383,10 +383,10 @@ export default function SignupPage() {
                     setIsNicknameValid(false);
                   }}
                   placeholder="닉네임을 입력해주세요"
-                  className={`flex-1 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                  className={`flex-1 px-4 py-3 border rounded-lg bg-gray-800 text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 transition-all ${
                     isNicknameValid
-                      ? "border-green-500 focus:ring-green-200"
-                      : "border-gray-300 focus:ring-[#FFB130] focus:border-[#FFB130]"
+                      ? "border-green-500 focus:ring-green-700"
+                      : "border-gray-600 focus:ring-[#FFB130] focus:border-[#FFB130]"
                   }`}
                   minLength={2}
                   maxLength={10}
@@ -403,7 +403,7 @@ export default function SignupPage() {
               {nicknameMessage && (
                 <p
                   className={`mt-2 text-sm ${
-                    isNicknameValid ? "text-green-600" : "text-red-500"
+                    isNicknameValid ? "text-green-400" : "text-red-400"
                   }`}
                 >
                   {nicknameMessage}
@@ -412,8 +412,8 @@ export default function SignupPage() {
             </div>
 
             {/* 성별 선택 */}
-            <div className="bg-gray-50 p-6 rounded-xl">
-              <label className="block text-gray-800 font-semibold mb-3 text-lg">
+            <div className="bg-gray-700 p-6 rounded-xl">
+              <label className="block text-white font-semibold mb-3 text-lg">
                 성별 <span className="text-red-500">*</span>
               </label>
               <div className="flex gap-6">
@@ -421,8 +421,8 @@ export default function SignupPage() {
                   <div
                     className={`w-5 h-5 rounded-full border flex items-center justify-center mr-3 ${
                       gender === "MALE"
-                        ? "border-[#FFB130] bg-white"
-                        : "border-gray-300"
+                        ? "border-[#FFB130] bg-gray-800"
+                        : "border-gray-500"
                     }`}
                   >
                     {gender === "MALE" && (
@@ -442,7 +442,7 @@ export default function SignupPage() {
                     className={`group-hover:text-[#FFB130] transition-colors ${
                       gender === "MALE"
                         ? "text-[#FFB130] font-medium"
-                        : "text-gray-700"
+                        : "text-gray-300"
                     }`}
                   >
                     남성
@@ -452,8 +452,8 @@ export default function SignupPage() {
                   <div
                     className={`w-5 h-5 rounded-full border flex items-center justify-center mr-3 ${
                       gender === "FEMALE"
-                        ? "border-[#FFB130] bg-white"
-                        : "border-gray-300"
+                        ? "border-[#FFB130] bg-gray-800"
+                        : "border-gray-500"
                     }`}
                   >
                     {gender === "FEMALE" && (
@@ -472,7 +472,7 @@ export default function SignupPage() {
                     className={`group-hover:text-[#FFB130] transition-colors ${
                       gender === "FEMALE"
                         ? "text-[#FFB130] font-medium"
-                        : "text-gray-700"
+                        : "text-gray-300"
                     }`}
                   >
                     여성
@@ -482,8 +482,8 @@ export default function SignupPage() {
                   <div
                     className={`w-5 h-5 rounded-full border flex items-center justify-center mr-3 ${
                       gender === "BLIND"
-                        ? "border-[#FFB130] bg-white"
-                        : "border-gray-300"
+                        ? "border-[#FFB130] bg-gray-800"
+                        : "border-gray-500"
                     }`}
                   >
                     {gender === "BLIND" && (
@@ -502,7 +502,7 @@ export default function SignupPage() {
                     className={`group-hover:text-[#FFB130] transition-colors ${
                       gender === "BLIND"
                         ? "text-[#FFB130] font-medium"
-                        : "text-gray-700"
+                        : "text-gray-300"
                     }`}
                   >
                     공개안함
@@ -512,12 +512,12 @@ export default function SignupPage() {
             </div>
 
             {/* 자기소개 입력 */}
-            <div className="bg-gray-50 p-6 rounded-xl">
+            <div className="bg-gray-700 p-6 rounded-xl">
               <div className="flex justify-between items-center mb-3">
-                <label className="block text-gray-800 font-semibold text-lg">
+                <label className="block text-white font-semibold text-lg">
                   자기소개 <span className="text-red-500">*</span>
                 </label>
-                <span className="text-sm text-gray-500 font-medium">
+                <span className="text-sm text-gray-400 font-medium">
                   {introduction.length}/200
                 </span>
               </div>
@@ -525,25 +525,25 @@ export default function SignupPage() {
                 value={introduction}
                 onChange={(e) => setIntroduction(e.target.value)}
                 placeholder="자기소개를 입력하세요"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FFB130] focus:border-[#FFB130] transition-all"
+                className="w-full px-4 py-3 border border-gray-600 bg-gray-800 text-gray-300 placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FFB130] focus:border-[#FFB130] transition-all"
                 maxLength={200}
                 rows={4}
                 required
               ></textarea>
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs text-gray-400 mt-2">
                 방탈출 모임에서 자신을 소개할 수 있는 내용을 작성해보세요
               </p>
             </div>
 
             {/* 태그 선택 영역 */}
-            <div className="bg-gray-50 p-6 rounded-xl">
+            <div className="bg-gray-700 p-6 rounded-xl">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-gray-800">
+                <h2 className="text-xl font-bold text-white">
                   나를 표현하는 태그
                 </h2>
                 <span
                   className={`text-sm font-medium ${
-                    selectedTags.length >= 5 ? "text-red-500" : "text-[#FFB130]"
+                    selectedTags.length >= 5 ? "text-red-400" : "text-[#FFB130]"
                   }`}
                 >
                   {selectedTags.length}/5개 선택
@@ -560,7 +560,7 @@ export default function SignupPage() {
                     className={`py-1.5 px-4 rounded-full text-sm font-medium transition-all duration-200 ${
                       selectedTags.includes(tag.id)
                         ? "bg-[#FFB130] text-white shadow-md"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        : "bg-gray-600 text-gray-300 hover:bg-gray-500"
                     }`}
                   >
                     #{tag.name}
@@ -569,12 +569,12 @@ export default function SignupPage() {
               </div>
 
               {tags.length === 0 && !isLoading && (
-                <p className="text-center text-gray-500 py-4">
+                <p className="text-center text-gray-400 py-4">
                   태그 정보가 없습니다
                 </p>
               )}
 
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs text-gray-400 mt-2">
                 나의 성격, 취향, 플레이 스타일 등을 표현할 수 있는 태그를
                 선택해주세요 (최대 5개)
               </p>
@@ -587,7 +587,7 @@ export default function SignupPage() {
                 disabled={isSubmitting}
                 className={`w-full py-4 text-white rounded-xl text-lg font-bold transition-all ${
                   isSubmitting
-                    ? "bg-gray-400 cursor-not-allowed"
+                    ? "bg-gray-600 cursor-not-allowed"
                     : "bg-[#FFB130] hover:bg-[#E09D20] shadow-lg hover:shadow-xl"
                 }`}
               >
