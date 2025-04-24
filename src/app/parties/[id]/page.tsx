@@ -2,13 +2,11 @@
 
 import { useState, useEffect, useContext } from "react";
 import Image from "next/image";
-import { Navigation } from "@/components/layout/Navigation";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import { LoginMemberContext } from "@/stores/auth/loginMember";
 import client from "@/lib/backend/client";
-import Script from "next/script";
 
 // 기본 이미지 경로
 const DEFAULT_PROFILE_IMAGE = "/profile_default.jpg";
@@ -352,10 +350,10 @@ export default function PartyDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FFB130] mx-auto"></div>
-          <p className="mt-4 text-gray-600">로딩 중...</p>
+          <p className="mt-4 text-gray-400">로딩 중...</p>
         </div>
       </div>
     );
@@ -363,7 +361,7 @@ export default function PartyDetailPage() {
 
   if (error || !partyData) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-500 mb-4">{error || "모임 정보를 불러올 수 없습니다."}</p>
           <button
@@ -408,19 +406,19 @@ export default function PartyDetailPage() {
   console.log("remainingCount", totalRemainingCount);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-900">
       <main className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-8">
         {/* [1단] 모임 기본 정보 */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 mb-6">
+        <div className="bg-gray-800 rounded-xl border border-gray-700 shadow-sm p-8 mb-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
             <div>
-              <h1 className="text-2xl font-bold mb-2">{partyData.title}</h1>
-              <p className="text-gray-600">
+              <h1 className="text-2xl font-bold mb-2 text-white">{partyData.title}</h1>
+              <p className="text-gray-400">
                 {formattedDate} {formattedTime}
               </p>
             </div>
             <div className="flex items-center mt-4 md:mt-0">
-              <div className="w-10 h-10 rounded-full overflow-hidden relative mr-3 bg-gray-200">
+              <div className="w-10 h-10 rounded-full overflow-hidden relative mr-3 bg-gray-700">
                 {partyData.hostProfilePictureUrl &&
                 isValidImageUrl(partyData.hostProfilePictureUrl) ? (
                   <Image
@@ -440,7 +438,7 @@ export default function PartyDetailPage() {
               </div>
               <div className="flex flex-col">
                 <div className="flex items-center">
-                  <span className="text-gray-900 font-medium">
+                  <span className="text-white font-medium">
                     {partyData.hostNickname || "모임장"}
                   </span>
                   <span className="ml-2 px-2 py-0.5 text-xs bg-[#FFB130] text-white rounded-full">
@@ -453,7 +451,7 @@ export default function PartyDetailPage() {
 
           <div className="flex flex-wrap items-center gap-4 mb-6">
             <div className="flex items-center">
-              <span className="text-sm font-medium text-gray-700 mr-2">
+              <span className="text-sm font-medium text-gray-300 mr-2">
                 초심자
               </span>
               <span
@@ -467,7 +465,7 @@ export default function PartyDetailPage() {
               </span>
             </div>
             <div className="flex items-center">
-              <span className="text-sm font-medium text-gray-700 mr-2">
+              <span className="text-sm font-medium text-gray-300 mr-2">
                 모집 현황
               </span>
               <div className="flex items-center">
@@ -475,7 +473,7 @@ export default function PartyDetailPage() {
                   {partyData.acceptedPartyMembers?.slice(0, 3).map((member) => (
                     <div
                       key={member.id}
-                      className="w-8 h-8 rounded-full overflow-hidden relative border-2 border-white bg-gray-200 hover:z-10 transition"
+                      className="w-8 h-8 rounded-full overflow-hidden relative border-2 border-gray-700 bg-gray-700 hover:z-10 transition"
                     >
                       {member.profilePictureUrl &&
                       isValidImageUrl(member.profilePictureUrl) ? (
@@ -493,9 +491,9 @@ export default function PartyDetailPage() {
                           <span className="text-gray-400 text-xs">🧑</span>
                         </div>
                       )}
-                      <div className="hidden group-hover:block absolute top-10 left-0 bg-white shadow-md rounded-md p-2 z-20 w-40">
+                      <div className="hidden group-hover:block absolute top-10 left-0 bg-gray-800 shadow-md rounded-md p-2 z-20 w-40 border border-gray-700">
                         <div className="flex items-center mb-2">
-                          <div className="w-6 h-6 rounded-full overflow-hidden mr-2 bg-gray-200 relative">
+                          <div className="w-6 h-6 rounded-full overflow-hidden mr-2 bg-gray-700 relative">
                             {member.profilePictureUrl &&
                             isValidImageUrl(member.profilePictureUrl) ? (
                               <Image
@@ -516,7 +514,7 @@ export default function PartyDetailPage() {
                             )}
                           </div>
                           <div className="flex items-center">
-                            <span className="text-sm font-medium">
+                            <span className="text-sm font-medium text-white">
                               {member.nickname}
                             </span>
                             {member.id === partyData.hostId && (
@@ -528,7 +526,7 @@ export default function PartyDetailPage() {
                         </div>
                         <Link
                           href={`/profile/${member.id}`}
-                          className="text-xs text-blue-600 hover:underline"
+                          className="text-xs text-blue-400 hover:underline"
                         >
                           프로필 보기
                         </Link>
@@ -536,17 +534,17 @@ export default function PartyDetailPage() {
                     </div>
                   ))}
                   {acceptedMembersCount > 0 && (
-                    <div className="w-8 h-8 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center text-xs text-gray-700 hover:bg-gray-300 transition">
+                    <div className="w-8 h-8 rounded-full bg-gray-700 border-2 border-gray-700 flex items-center justify-center text-xs text-gray-300 hover:bg-gray-600 transition">
                       +{acceptedMembersCount}
                     </div>
                   )}
                   {totalRemainingCount > 0 && (
-                    <div className="w-8 h-8 rounded-full bg-gray-100 border-2 border-white flex items-center justify-center text-xs text-gray-500">
+                    <div className="w-8 h-8 rounded-full bg-gray-600 border-2 border-gray-700 flex items-center justify-center text-xs text-gray-300">
                       {totalRemainingCount}명
                     </div>
                   )}
                 </div>
-                <span className="text-sm text-gray-600 font-medium">
+                <span className="text-sm text-gray-400 font-medium">
                   {acceptedMembersCount}/{partyData.totalParticipants || 0}명
                 </span>
               </div>
@@ -555,9 +553,9 @@ export default function PartyDetailPage() {
 
           {/* 모임 내용 */}
           {partyData.content && (
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <h3 className="text-md font-semibold mb-2">모임 소개</h3>
-              <p className="text-gray-700 whitespace-pre-wrap">
+            <div className="mt-6 p-4 bg-gray-700 rounded-lg">
+              <h3 className="text-md font-semibold mb-2 text-white">모임 소개</h3>
+              <p className="text-gray-300 whitespace-pre-wrap">
                 {partyData.content}
               </p>
             </div>
@@ -568,12 +566,12 @@ export default function PartyDetailPage() {
         {userRole === "host" &&
           partyData.AppliedPartyMembers &&
           partyData.AppliedPartyMembers.length > 0 && (
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 mb-6">
+            <div className="bg-gray-800 rounded-xl border border-gray-700 shadow-sm p-8 mb-6">
               <button
                 onClick={() => setIsRequestsOpen(!isRequestsOpen)}
                 className="w-full flex justify-between items-center text-left"
               >
-                <h2 className="text-xl font-bold">
+                <h2 className="text-xl font-bold text-white">
                   참가 신청 목록{" "}
                   <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5 ml-2">
                     {partyData.AppliedPartyMembers.length}
@@ -581,7 +579,7 @@ export default function PartyDetailPage() {
                 </h2>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className={`h-5 w-5 transition-transform ${
+                  className={`h-5 w-5 transition-transform text-white ${
                     isRequestsOpen ? "transform rotate-180" : ""
                   }`}
                   fill="none"
@@ -602,10 +600,10 @@ export default function PartyDetailPage() {
                   {partyData.AppliedPartyMembers.map((member) => (
                     <div
                       key={member.id}
-                      className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+                      className="flex items-center justify-between p-4 border border-gray-700 rounded-lg hover:bg-gray-700"
                     >
                       <div className="flex items-center">
-                        <div className="w-10 h-10 rounded-full overflow-hidden relative mr-3 bg-gray-200">
+                        <div className="w-10 h-10 rounded-full overflow-hidden relative mr-3 bg-gray-700">
                           {member.profilePictureUrl &&
                           isValidImageUrl(member.profilePictureUrl) ? (
                             <Image
@@ -625,7 +623,7 @@ export default function PartyDetailPage() {
                         </div>
                         <div className="flex flex-col">
                           <div className="flex items-center">
-                            <span className="font-medium">
+                            <span className="font-medium text-white">
                               {member.nickname}
                             </span>
                             {member.id === partyData.hostId && (
@@ -636,7 +634,7 @@ export default function PartyDetailPage() {
                           </div>
                           <Link
                             href={`/profile/${member.id}`}
-                            className="text-sm text-blue-600 hover:underline"
+                            className="text-sm text-blue-400 hover:underline"
                           >
                             프로필 보기
                           </Link>
@@ -645,7 +643,7 @@ export default function PartyDetailPage() {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleRejectRequest(member.id)}
-                          className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition"
+                          className="bg-gray-600 hover:bg-gray-500 text-gray-200 px-4 py-2 rounded-lg transition"
                         >
                           거절
                         </button>
@@ -664,10 +662,10 @@ export default function PartyDetailPage() {
           )}
 
         {/* [3단] 테마 정보 */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 mb-6">
-          <h2 className="text-xl font-bold mb-6">테마 정보</h2>
+        <div className="bg-gray-800 rounded-xl border border-gray-700 shadow-sm p-8 mb-6">
+          <h2 className="text-xl font-bold mb-6 text-white">테마 정보</h2>
           <div className="flex flex-col md:flex-row gap-8">
-            <div className="w-full md:w-48 h-64 relative rounded-lg overflow-hidden bg-gray-200">
+            <div className="w-full md:w-48 h-64 relative rounded-lg overflow-hidden bg-gray-700">
               {partyData.themeThumbnailUrl &&
               isValidImageUrl(partyData.themeThumbnailUrl) ? (
                 <Image
@@ -686,14 +684,14 @@ export default function PartyDetailPage() {
               )}
             </div>
             <div className="flex-1">
-              <h3 className="text-xl font-bold mb-2">{partyData.themeName}</h3>
+              <h3 className="text-xl font-bold mb-2 text-white">{partyData.themeName}</h3>
 
               {/* 장르 및 태그 */}
               <div className="flex flex-wrap gap-2 mb-4">
                 {partyData.themeTagMappings?.map((tag, index) => (
                   <span
                     key={index}
-                    className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm"
+                    className="px-3 py-1 bg-gray-700 text-gray-300 rounded-full text-sm"
                   >
                     #{tag.tagName || "태그"}
                   </span>
@@ -702,26 +700,26 @@ export default function PartyDetailPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div className="flex items-center">
-                  <span className="text-gray-600 mr-2">노힌트 탈출률:</span>
-                  <span className="font-medium">
+                  <span className="text-gray-400 mr-2">노힌트 탈출률:</span>
+                  <span className="font-medium text-white">
                     {(partyData.noHintEscapeRate || 0).toFixed(1)}%
                   </span>
                 </div>
                 <div className="flex items-center">
-                  <span className="text-gray-600 mr-2">유저 탈출률:</span>
-                  <span className="font-medium">
+                  <span className="text-gray-400 mr-2">유저 탈출률:</span>
+                  <span className="font-medium text-white">
                     {(partyData.escapeResult || 0).toFixed(1)}%
                   </span>
                 </div>
                 <div className="flex items-center">
-                  <span className="text-gray-600 mr-2">평균 탈출 시간:</span>
-                  <span className="font-medium">
+                  <span className="text-gray-400 mr-2">평균 탈출 시간:</span>
+                  <span className="font-medium text-white">
                     {partyData.escapeTimeAvg || 0}분
                   </span>
                 </div>
                 <div className="flex items-center">
-                  <span className="text-gray-600 mr-2">플레이 시간:</span>
-                  <span className="font-medium">
+                  <span className="text-gray-400 mr-2">플레이 시간:</span>
+                  <span className="font-medium text-white">
                     {partyData.runtime || 60}분
                   </span>
                 </div>
@@ -731,17 +729,17 @@ export default function PartyDetailPage() {
         </div>
 
         {/* [4단] 매장 위치 및 정보 */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 mb-6">
-          <h2 className="text-xl font-bold mb-6">매장 위치 및 정보</h2>
+        <div className="bg-gray-800 rounded-xl border border-gray-700 shadow-sm p-8 mb-6">
+          <h2 className="text-xl font-bold mb-6 text-white">매장 위치 및 정보</h2>
           <div className="flex flex-col md:flex-row gap-8">
             <div className="flex-1">
-              <h3 className="text-lg font-medium mb-2">
+              <h3 className="text-lg font-medium mb-2 text-white">
                 {partyData.storeName}
               </h3>
-              <p className="text-gray-600 mb-4">{partyData.storeAddress}</p>
+              <p className="text-gray-400 mb-4">{partyData.storeAddress}</p>
 
               {/* 고정 지도 이미지 사용 */}
-              <div className="w-full h-80 bg-gray-200 rounded-lg relative">
+              <div className="w-full h-80 bg-gray-700 rounded-lg relative">
                 <Image
                   src="https://i.postimg.cc/L5Q5s78R/image.png"
                   alt={`${partyData.storeName} 지도`}
@@ -749,7 +747,7 @@ export default function PartyDetailPage() {
                   className="object-cover rounded-lg"
                   unoptimized
                 />
-                <div className="absolute bottom-2 right-2 bg-white px-2 py-1 rounded shadow text-xs">
+                <div className="absolute bottom-2 right-2 bg-gray-800 px-2 py-1 rounded shadow text-xs text-white">
                   {partyData.storeName || ""}
                 </div>
               </div>
