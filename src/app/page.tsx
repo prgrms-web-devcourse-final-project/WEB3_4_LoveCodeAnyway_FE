@@ -207,27 +207,27 @@ export default function HomePage() {
                                 ? // 스켈레톤 UI
                                   [...Array(4)].map((_, index) => (
                                       <SwiperSlide key={`skeleton-${index}`} className="p-1 h-full">
-                                          <div className="rounded-lg overflow-hidden h-full flex flex-col bg-white border border-gray-200">
+                                          <div className="rounded-lg overflow-hidden h-full flex flex-col bg-gray-800 border border-gray-700">
                                               <div className="p-5 flex flex-col h-full">
                                                   <div className="flex items-center justify-between mb-3">
-                                                      <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
-                                                      <div className="h-4 w-12 bg-gray-200 rounded animate-pulse"></div>
+                                                      <div className="h-4 w-20 bg-gray-700 rounded animate-pulse"></div>
+                                                      <div className="h-4 w-12 bg-gray-700 rounded animate-pulse"></div>
                                                   </div>
 
-                                                  <div className="h-40 bg-gray-200 rounded-lg mb-3 flex-shrink-0 animate-pulse"></div>
+                                                  <div className="h-40 bg-gray-700 rounded-lg mb-3 flex-shrink-0 animate-pulse"></div>
 
                                                   <div className="h-14">
-                                                      <div className="h-5 bg-gray-200 rounded animate-pulse mb-2"></div>
-                                                      <div className="h-5 w-3/4 bg-gray-200 rounded animate-pulse"></div>
+                                                      <div className="h-5 bg-gray-700 rounded animate-pulse mb-2"></div>
+                                                      <div className="h-5 w-3/4 bg-gray-700 rounded animate-pulse"></div>
                                                   </div>
                                                   <div className="h-6">
-                                                      <div className="h-4 w-1/2 bg-gray-200 rounded animate-pulse"></div>
+                                                      <div className="h-4 w-1/2 bg-gray-700 rounded animate-pulse"></div>
                                                   </div>
 
                                                   <div className="flex items-center mt-auto">
-                                                      <div className="h-4 w-16 bg-gray-200 rounded animate-pulse"></div>
+                                                      <div className="h-4 w-16 bg-gray-700 rounded animate-pulse"></div>
                                                       <div className="mx-2"></div>
-                                                      <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+                                                      <div className="h-4 w-24 bg-gray-700 rounded animate-pulse"></div>
                                                   </div>
                                               </div>
                                           </div>
@@ -237,11 +237,11 @@ export default function HomePage() {
                                       <SwiperSlide key={party.id} className="p-1 h-full">
                                           <Link
                                               href={`/parties/${party.id}`}
-                                              className={`rounded-lg overflow-hidden transition-all h-full flex flex-col bg-white border border-gray-200`}
+                                              className={`rounded-lg overflow-hidden transition-all h-full flex flex-col bg-gray-800 border border-gray-700`}
                                           >
                                               <div className="p-5 flex flex-col h-full">
                                                   <div className="flex items-center justify-between mb-3">
-                                                      <div className="text-gray-600 text-sm">{party.storeName}</div>
+                                                      <div className="text-gray-300 text-sm">{party.storeName}</div>
                                                       <div className="text-red-500 text-sm font-medium">
                                                           {new Date(party.scheduledAt).toDateString() ===
                                                           new Date().toDateString()
@@ -250,7 +250,7 @@ export default function HomePage() {
                                                       </div>
                                                   </div>
 
-                                                  <div className="flex justify-center items-center h-40 bg-gray-100 rounded-lg mb-3 flex-shrink-0 relative overflow-hidden">
+                                                  <div className="flex justify-center items-center h-40 bg-gray-700 rounded-lg mb-3 flex-shrink-0 relative overflow-hidden">
                                                       {party.themeThumbnailUrl ? (
                                                           <Image
                                                               src={party.themeThumbnailUrl}
@@ -260,7 +260,7 @@ export default function HomePage() {
                                                               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                                           />
                                                       ) : (
-                                                          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-gray-200 text-gray-400">
+                                                          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-gray-600 text-gray-400">
                                                               <svg
                                                                   xmlns="http://www.w3.org/2000/svg"
                                                                   className="h-8 w-8"
@@ -280,17 +280,17 @@ export default function HomePage() {
                                                   </div>
 
                                                   <div className="h-14">
-                                                      <h3 className="font-medium text-lg line-clamp-2 h-full">
+                                                      <h3 className="font-medium text-lg line-clamp-2 h-full text-white">
                                                           {party.title}
                                                       </h3>
                                                   </div>
                                                   <div className="h-6">
-                                                      <p className="text-gray-600 text-sm line-clamp-1">
+                                                      <p className="text-gray-400 text-sm line-clamp-1">
                                                           {party.themeName}
                                                       </p>
                                                   </div>
 
-                                                  <div className="flex items-center text-gray-600 text-sm mt-auto">
+                                                  <div className="flex items-center text-gray-400 text-sm mt-auto">
                                                       <span>
                                                           {party.acceptedParticipantCount}/{party.totalParticipants}명
                                                       </span>
@@ -374,7 +374,7 @@ export default function HomePage() {
                                     {rankingThemes.map((theme, index) => (
                                         <SwiperSlide key={theme.id}>
                                             <Link href={`/themes/${theme.id}`} className="relative block group h-full">
-                                                <div className="aspect-[3/4] bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center relative">
+                                                <div className="aspect-[3/4] bg-gray-700 rounded-lg overflow-hidden flex items-center justify-center relative">
                                                     {theme.thumbnailUrl ? (
                                                         <Image
                                                             src={theme.thumbnailUrl}
