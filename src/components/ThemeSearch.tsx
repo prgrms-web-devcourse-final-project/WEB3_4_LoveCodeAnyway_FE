@@ -60,7 +60,7 @@ export function ThemeSearch({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="테마 이름으로 검색"
-              className="w-full pl-9 pr-4 py-2.5 h-10 border border-black rounded-lg focus:outline-none focus:border-black placeholder:text-gray-400"
+              className="w-full pl-9 pr-4 py-2.5 h-10 border border-gray-700 rounded-lg focus:outline-none focus:border-gray-700 placeholder:text-gray-400"
             />
           </form>
         </div>

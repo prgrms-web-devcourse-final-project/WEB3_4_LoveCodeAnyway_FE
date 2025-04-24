@@ -132,21 +132,21 @@ export default function ThemesPage() {
       .map((_, index) => (
         <div
           key={`skeleton-${index}`}
-          className="bg-white rounded-xl shadow-sm overflow-hidden cursor-pointer h-[450px] flex flex-col"
+          className="bg-gray-800 rounded-xl shadow-sm overflow-hidden cursor-pointer h-[450px] flex flex-col"
         >
           {/* 이미지 섹션 */}
-          <div className="relative h-[220px] bg-gray-200 animate-pulse"></div>
+          <div className="relative h-[220px] bg-gray-700 animate-pulse"></div>
 
           {/* 내용 섹션 */}
           <div className="p-5 flex flex-col h-full">
-            <div className="h-6 bg-gray-200 rounded animate-pulse mb-3"></div>
-            <div className="h-5 w-3/4 bg-gray-200 rounded animate-pulse mb-3"></div>
+            <div className="h-6 bg-gray-700 rounded animate-pulse mb-3"></div>
+            <div className="h-5 w-3/4 bg-gray-700 rounded animate-pulse mb-3"></div>
             <div className="mt-2">
-              <div className="h-4 w-full bg-gray-200 rounded animate-pulse mb-2"></div>
-              <div className="h-4 w-2/3 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-4 w-full bg-gray-700 rounded animate-pulse mb-2"></div>
+              <div className="h-4 w-2/3 bg-gray-700 rounded animate-pulse"></div>
             </div>
             <div className="mt-auto">
-              <div className="h-5 w-1/2 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-5 w-1/2 bg-gray-700 rounded animate-pulse"></div>
             </div>
           </div>
         </div>
@@ -154,10 +154,10 @@ export default function ThemesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-900">
       <main className="container mx-auto px-4 py-10">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">방탈출 테마</h1>
+          <h1 className="text-3xl font-bold text-white">방탈출 테마</h1>
         </div>
 
         <ThemeSearch
@@ -186,7 +186,7 @@ export default function ThemesPage() {
             </div>
             {themes.length === 0 && !loading && (
               <div className="w-full my-12">
-                <div className="bg-gray-50 border border-gray-300 rounded-xl py-24 px-8 text-center">
+                <div className="bg-gray-800 border border-gray-700 rounded-xl py-24 px-8 text-center">
                   <p className="text-lg font-medium text-gray-400">
                   표시할 테마가 없습니다.
                   </p>
