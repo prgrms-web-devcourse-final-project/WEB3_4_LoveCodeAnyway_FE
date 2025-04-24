@@ -213,9 +213,9 @@ export default function MyPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-gray-900">
       {/* Section 1: 사용자 프로필 */}
-      <section className="bg-white shadow-md">
+      <section className="bg-gray-800 shadow-md">
         <div className="max-w-7xl mx-auto px-4 py-10">
           <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-6 mb-8">
             <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
@@ -255,11 +255,11 @@ export default function MyPage() {
                 </div>
               </div>
               <div className="text-center md:text-left">
-                <h1 className="text-3xl font-bold mb-3 text-gray-800">
+                <h1 className="text-3xl font-bold mb-3 text-white">
                   {userProfile.nickname}
                 </h1>
                 <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-4">
-                  <span className="inline-flex items-center text-sm bg-gray-100 px-3 py-1 rounded-full">
+                  <span className="inline-flex items-center text-sm bg-gray-700 px-3 py-1 rounded-full text-gray-200">
                     <svg
                       className="w-4 h-4 text-[#FFB130] mr-1"
                       viewBox="0 0 20 20"
@@ -281,7 +281,7 @@ export default function MyPage() {
                   {userProfile.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="px-3 py-1 bg-black text-white rounded-full text-sm"
+                      className="px-3 py-1 bg-[#FFB130] text-black rounded-full text-sm"
                     >
                       {tag}
                     </span>
@@ -291,7 +291,7 @@ export default function MyPage() {
             </div>
             <Link
               href="/my/edit"
-              className="px-6 py-2.5 bg-black text-white rounded-full hover:bg-gray-800 transition-colors font-medium text-sm shadow-sm flex items-center gap-2"
+              className="px-6 py-2.5 bg-gray-700 text-white rounded-full hover:bg-gray-600 transition-colors font-medium text-sm shadow-sm flex items-center gap-2"
             >
               <svg
                 className="w-4 h-4"
@@ -310,9 +310,9 @@ export default function MyPage() {
             </Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+            <div className="bg-gray-700 rounded-2xl p-6 border border-gray-600 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-[#FFB130]/10 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-[#FFB130]/20 flex items-center justify-center">
                   <svg
                     className="w-6 h-6 text-[#FFB130]"
                     fill="none"
@@ -328,16 +328,16 @@ export default function MyPage() {
                   </svg>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-500 mb-1">평균 성공률</div>
-                  <div className="text-3xl font-bold text-gray-800">
+                  <div className="text-sm text-gray-300 mb-1">평균 성공률</div>
+                  <div className="text-3xl font-bold text-white">
                     {userProfile.stats.successRate}%
                   </div>
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+            <div className="bg-gray-700 rounded-2xl p-6 border border-gray-600 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-[#FFB130]/10 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-[#FFB130]/20 flex items-center justify-center">
                   <svg
                     className="w-6 h-6 text-[#FFB130]"
                     fill="none"
@@ -353,17 +353,17 @@ export default function MyPage() {
                   </svg>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-500 mb-1">평균 클리어</div>
-                  <div className="text-3xl font-bold text-gray-800">
+                  <div className="text-sm text-gray-300 mb-1">평균 클리어</div>
+                  <div className="text-3xl font-bold text-white">
                     {userProfile.stats.averageClear}
                     <span className="text-lg font-medium">분</span>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+            <div className="bg-gray-700 rounded-2xl p-6 border border-gray-600 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-[#FFB130]/10 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-[#FFB130]/20 flex items-center justify-center">
                   <svg
                     className="w-6 h-6 text-[#FFB130]"
                     fill="none"
@@ -379,8 +379,8 @@ export default function MyPage() {
                   </svg>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-500 mb-1">누적 방 수</div>
-                  <div className="text-3xl font-bold text-gray-800">
+                  <div className="text-sm text-gray-300 mb-1">누적 방 수</div>
+                  <div className="text-3xl font-bold text-white">
                     {userProfile.stats.totalRooms}
                     <span className="text-lg font-medium">개</span>
                   </div>
@@ -392,18 +392,18 @@ export default function MyPage() {
       </section>
 
       {/* Section 2: 모임 희망 테마 */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-gray-900">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-between items-center mb-8">
             <div>
-              <h2 className="text-2xl font-bold text-gray-800">
+              <h2 className="text-2xl font-bold text-white">
                 모임 희망 테마
               </h2>
-              <p className="text-gray-500 mt-1">내가 참여하고 싶은 테마들</p>
+              <p className="text-gray-400 mt-1">내가 참여하고 싶은 테마들</p>
             </div>
             <Link
               href="/themes"
-              className="px-6 py-2.5 bg-[#FFB130] text-white rounded-full hover:bg-[#F0A120] transition-colors font-medium text-sm shadow-sm flex items-center gap-2"
+              className="px-6 py-2.5 bg-[#FFB130] text-black rounded-full hover:bg-[#F0A120] transition-colors font-medium text-sm shadow-sm flex items-center gap-2"
             >
               <svg
                 className="w-4 h-4"
@@ -426,7 +426,7 @@ export default function MyPage() {
               <Link
                 key={theme.id}
                 href={`/themes/${theme.id}`}
-                className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all hover:translate-y-[-4px] duration-300 border border-gray-100"
+                className="bg-gray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all hover:translate-y-[-4px] duration-300 border border-gray-700"
               >
                 <div className="aspect-[3/4] relative">
                   <Image
@@ -437,26 +437,26 @@ export default function MyPage() {
                   />
                 </div>
                 <div className="p-5">
-                  <h3 className="font-bold text-lg text-gray-800 mb-2 line-clamp-1">
+                  <h3 className="font-bold text-lg text-white mb-2 line-clamp-1">
                     {theme.title || theme.name}
                   </h3>
-                  <p className="text-sm text-gray-600 mb-3 line-clamp-1">
+                  <p className="text-sm text-gray-300 mb-3 line-clamp-1">
                     {theme.storeName}
                   </p>
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <span className="px-2 py-1 bg-gray-100 rounded-md">
+                  <div className="flex items-center gap-2 text-sm text-gray-300">
+                    <span className="px-2 py-1 bg-gray-700 rounded-md">
                       {theme.genre}
                     </span>
                     <span>•</span>
-                    <span className="px-2 py-1 bg-gray-100 rounded-md">
+                    <span className="px-2 py-1 bg-gray-700 rounded-md">
                       {theme.playTime}
                     </span>
                   </div>
                 </div>
               </Link>
             ))}
-            <div className="bg-gray-100 rounded-2xl overflow-hidden border border-dashed border-gray-300 flex flex-col items-center justify-center p-6 min-h-[300px]">
-              <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mb-4 shadow-sm">
+            <div className="bg-gray-800 rounded-2xl overflow-hidden border border-dashed border-gray-600 flex flex-col items-center justify-center p-6 min-h-[300px]">
+              <div className="w-16 h-16 rounded-full bg-gray-700 flex items-center justify-center mb-4 shadow-sm">
                 <svg
                   className="w-8 h-8 text-[#FFB130]"
                   fill="none"
@@ -471,15 +471,15 @@ export default function MyPage() {
                   />
                 </svg>
               </div>
-              <p className="text-gray-600 font-medium mb-2">
+              <p className="text-gray-300 font-medium mb-2">
                 새로운 테마 추가하기
               </p>
-              <p className="text-gray-500 text-sm text-center mb-4">
+              <p className="text-gray-400 text-sm text-center mb-4">
                 관심있는 테마를 찾아보세요
               </p>
               <Link
                 href="/themes"
-                className="px-4 py-2 bg-black text-white rounded-full text-sm hover:bg-gray-800 transition-colors"
+                className="px-4 py-2 bg-[#FFB130] text-black rounded-full text-sm hover:bg-[#F0A120] transition-colors"
               >
                 테마 찾기
               </Link>
@@ -489,10 +489,10 @@ export default function MyPage() {
       </section>
 
       {/* Section 3: 나의 탈출일지 */}
-      <section className="py-12 bg-white">
+      <section className="py-12 bg-gray-800">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold">나의 탈출일지</h2>
+            <h2 className="text-xl font-bold text-white">나의 탈출일지</h2>
             <Link
               href="/my/diary"
               className="text-[#FFB130] hover:text-[#F0A120] transition-colors"
@@ -501,7 +501,7 @@ export default function MyPage() {
             </Link>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="bg-gray-50 rounded-lg p-6">
+            <div className="bg-gray-700 rounded-lg p-6">
               <Calendar
                 selectedDate={selectedDate}
                 onChange={setSelectedDate}
@@ -510,10 +510,10 @@ export default function MyPage() {
                 )}
               />
             </div>
-            <div className="bg-gray-50 rounded-lg p-6">
+            <div className="bg-gray-700 rounded-lg p-6">
               {selectedDate ? (
                 <div className="space-y-4">
-                  <div className="text-lg font-medium mb-4">
+                  <div className="text-lg font-medium mb-4 text-white">
                     {selectedDate.toLocaleDateString("ko-KR", {
                       year: "numeric",
                       month: "long",
@@ -530,17 +530,17 @@ export default function MyPage() {
                       <Link
                         key={diary.id}
                         href={`/my/diary/${diary.id}`}
-                        className="block bg-white p-4 rounded-lg hover:shadow-md transition-shadow"
+                        className="block bg-gray-800 p-4 rounded-lg hover:shadow-md transition-shadow border border-gray-600"
                       >
-                        <h3 className="font-medium mb-2">{diary.title}</h3>
-                        <p className="text-sm text-gray-600">
+                        <h3 className="font-medium mb-2 text-white">{diary.title}</h3>
+                        <p className="text-sm text-gray-300">
                           {diary.themeName}
                         </p>
                         <span
                           className={`inline-block mt-2 px-2 py-1 text-sm rounded ${
                             diary.isSuccess
-                              ? "bg-green-100 text-green-600"
-                              : "bg-red-100 text-red-600"
+                              ? "bg-green-900 text-green-300"
+                              : "bg-red-900 text-red-300"
                           }`}
                         >
                           {diary.isSuccess ? "성공" : "실패"}
@@ -549,7 +549,7 @@ export default function MyPage() {
                     ))}
                 </div>
               ) : (
-                <div className="text-center text-gray-500">
+                <div className="text-center text-gray-400">
                   날짜를 선택하면 해당 날짜의 탈출일지를 볼 수 있습니다.
                 </div>
               )}
@@ -559,10 +559,10 @@ export default function MyPage() {
       </section>
 
       {/* Section 4: 나의 모임 히스토리 */}
-      <section className="py-12">
+      <section className="py-12 bg-gray-900">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold">나의 모임 히스토리</h2>
+            <h2 className="text-xl font-bold text-white">나의 모임 히스토리</h2>
             <Link
               href="/my/history"
               className="text-[#FFB130] hover:text-[#F0A120] transition-colors"
@@ -574,11 +574,11 @@ export default function MyPage() {
             {[1, 2].map((item) => (
               <div
                 key={item}
-                className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+                className="bg-gray-800 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-gray-700"
               >
                 <div className="p-6">
                   <div className="flex gap-4">
-                    <div className="w-24 h-24 bg-gray-200 rounded-lg flex-shrink-0 relative">
+                    <div className="w-24 h-24 bg-gray-700 rounded-lg flex-shrink-0 relative">
                       <Image
                         src={`https://i.postimg.cc/PJNVr12v/theme.jpg`}
                         alt="Party thumbnail"
@@ -595,13 +595,13 @@ export default function MyPage() {
                       />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-medium mb-1">
+                      <h3 className="font-medium mb-1 text-white">
                         공포 테마 같이 도전하실 분!
                       </h3>
-                      <p className="text-sm text-gray-600 mb-2">
+                      <p className="text-sm text-gray-300 mb-2">
                         비밀의 방 [미스터리 룸 잠입전]
                       </p>
-                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <div className="flex items-center gap-2 text-sm text-gray-400">
                         <span>이스케이프 홍대점</span>
                         <span>•</span>
                         <span>2024.03.15 (금)</span>
@@ -611,7 +611,7 @@ export default function MyPage() {
                     </div>
                   </div>
                   <div className="mt-4 flex justify-end">
-                    <button className="px-4 py-2 bg-[#FFB130] text-white rounded-lg hover:bg-[#F0A120] transition-colors">
+                    <button className="px-4 py-2 bg-[#FFB130] text-black rounded-lg hover:bg-[#F0A120] transition-colors">
                       후기 작성
                     </button>
                   </div>

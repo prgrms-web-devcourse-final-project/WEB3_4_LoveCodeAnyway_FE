@@ -157,7 +157,7 @@ export default function StatPage() {
 
   if (loading) {
     return (
-      <div className="bg-gray-50 min-h-screen">
+      <div className="bg-gray-900 min-h-screen">
         <PageLoading isLoading={true} />
       </div>
     );
@@ -165,18 +165,18 @@ export default function StatPage() {
 
   if (!statData) {
     return (
-      <div className="bg-gray-50 min-h-screen">
+      <div className="bg-gray-900 min-h-screen">
         <div className="max-w-7xl mx-auto p-6">
-          <div className="bg-white p-8 rounded-xl shadow-sm text-center">
-            <h1 className="text-2xl font-bold mb-4">
+          <div className="bg-gray-800 p-8 rounded-xl shadow-sm text-center">
+            <h1 className="text-2xl font-bold mb-4 text-white">
               통계를 불러올 수 없습니다
             </h1>
-            <p className="text-gray-500 mb-6">
+            <p className="text-gray-300 mb-6">
               탈출일지를 작성하시면 통계가 생성됩니다.
             </p>
             <button
               onClick={() => router.push("/my/diary/new")}
-              className="px-6 py-2 bg-[#FFB130] text-white rounded-md"
+              className="px-6 py-2 bg-[#FFB130] text-black rounded-md"
             >
               탈출일지 작성하기
             </button>
@@ -187,26 +187,26 @@ export default function StatPage() {
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen pb-10">
+    <div className="bg-gray-900 min-h-screen pb-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">방탈출 통계 대시보드</h1>
-          <p className="text-gray-500 text-sm">
+          <h1 className="text-2xl font-bold text-white">방탈출 통계 대시보드</h1>
+          <p className="text-gray-300 text-sm">
             당신이 방탈출 여행을 한눈에 확인하세요.
           </p>
         </div>
 
         {/* 상단 카드 - 주요 통계 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white p-6 rounded-xl shadow-sm">
+          <div className="bg-gray-800 p-6 rounded-xl shadow-sm">
             <div className="flex justify-between items-center mb-4">
               <div>
-                <p className="text-gray-500 text-sm">총 방탈출 횟수</p>
-                <h2 className="text-3xl font-bold">
+                <p className="text-gray-300 text-sm">총 방탈출 횟수</p>
+                <h2 className="text-3xl font-bold text-white">
                   {statData.totalEscapeCount}
                 </h2>
               </div>
-              <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
                 <Image
                   src="/images/count-icon.svg"
                   alt="방 아이콘"
@@ -216,7 +216,7 @@ export default function StatPage() {
                 />
               </div>
             </div>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-400">
               탈출 성공률{" "}
               <span className="text-[#4ecdc4] font-semibold">
                 {statData.successRate}%
@@ -224,15 +224,15 @@ export default function StatPage() {
             </p>
           </div>
 
-          <div className="bg-white p-6 rounded-xl shadow-sm">
+          <div className="bg-gray-800 p-6 rounded-xl shadow-sm">
             <div className="flex justify-between items-center mb-4">
               <div>
-                <p className="text-gray-500 text-sm">노힌트 클리어</p>
-                <h2 className="text-3xl font-bold">
+                <p className="text-gray-300 text-sm">노힌트 클리어</p>
+                <h2 className="text-3xl font-bold text-white">
                   {statData.noHintEscapeCount}
                 </h2>
               </div>
-              <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
                 <Image
                   src="/images/star-icon.svg"
                   alt="별 아이콘"
@@ -242,19 +242,19 @@ export default function StatPage() {
                 />
               </div>
             </div>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-400">
               노힌트 성공률{" "}
               <span className="text-[#4ecdc4] font-semibold">28.5%</span>
             </p>
           </div>
 
-          <div className="bg-white p-6 rounded-xl shadow-sm">
+          <div className="bg-gray-800 p-6 rounded-xl shadow-sm">
             <div className="flex justify-between items-center mb-4">
               <div>
-                <p className="text-gray-500 text-sm">힌트 평균 사용</p>
-                <h2 className="text-3xl font-bold">{statData.avgHintUsed}</h2>
+                <p className="text-gray-300 text-sm">힌트 평균 사용</p>
+                <h2 className="text-3xl font-bold text-white">{statData.avgHintUsed}</h2>
               </div>
-              <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
                 <Image
                   src="/images/hint-icon.svg"
                   alt="전구 아이콘"
@@ -264,14 +264,14 @@ export default function StatPage() {
                 />
               </div>
             </div>
-            <p className="text-sm text-gray-500">&nbsp;</p>
+            <p className="text-sm text-gray-400">&nbsp;</p>
           </div>
         </div>
 
         {/* 장르별 진행 비율 & 장르별 성공/실패 비율 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div className="bg-white p-6 rounded-xl shadow-sm">
-            <h3 className="text-lg font-semibold mb-6">장르별 진행 비율</h3>
+          <div className="bg-gray-800 p-6 rounded-xl shadow-sm">
+            <h3 className="text-lg font-semibold mb-6 text-white">장르별 진행 비율</h3>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -301,11 +301,11 @@ export default function StatPage() {
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-xl shadow-sm">
-            <h3 className="text-lg font-semibold mb-6">
+          <div className="bg-gray-800 p-6 rounded-xl shadow-sm">
+            <h3 className="text-lg font-semibold mb-6 text-white">
               장르별 성공/실패 비율
             </h3>
-            <p className="text-xs text-gray-500 mb-4">
+            <p className="text-xs text-gray-400 mb-4">
               참여 비율 상위 5개 장르만 표시합니다.
             </p>
             <div className="h-64">
@@ -339,8 +339,8 @@ export default function StatPage() {
 
         {/* 성향 분석 & 월별 방탈출 장소 수와 평균 용맹 지수 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div className="bg-white p-6 rounded-xl shadow-sm">
-            <h3 className="text-lg font-semibold mb-6">
+          <div className="bg-gray-800 p-6 rounded-xl shadow-sm">
+            <h3 className="text-lg font-semibold mb-6 text-white">
               성향 분석 <span className="text-gray-400 text-sm">ⓘ</span>
             </h3>
             <div className="relative h-64">
@@ -367,8 +367,8 @@ export default function StatPage() {
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-xl shadow-sm">
-            <h3 className="text-lg font-semibold mb-6">
+          <div className="bg-gray-800 p-6 rounded-xl shadow-sm">
+            <h3 className="text-lg font-semibold mb-6 text-white">
               월별 방탈출 장소 수와 평균 용맹 지수
             </h3>
             <div className="h-64">
@@ -392,28 +392,28 @@ export default function StatPage() {
 
         {/* 통계 카드 행 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white p-6 rounded-xl shadow-sm text-center">
-            <p className="text-gray-500 text-sm mb-1">첫 방탈출</p>
-            <p className="text-xl font-semibold">{statData.firstEscapeDate}</p>
+          <div className="bg-gray-800 p-6 rounded-xl shadow-sm text-center">
+            <p className="text-gray-300 text-sm mb-1">첫 방탈출</p>
+            <p className="text-xl font-semibold text-white">{statData.firstEscapeDate}</p>
           </div>
 
-          <div className="bg-white p-6 rounded-xl shadow-sm text-center">
-            <p className="text-gray-500 text-sm mb-1">최근 방탈출</p>
-            <p className="text-xl font-semibold text-[#FF8B30]">
+          <div className="bg-gray-800 p-6 rounded-xl shadow-sm text-center">
+            <p className="text-gray-300 text-sm mb-1">최근 방탈출</p>
+            <p className="text-xl font-semibold text-[#FFB130]">
               {statData.lastEscapeDate}
             </p>
             <p className="text-xs text-gray-400">활동 중</p>
           </div>
 
-          <div className="bg-white p-6 rounded-xl shadow-sm text-center">
-            <p className="text-gray-500 text-sm mb-1">방탈출을 사랑한 지</p>
-            <p className="text-xl font-semibold">{statData.totalDays}일 째</p>
+          <div className="bg-gray-800 p-6 rounded-xl shadow-sm text-center">
+            <p className="text-gray-300 text-sm mb-1">방탈출을 사랑한 지</p>
+            <p className="text-xl font-semibold text-white">{statData.totalDays}일 째</p>
           </div>
         </div>
 
         {/* 최근 방탈출 활동 */}
-        <div className="bg-white p-6 rounded-xl shadow-sm mb-6">
-          <h3 className="text-lg font-semibold mb-6">최근 방탈출 활동</h3>
+        <div className="bg-gray-800 p-6 rounded-xl shadow-sm mb-6">
+          <h3 className="text-lg font-semibold mb-6 text-white">최근 방탈출 활동</h3>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6">
             <div className="text-center">
@@ -426,8 +426,8 @@ export default function StatPage() {
                   className="mx-auto"
                 />
               </div>
-              <p className="text-gray-500 text-xs">참여 테마 수</p>
-              <p className="text-lg font-semibold">
+              <p className="text-gray-300 text-xs">참여 테마 수</p>
+              <p className="text-lg font-semibold text-white">
                 {statData.recentEscapes.count}개
               </p>
             </div>
@@ -442,8 +442,8 @@ export default function StatPage() {
                   className="mx-auto"
                 />
               </div>
-              <p className="text-gray-500 text-xs">평균 만족도</p>
-              <p className="text-lg font-semibold">
+              <p className="text-gray-300 text-xs">평균 만족도</p>
+              <p className="text-lg font-semibold text-white">
                 {statData.recentEscapes.avgRating}/5.0
               </p>
             </div>
@@ -458,8 +458,8 @@ export default function StatPage() {
                   className="mx-auto"
                 />
               </div>
-              <p className="text-gray-500 text-xs">평균 힌트 사용</p>
-              <p className="text-lg font-semibold">
+              <p className="text-gray-300 text-xs">평균 힌트 사용</p>
+              <p className="text-lg font-semibold text-white">
                 {statData.recentEscapes.avgHint}개
               </p>
             </div>
@@ -474,8 +474,8 @@ export default function StatPage() {
                   className="mx-auto"
                 />
               </div>
-              <p className="text-gray-500 text-xs">탈출 성공률</p>
-              <p className="text-lg font-semibold">
+              <p className="text-gray-300 text-xs">탈출 성공률</p>
+              <p className="text-lg font-semibold text-white">
                 {statData.recentEscapes.successRate}%
               </p>
             </div>
@@ -490,8 +490,8 @@ export default function StatPage() {
                   className="mx-auto"
                 />
               </div>
-              <p className="text-gray-500 text-xs">평균 소요 시간</p>
-              <p className="text-lg font-semibold">
+              <p className="text-gray-300 text-xs">평균 소요 시간</p>
+              <p className="text-lg font-semibold text-white">
                 {statData.recentEscapes.avgTime}분
               </p>
             </div>
@@ -506,7 +506,7 @@ export default function StatPage() {
                   className="mx-auto"
                 />
               </div>
-              <p className="text-gray-500 text-xs">최고 전적 대비</p>
+              <p className="text-gray-300 text-xs">최고 전적 대비</p>
               <p className="text-lg font-semibold text-[#4ecdc4]">
                 {statData.recentEscapes.bestResult}
               </p>
@@ -517,8 +517,8 @@ export default function StatPage() {
 
         {/* 난이도별 방탈출 사용 패턴 & 난이도와 만족도 상관관계 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white p-6 rounded-xl shadow-sm">
-            <h3 className="text-lg font-semibold mb-6">
+          <div className="bg-gray-800 p-6 rounded-xl shadow-sm">
+            <h3 className="text-lg font-semibold mb-6 text-white">
               난이도별 힌트 사용 패턴
             </h3>
             <div className="h-64">
@@ -540,13 +540,13 @@ export default function StatPage() {
                 </LineChart>
               </ResponsiveContainer>
             </div>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-gray-400 mt-2">
               난이도가 높을수록 힌트 사용량이 증가하는 경향이 있습니다.
             </p>
           </div>
 
-          <div className="bg-white p-6 rounded-xl shadow-sm">
-            <h3 className="text-lg font-semibold mb-6">
+          <div className="bg-gray-800 p-6 rounded-xl shadow-sm">
+            <h3 className="text-lg font-semibold mb-6 text-white">
               난이도와 만족도 상관관계
             </h3>
             <div className="h-64">
@@ -563,7 +563,7 @@ export default function StatPage() {
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-gray-400 mt-2">
               난이도와 상관없이 점차 만족도가 높아지는 것으로 보입니다.
             </p>
             <p className="text-xs text-gray-400 mt-1">
