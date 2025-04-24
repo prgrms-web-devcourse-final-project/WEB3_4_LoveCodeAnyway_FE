@@ -339,10 +339,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Section 3: 랭킹 */}
-      <section className="py-12 bg-gray-50">
+      {/* Section 3: 인기테마 */}
+      <section className="py-12 bg-gray-800">
         <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-2xl font-bold text-center mb-8">인기 테마</h2>
+          <h2 className="text-2xl font-bold text-center mb-8 text-white">
+            인기 테마
+          </h2>
           <div className="flex justify-center gap-4 mb-8 flex-wrap">
             {tags.map((tag) => (
               <button
@@ -469,7 +471,7 @@ export default function HomePage() {
       </section>
 
       {/* Section 4: 신규 테마 */}
-      <section className="py-12 bg-gray-800">
+      <section className="py-12 bg-gray-900">
         <div className="max-w-7xl mx-auto px-4">
           <h2 className="text-2xl font-bold text-center mb-8 text-white">
             신규 테마
@@ -496,48 +498,71 @@ export default function HomePage() {
           {isLoadingNew ? (
             <ThemeSkeleton />
           ) : newThemes.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {newThemes.map((theme) => (
-                <Link
-                  key={theme.id}
-                  href={`/themes/${theme.id}`}
-                  className="group"
-                >
-                  <div className="relative aspect-[3/4] bg-gray-800 rounded-lg overflow-hidden">
-                    {theme.thumbnailUrl ? (
-                      <Image
-                        src={theme.thumbnailUrl}
-                        alt={theme.name}
-                        fill
-                        className="object-cover transition-transform group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gray-700">
-                        <span className="text-gray-400">이미지 없음</span>
+            <div className="relative">
+              <Swiper
+                modules={[Autoplay, SwiperNavigation]}
+                spaceBetween={20}
+                slidesPerView={1}
+                centeredSlides={false}
+                autoplay={{
+                  delay: 3000,
+                  disableOnInteraction: false,
+                  pauseOnMouseEnter: true,
+                }}
+                navigation
+                breakpoints={{
+                  640: {
+                    slidesPerView: 2,
+                  },
+                  768: {
+                    slidesPerView: 3,
+                  },
+                  1024: {
+                    slidesPerView: 4,
+                  },
+                }}
+                className="py-4"
+              >
+                {newThemes.map((theme) => (
+                  <SwiperSlide key={theme.id}>
+                    <Link href={`/themes/${theme.id}`} className="group">
+                      <div className="relative aspect-[3/4] bg-gray-800 rounded-lg overflow-hidden">
+                        {theme.thumbnailUrl ? (
+                          <Image
+                            src={theme.thumbnailUrl}
+                            alt={theme.name}
+                            fill
+                            className="object-cover transition-transform group-hover:scale-105"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gray-700">
+                            <span className="text-gray-400">이미지 없음</span>
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                        <div className="absolute bottom-0 left-0 right-0 p-4">
+                          <h3 className="text-lg font-bold text-white mb-1">
+                            {theme.name}
+                          </h3>
+                          <p className="text-sm text-gray-300 mb-2">
+                            {theme.storeName}
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {theme.tags?.map((tag, index) => (
+                              <span
+                                key={index}
+                                className="px-2 py-1 text-xs bg-gray-700/80 text-gray-300 rounded-full"
+                              >
+                                #{tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
                       </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-                    <div className="absolute bottom-0 left-0 right-0 p-4">
-                      <h3 className="text-lg font-bold text-white mb-1">
-                        {theme.name}
-                      </h3>
-                      <p className="text-sm text-gray-300 mb-2">
-                        {theme.storeName}
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {theme.tags?.map((tag, index) => (
-                          <span
-                            key={index}
-                            className="px-2 py-1 text-xs bg-gray-700/80 text-gray-300 rounded-full"
-                          >
-                            #{tag}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
+                    </Link>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
             </div>
           ) : (
             <EmptyState />
