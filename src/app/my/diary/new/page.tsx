@@ -389,26 +389,26 @@ export default function NewDiaryPage() {
 
   // ==================== 렌더링 ====================
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-gray-900">
       <div className="max-w-3xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-8 text-center">탈출일지 작성</h1>
+        <h1 className="text-2xl font-bold mb-8 text-center text-white">탈출일지 작성</h1>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* 섹션 1: 테마 선택 */}
-          <section className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-lg font-semibold mb-4">테마 선택</h2>
+          <section className="bg-gray-800 rounded-lg shadow-sm p-6">
+            <h2 className="text-lg font-semibold mb-4 text-white">테마 선택</h2>
 
             {selectedTheme ? (
-              <div className="flex justify-between items-center p-4 border rounded-lg">
+              <div className="flex justify-between items-center p-4 border border-gray-700 rounded-lg bg-gray-700">
                 <div>
-                  <p className="font-medium">{selectedTheme.name}</p>
-                  <p className="text-gray-500 text-sm">
+                  <p className="font-medium text-white">{selectedTheme.name}</p>
+                  <p className="text-gray-300 text-sm">
                     {selectedTheme.storeName}
                   </p>
                 </div>
                 <button
                   type="button"
-                  className="text-sm text-blue-600"
+                  className="text-sm text-blue-400"
                   onClick={() => setSelectedTheme(null)}
                 >
                   변경
@@ -419,41 +419,41 @@ export default function NewDiaryPage() {
                 <input
                   type="text"
                   placeholder="테마 또는 매장명으로 검색"
-                  className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 px-4 py-2 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white"
                   readOnly
                   onClick={() => setIsThemeModalOpen(true)}
                 />
                 <button
                   type="button"
-                  className="px-4 py-2 bg-black text-white rounded-lg"
+                  className="px-4 py-2 bg-[#FFB130] text-black rounded-lg"
                   onClick={() => setIsThemeModalOpen(true)}
                 >
                   테마 검색
                 </button>
                 <button
                   type="button"
-                  className="px-4 py-2 bg-gray-800 text-white rounded-lg"
+                  className="px-4 py-2 bg-gray-600 text-white rounded-lg"
                   onClick={openNewThemeModal}
                 >
                   새 테마 등록
                 </button>
               </div>
             )}
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-gray-400 mt-2">
               * 테마 선택은 필수입니다.
             </p>
           </section>
 
           {/* 섹션 2: 탈출 사진 및 기본 정보 */}
-          <section className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-lg font-semibold mb-4">기본 정보</h2>
+          <section className="bg-gray-800 rounded-lg shadow-sm p-6">
+            <h2 className="text-lg font-semibold mb-4 text-white">기본 정보</h2>
 
             <div className="space-y-4">
               {/* 탈출 사진 */}
               <div>
-                <h3 className="text-md font-medium mb-2">탈출 사진</h3>
+                <h3 className="text-md font-medium mb-2 text-white">탈출 사진</h3>
                 <div
-                  className="border-dashed border-2 border-gray-300 p-6 rounded-lg text-center mb-4 cursor-pointer"
+                  className="border-dashed border-2 border-gray-600 p-6 rounded-lg text-center mb-4 cursor-pointer bg-gray-700"
                   onClick={() => fileInputRef.current?.click()}
                 >
                   <input
@@ -479,7 +479,7 @@ export default function NewDiaryPage() {
                       />
                     </svg>
                   </div>
-                  <p className="text-sm text-gray-500 mb-2">
+                  <p className="text-sm text-gray-400 mb-2">
                     탈출 사진을 드래그하거나 클릭하여 업로드하세요
                   </p>
                 </div>
@@ -489,7 +489,7 @@ export default function NewDiaryPage() {
                   <div className="grid grid-cols-2 gap-2 mt-2 mb-4">
                     {uploadedFiles.map((file, index) => (
                       <div key={`file-${index}`} className="relative">
-                        <div className="bg-gray-100 h-24 rounded-lg flex items-center justify-center overflow-hidden">
+                        <div className="bg-gray-700 h-24 rounded-lg flex items-center justify-center overflow-hidden">
                           <img
                             src={URL.createObjectURL(file)}
                             alt={`Preview ${index}`}
@@ -514,12 +514,12 @@ export default function NewDiaryPage() {
                     value={newEscapeImage}
                     onChange={(e) => setNewEscapeImage(e.target.value)}
                     placeholder="이미지 URL 입력"
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg"
+                    className="flex-1 px-3 py-2 border border-gray-700 rounded-lg bg-gray-700 text-white"
                   />
                   <button
                     type="button"
                     onClick={addEscapeImage}
-                    className="px-4 py-2 bg-gray-200 rounded-lg text-sm"
+                    className="px-4 py-2 bg-gray-600 rounded-lg text-sm text-white"
                   >
                     추가
                   </button>
@@ -529,8 +529,8 @@ export default function NewDiaryPage() {
                   <div className="grid grid-cols-2 gap-2 mt-2">
                     {escapeImages.map((url, index) => (
                       <div key={`url-${index}`} className="relative">
-                        <div className="bg-gray-100 h-24 rounded-lg flex items-center justify-center overflow-hidden">
-                          <span className="text-xs text-gray-500 break-all px-2">
+                        <div className="bg-gray-700 h-24 rounded-lg flex items-center justify-center overflow-hidden">
+                          <span className="text-xs text-gray-300 break-all px-2">
                             {url}
                           </span>
                         </div>
@@ -549,32 +549,32 @@ export default function NewDiaryPage() {
 
               {/* 진행 날짜 */}
               <div>
-                <h3 className="text-md font-medium mb-2">진행 날짜</h3>
+                <h3 className="text-md font-medium mb-2 text-white">진행 날짜</h3>
                 <input
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white"
                 />
               </div>
 
               {/* 함께한 사람 */}
               <div>
-                <h3 className="text-md font-medium mb-2">함께한 사람</h3>
+                <h3 className="text-md font-medium mb-2 text-white">함께한 사람</h3>
                 <input
                   type="text"
                   value={participants}
                   onChange={(e) => setParticipants(e.target.value)}
                   placeholder="예) 홍길동, 김철수, 이영희"
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white"
                 />
               </div>
             </div>
           </section>
 
           {/* 섹션 3: 테마 평가 */}
-          <section className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-lg font-semibold mb-4">테마 평가</h2>
+          <section className="bg-gray-800 rounded-lg shadow-sm p-6">
+            <h2 className="text-lg font-semibold mb-4 text-white">테마 평가</h2>
 
             <div className="grid grid-cols-2 gap-6">
               {/* 평가 항목들 */}
@@ -589,7 +589,7 @@ export default function NewDiaryPage() {
                 { id: "activity", label: "활동성", color: "green" },
               ].map((item) => (
                 <div key={item.id}>
-                  <h3 className="text-md font-medium mb-2">{item.label}</h3>
+                  <h3 className="text-md font-medium mb-2 text-white">{item.label}</h3>
                   <div className="flex items-center">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <button
@@ -603,7 +603,7 @@ export default function NewDiaryPage() {
                             ? `text-${item.color}-${
                                 item.color === "yellow" ? "400" : "500"
                               }`
-                            : "text-gray-300"
+                            : "text-gray-500"
                         }`}
                       >
                         <svg fill="currentColor" viewBox="0 0 20 20">
@@ -618,7 +618,7 @@ export default function NewDiaryPage() {
               {/* 장치 비중 */}
               <div className="col-span-2">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-md font-medium">장치 비중</h3>
+                  <h3 className="text-md font-medium text-white">장치 비중</h3>
                   <label className="flex items-center">
                     <input
                       type="checkbox"
@@ -626,7 +626,7 @@ export default function NewDiaryPage() {
                       onChange={(e) => setNoDevice(e.target.checked)}
                       className="mr-2"
                     />
-                    <span className="text-sm">장치X</span>
+                    <span className="text-sm text-white">장치X</span>
                   </label>
                 </div>
                 <div className="mb-2">
@@ -650,13 +650,13 @@ export default function NewDiaryPage() {
           </section>
 
           {/* 섹션 4: 탈출 정보 */}
-          <section className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-lg font-semibold mb-4">탈출 정보</h2>
+          <section className="bg-gray-800 rounded-lg shadow-sm p-6">
+            <h2 className="text-lg font-semibold mb-4 text-white">탈출 정보</h2>
 
             <div className="grid grid-cols-2 gap-6">
               {/* 힌트 사용 횟수 */}
               <div>
-                <h3 className="text-md font-medium mb-2">힌트 사용 횟수</h3>
+                <h3 className="text-md font-medium mb-2 text-white">힌트 사용 횟수</h3>
                 <input
                   type="number"
                   min="0"
@@ -667,13 +667,13 @@ export default function NewDiaryPage() {
                     )
                   }
                   placeholder="횟수 입력"
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white"
                 />
               </div>
 
               {/* 탈출 여부 */}
               <div>
-                <h3 className="text-md font-medium mb-2">탈출 여부</h3>
+                <h3 className="text-md font-medium mb-2 text-white">탈출 여부</h3>
                 <div className="flex gap-4">
                   <label className="flex items-center">
                     <input
@@ -700,7 +700,7 @@ export default function NewDiaryPage() {
 
               {/* 시간 */}
               <div className="col-span-2">
-                <h3 className="text-md font-medium mb-2">시간</h3>
+                <h3 className="text-md font-medium mb-2 text-white">시간</h3>
                 <div className="flex items-center gap-4">
                   <div className="flex-1">
                     <div className="flex mb-2">
@@ -736,9 +736,9 @@ export default function NewDiaryPage() {
                         }
                       }}
                       placeholder="분:초 (예: 30:00)"
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-2 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white"
                     />
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-gray-400 mt-1">
                       * 분:초 형식으로 입력해주세요 (예: 30:00)
                     </p>
                   </div>
@@ -748,13 +748,13 @@ export default function NewDiaryPage() {
           </section>
 
           {/* 섹션 5: 소감 */}
-          <section className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-lg font-semibold mb-4">소감</h2>
+          <section className="bg-gray-800 rounded-lg shadow-sm p-6">
+            <h2 className="text-lg font-semibold mb-4 text-white">소감</h2>
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="테마에 대한 소감을 자유롭게 작성해주세요."
-              className="w-full h-40 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full h-40 px-4 py-2 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white"
             ></textarea>
           </section>
 
