@@ -49,10 +49,10 @@ export default function ProfileEditPage() {
 
   // 페이지 로드 시 사용자 정보 가져오기
   useEffect(() => {
-    if (!loginMember?.id) {
-      router.push("/login");
-      return;
-    }
+    // if (!loginMember?.id) {
+    //   router.push("/login");
+    //   return;
+    // }
 
     // 현재 사용자 정보 설정
     setProfile({
