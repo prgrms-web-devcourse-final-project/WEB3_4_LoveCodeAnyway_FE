@@ -185,13 +185,15 @@ export default function ThemesPage() {
               {loading && renderSkeletonCards()}
             </div>
             {themes.length === 0 && !loading && (
-              <div className="text-center my-20">
-                <p className="text-xl text-gray-500 mb-4">
+              <div className="w-full my-12">
+                <div className="bg-gray-50 border border-gray-300 rounded-xl py-24 px-8 text-center">
+                  <p className="text-lg font-medium text-gray-400">
                   표시할 테마가 없습니다.
-                </p>
-                <p className="text-gray-400">
-                  다른 검색어나 필터로 시도해보세요.
-                </p>
+                  </p>
+                  <p className="text-gray-400">
+                    다른 검색어나 필터로 시도해보세요.
+                  </p>
+                </div>
               </div>
             )}
           </div>

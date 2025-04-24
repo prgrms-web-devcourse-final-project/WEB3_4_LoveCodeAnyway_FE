@@ -287,7 +287,10 @@ export default function PartiesPage() {
               <div className="w-full my-12">
                 <div className="bg-gray-50 border border-gray-300 rounded-xl py-24 px-8 text-center">
                   <p className="text-lg font-medium text-gray-400">
-                    등록된 모임이 없습니다
+                    등록된 모임이 없습니다.
+                  </p>
+                  <p className="text-gray-400">
+                    다른 검색어나 필터로 시도해보세요.
                   </p>
                 </div>
               </div>
