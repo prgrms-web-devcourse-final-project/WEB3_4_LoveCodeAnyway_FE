@@ -47,21 +47,21 @@ export function Calendar({
   return (
     <div className="w-full">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-medium">
+        <h2 className="text-lg font-medium text-white">
           {format(currentMonth, "yyyy년 MM월", { locale: ko })}
         </h2>
         <div className="flex gap-2">
           <button
             onClick={goToPreviousMonth}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-2 hover:bg-gray-700 rounded-full transition-colors"
           >
-            <ChevronLeftIcon className="w-5 h-5" />
+            <ChevronLeftIcon className="w-5 h-5 text-white" />
           </button>
           <button
             onClick={goToNextMonth}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-2 hover:bg-gray-700 rounded-full transition-colors"
           >
-            <ChevronRightIcon className="w-5 h-5" />
+            <ChevronRightIcon className="w-5 h-5 text-white" />
           </button>
         </div>
       </div>
@@ -70,7 +70,7 @@ export function Calendar({
         {weekDays.map((day) => (
           <div
             key={day}
-            className="h-8 flex items-center justify-center text-sm font-medium text-gray-500"
+            className="h-8 flex items-center justify-center text-sm font-medium text-gray-300"
           >
             {day}
           </div>
@@ -87,8 +87,8 @@ export function Calendar({
               onClick={() => onChange(day)}
               className={`
                 h-10 flex flex-col items-center justify-center relative
-                ${isCurrentMonth ? "text-gray-900" : "text-gray-400"}
-                ${isSelected ? "bg-blue-50" : "hover:bg-gray-100"}
+                ${isCurrentMonth ? "text-white" : "text-gray-500"}
+                ${isSelected ? "bg-[#FFB130]" : "hover:bg-gray-700"}
                 rounded-lg transition-colors
               `}
             >
@@ -96,7 +96,7 @@ export function Calendar({
                 {format(day, "d")}
               </span>
               {isMarked && (
-                <div className="absolute bottom-1 w-1 h-1 bg-blue-500 rounded-full" />
+                <div className="absolute bottom-1 w-1 h-1 bg-[#FFB130] rounded-full" />
               )}
             </button>
           );

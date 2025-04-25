@@ -43,7 +43,9 @@ export default function PartiesPage() {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [searchKeyword, setSearchKeyword] = useState("");
-  const [filterRegion, setFilterRegion] = useState("");
+  const [filterRegions, setFilterRegions] = useState<string[]>([]);
+  const [filterGenres, setFilterGenres] = useState<string[]>([]);
+  const [filterDates, setFilterDates] = useState<string[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const observer = useRef<IntersectionObserver | null>(null);
   const ITEMS_PER_PAGE = 30;
@@ -86,8 +88,9 @@ export default function PartiesPage() {
 
       const searchCondition = {
         keyword: searchKeyword,
-        regionIds: filterRegion ? [parseInt(filterRegion)] : undefined,
+        regionIds: filterRegions.length > 0 ? filterRegions.map(id => parseInt(id)) : undefined,
         themeId: searchParams.get('themeId') ? parseInt(searchParams.get('themeId')!) : undefined,
+        dates: filterDates.length > 0 ? filterDates : undefined,
       };
 
       const response = await client.POST("/api/v1/parties/search", {
@@ -156,9 +159,35 @@ export default function PartiesPage() {
   // 필터 처리
   const handleFilterChange = (filterType: string, value: string) => {
     if (filterType === "region") {
-      setFilterRegion(value);
-      loadParties(true); // 필터가 변경되면 데이터 리셋 후 다시 로드
+      setFilterRegions([value]);
+      loadParties(true);
     }
+  };
+
+  // 필터 적용 처리
+  const handleFilterApply = (filters: any) => {
+    // 지역 필터 처리
+    if (filters.regions && filters.regions.length > 0) {
+      setFilterRegions(filters.regions);
+    } else {
+      setFilterRegions([]);
+    }
+
+    // 장르 필터 처리
+    if (filters.genres && filters.genres.length > 0) {
+      setFilterGenres(filters.genres);
+    } else {
+      setFilterGenres([]);
+    }
+
+    // 날짜 필터 처리
+    if (filters.dates && filters.dates.length > 0) {
+      setFilterDates(filters.dates);
+    } else {
+      setFilterDates([]);
+    }
+
+    loadParties(true);
   };
 
   // 카드 클릭 처리
@@ -262,10 +291,136 @@ export default function PartiesPage() {
         </div>
 
         {/* 검색 및 필터 섹션 */}
-        <ThemeSearch
-          onSearch={handleSearch}
-          onFilterChange={handleFilterChange}
-        />
+        <div className="space-y-3">
+          <ThemeSearch
+            onSearch={handleSearch}
+            onFilterChange={handleFilterChange}
+            onFilterApply={handleFilterApply}
+            filterType="party"
+          />
+          
+          {/* 활성화된 필터 표시 */}
+          <div className="flex flex-wrap gap-2">
+            {searchKeyword && (
+              <div className="inline-flex items-center px-2 py-1 bg-gray-700 text-white rounded-full text-xs">
+                <span>검색어: {searchKeyword}</span>
+                <button
+                  onClick={() => {
+                    setSearchKeyword("");
+                    loadParties(true);
+                  }}
+                  className="ml-1.5 hover:text-gray-300"
+                >
+                  <svg
+                    className="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            )}
+            {filterRegions.length > 0 && (
+              <div className="inline-flex items-center px-2 py-1 bg-gray-700 text-white rounded-full text-xs">
+                <span>지역: {filterRegions.join(", ")}</span>
+                <button
+                  onClick={() => {
+                    setFilterRegions([]);
+                    loadParties(true);
+                  }}
+                  className="ml-1.5 hover:text-gray-300"
+                >
+                  <svg
+                    className="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            )}
+            {filterGenres.length > 0 && (
+              <div className="inline-flex items-center px-2 py-1 bg-gray-700 text-white rounded-full text-xs">
+                <span>장르: {filterGenres.join(", ")}</span>
+                <button
+                  onClick={() => {
+                    setFilterGenres([]);
+                    loadParties(true);
+                  }}
+                  className="ml-1.5 hover:text-gray-300"
+                >
+                  <svg
+                    className="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            )}
+            {filterDates.length > 0 && (
+              <div className="inline-flex items-center px-2 py-1 bg-gray-700 text-white rounded-full text-xs">
+                <span>날짜: {filterDates.join(", ")}</span>
+                <button
+                  onClick={() => {
+                    setFilterDates([]);
+                    loadParties(true);
+                  }}
+                  className="ml-1.5 hover:text-gray-300"
+                >
+                  <svg
+                    className="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            )}
+            {(searchKeyword || filterRegions.length > 0 || filterGenres.length > 0 || filterDates.length > 0) && (
+              <button
+                onClick={() => {
+                  setSearchKeyword("");
+                  setFilterRegions([]);
+                  setFilterGenres([]);
+                  setFilterDates([]);
+                  loadParties(true);
+                }}
+                className="inline-flex items-center px-2 py-1 bg-black text-white rounded-full text-xs hover:bg-gray-800"
+              >
+                필터 초기화
+              </button>
+            )}
+          </div>
+        </div>
 
         {initialLoading ? (
           <PageLoading />

@@ -4,12 +4,14 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ThemeFilterModal } from "./ThemeFilterModal";
+import { ThemeFilterModalForParties } from "./ThemeFilterModalForParties";
 
 interface ThemeSearchProps {
   showCreateButton?: boolean;
   onSearch?: (keyword: string) => void;
   onFilterApply?: (filters: any) => void;
   onFilterChange?: (filterType: string, value: string) => void;
+  filterType?: 'theme' | 'party';
 }
 
 export function ThemeSearch({
@@ -17,6 +19,7 @@ export function ThemeSearch({
   onSearch,
   onFilterApply,
   onFilterChange,
+  filterType = 'theme',
 }: ThemeSearchProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
@@ -105,11 +108,19 @@ export function ThemeSearch({
         </div>
       </div>
 
-      <ThemeFilterModal
-        isOpen={isFilterModalOpen}
-        onClose={() => setIsFilterModalOpen(false)}
-        onApply={handleFilterApply}
-      />
+      {filterType === 'theme' ? (
+        <ThemeFilterModal
+          isOpen={isFilterModalOpen}
+          onClose={() => setIsFilterModalOpen(false)}
+          onApply={handleFilterApply}
+        />
+      ) : (
+        <ThemeFilterModalForParties
+          isOpen={isFilterModalOpen}
+          onClose={() => setIsFilterModalOpen(false)}
+          onApply={handleFilterApply}
+        />
+      )}
     </div>
   );
 }

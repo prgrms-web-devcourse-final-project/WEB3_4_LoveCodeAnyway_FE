@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useContext } from "react";
 import Image from "next/image";
-import { LoginMemberContext } from "@/stores/auth/loginMember";
+import { LoginMemberContext, useGlobalLoginMember } from "@/stores/auth/loginMember";
 import { useRouter } from "next/navigation";
 import client from "@/lib/backend/client";
 
@@ -31,7 +31,7 @@ interface TagType {
 
 export default function ProfileEditPage() {
   const router = useRouter();
-  const { loginMember } = useContext(LoginMemberContext);
+  const { loginMember, setLoginMember } = useGlobalLoginMember();
 
   // 프로필 데이터 상태
   const [profile, setProfile] = useState({
@@ -44,6 +44,7 @@ export default function ProfileEditPage() {
 
   // 프로필 태그 ID 상태
   const [tagIds, setTagIds] = useState<number[]>([]);
+  // const [customTagInput, setCustomTagInput] = useState("");
 
   // 파일 업로드 관련 상태
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -61,7 +62,7 @@ export default function ProfileEditPage() {
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        const response = await client.GET("/api/v1/members/tags", {
+        const response = await client.GET("/api/v1/members/me/tags", {
           credentials: "include"
         });
         
@@ -215,46 +216,61 @@ export default function ProfileEditPage() {
         // FormData 생성 및 파일 추가
         const formData = new FormData();
         formData.append("file", imageFile);
-
-        // 임의의 diaryId 생성 (현재 시간 기준)
-        const randomDiaryId = Date.now().toString();
+        formData.append("target", "PROFILE");
 
         // 이미지 업로드 API 호출
         try {
-          const uploadResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/api/v1/upload/image/${randomDiaryId}`, {
-            method: "POST",
-            body: formData,
-            credentials: "include",
+          const uploadResponse = await client.POST("/api/v1/upload/image/0", {
+            withCredentials: true,
+            body: formData
           });
           
-          if (uploadResponse.ok) {
-            const data = await uploadResponse.json();
-            if (data && data.data && data.data.imageUrl) {
-              profileImageUrl = data.data.imageUrl;
+          if (uploadResponse.data) {
+            // 이미지 업로드 성공 후 프로필 정보를 다시 가져옴
+            const updatedProfileResponse = await client.GET("/api/v1/members/me", {
+              withCredentials: true
+            });
+            
+            if (updatedProfileResponse.data?.data?.profilePictureUrl) {
+              profileImageUrl = updatedProfileResponse.data.data.profilePictureUrl;
             }
           }
         } catch (uploadErr) {
           console.error("이미지 업로드 중 오류:", uploadErr);
+          setError("이미지 업로드 중 오류가 발생했습니다");
+          setIsSubmitting(false);
+          return;
         }
       }
 
       // 프로필 업데이트
-      const profileUpdateData = {
-        nickname: profile.nickname,
-        introduction: profile.introduction,
-        profileImageUrl: profileImageUrl,
-      };
-
-      await client.PATCH("/api/v1/members/me", {
-        body: profileUpdateData,
-        credentials: "include"
+      const response = await client.PATCH("/api/v1/members/me", {
+        withCredentials: true,
+        body: {
+          nickname: profile.nickname,
+          introduction: profile.introduction,
+          profileImageUrl: profileImageUrl
+        }
       });
 
-      // 태그 업데이트
+      // 태그 업데이트 - 백엔드 API에 맞게 수정
       await client.PATCH("/api/v1/members/me/tags", {
-        body: { tagIds },
-        credentials: "include"
+        withCredentials: true,
+        body: { tagIds }
       });
+
+      // 업데이트된 프로필 정보 가져오기
+      const updatedProfileResponse = await client.GET("/api/v1/members/me", {
+        withCredentials: true
+      });
+      
+      if (updatedProfileResponse.data?.data) {
+        // 전역 상태 업데이트
+        setLoginMember({
+          ...updatedProfileResponse.data.data,
+          id: loginMember.id
+        });
+      }
 
       // 성공 메시지 표시
       alert("프로필이 성공적으로 업데이트되었습니다");
@@ -588,6 +604,48 @@ export default function ProfileEditPage() {
                   {tagIds.length}/5개 선택
                 </span>
               </div>
+
+              {/* 커스텀 태그 입력 */}
+              {/* <div className="mb-4">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={customTagInput}
+                    onChange={(e) => setCustomTagInput(e.target.value)}
+                    placeholder="새로운 태그 입력 (예: #도전)"
+                    className="flex-1 px-4 py-2 border rounded-lg bg-gray-800 text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#FFB130] focus:border-[#FFB130] transition-all border-gray-600"
+                    maxLength={10}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (customTagInput.trim() && tagIds.length < 5) {
+                        const newTag = customTagInput.trim().replace(/^#/, '');
+                        if (!allTags.some(tag => tag.name === newTag)) {
+                          const newTagObj = {
+                            id: Date.now(), // 임시 ID
+                            name: newTag
+                          };
+                          setAllTags([...allTags, newTagObj]);
+                          setTagIds([...tagIds, newTagObj.id]);
+                        }
+                        setCustomTagInput("");
+                      }
+                    }}
+                    disabled={!customTagInput.trim() || tagIds.length >= 5}
+                    className={`px-4 py-2 rounded-lg font-medium ${
+                      !customTagInput.trim() || tagIds.length >= 5
+                        ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                        : "bg-[#FFB130] text-white hover:bg-[#E09D20] transition-colors"
+                    }`}
+                  >
+                    추가
+                  </button>
+                </div>
+                <p className="text-xs text-gray-400 mt-2">
+                  #을 제외하고 태그를 입력해주세요 (최대 10자)
+                </p>
+              </div> */}
 
               {/* 태그 목록 */}
               <div className="flex flex-wrap gap-2 mb-3">

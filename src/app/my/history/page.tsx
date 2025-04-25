@@ -4,6 +4,9 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useGlobalLoginMember } from "@/stores/auth/loginMember";
+import client from "@/lib/backend/client";
+import { AxiosResponse } from "axios";
 
 // 모임 타입 정의
 type PartyType = {
@@ -19,8 +22,37 @@ type PartyType = {
   reviewStatus: "WRITABLE" | "COMPLETED" | "NOT_WRITABLE";
 };
 
+// API 응답 타입 정의
+type PartyResponse = {
+  partyId: number;
+  title: string;
+  scheduledAt: string;
+  acceptedParticipantsCount: number;
+  totalParticipants: number;
+  rookieAvailable: boolean;
+  storeName: string;
+  themeId: number;
+  themeName: string;
+  themeThumbnailUrl: string;
+  hostId: number;
+  hostNickname: string;
+  hostProfilePictureUrl: string;
+};
+
+type ApiResponse = {
+  message: string | null;
+  data: {
+    currentPageNumber: number;
+    pageSize: number;
+    totalPages: number;
+    totalItems: number;
+    items: PartyResponse[];
+  };
+};
+
 export default function HistoryPage() {
   const router = useRouter();
+  const { loginMember } = useGlobalLoginMember();
   // 상태 관리
   const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming");
   const [statusFilter, setStatusFilter] = useState<
@@ -29,251 +61,148 @@ export default function HistoryPage() {
   const [roleFilter, setRoleFilter] = useState<"ALL" | "HOST" | "MEMBER">(
     "ALL"
   );
+  const [allParties, setAllParties] = useState<PartyType[]>([]);
+  const [filteredParties, setFilteredParties] = useState<PartyType[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [parties, setParties] = useState<PartyType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedMapParty, setSelectedMapParty] = useState<number | null>(null);
 
-  // 모임 데이터 가져오기 (실제로는 API 요청)
+  // 모임 데이터 가져오기
   useEffect(() => {
     setIsLoading(true);
     setError(null);
 
-    // API 요청을 시뮬레이션 (실제로는 fetch 사용)
-    setTimeout(() => {
-      // 목업 데이터
-      const mockData: PartyType[] = [
-        {
-          id: 1,
-          title: "좀비 연구소 모집합니다",
-          dateTime: new Date(
-            Date.now() + 15 * 24 * 60 * 60 * 1000
-          ).toISOString(), // 15일 후
-          location: "이스케이프 홍대점",
-          participantsNeeded: 5,
-          totalParticipants: 6,
-          themeThumbnailUrl:
-            "https://i.postimg.cc/rs2bByH8/interior-2505229-640.jpg", // 1번 이미지
-          themeTitle: "좀비 연구소",
-          role: "HOST" as const,
-          reviewStatus: "WRITABLE" as const,
-        },
-        {
-          id: 2,
-          title: "심야 병동 같이 가실 분",
-          dateTime: new Date(
-            Date.now() - 5 * 24 * 60 * 60 * 1000
-          ).toISOString(), // 5일 전
-          location: "플레이포인트 강남점",
-          participantsNeeded: 4,
-          totalParticipants: 4,
-          themeThumbnailUrl:
-            "https://i.postimg.cc/7hL7Y0dX/interior-2505229-640.jpg", // 2번 이미지
-          themeTitle: "심야 병동",
-          role: "MEMBER" as const,
-          reviewStatus: "COMPLETED" as const,
-        },
-        {
-          id: 3,
-          title: "타임루프 도전하실 분 모집해요",
-          dateTime: new Date(
-            Date.now() + 10 * 24 * 60 * 60 * 1000
-          ).toISOString(), // 10일 후
-          location: "솔버 강남점",
-          participantsNeeded: 3,
-          totalParticipants: 6,
-          themeThumbnailUrl: "https://i.postimg.cc/fT3s132T/image.jpg", // 3번 이미지
-          themeTitle: "타임루프",
-          role: "MEMBER" as const,
-          reviewStatus: "NOT_WRITABLE" as const,
-        },
-        {
-          id: 4,
-          title: "마술사의 집 모임 모집",
-          dateTime: new Date(
-            Date.now() - 15 * 24 * 60 * 60 * 1000
-          ).toISOString(), // 15일 전
-          location: "키이스케이프 건대점",
-          participantsNeeded: 4,
-          totalParticipants: 4,
-          themeThumbnailUrl: "https://i.postimg.cc/bJHXqpxr/image.jpg", // 4번 이미지
-          themeTitle: "마술사의 집",
-          role: "HOST" as const,
-          reviewStatus: "COMPLETED" as const,
-        },
-        {
-          id: 5,
-          title: "자살 사건 추리 모임",
-          dateTime: new Date(
-            Date.now() + 3 * 24 * 60 * 60 * 1000
-          ).toISOString(), // 3일 후
-          location: "비트포비아 홍대점",
-          participantsNeeded: 4,
-          totalParticipants: 6,
-          themeThumbnailUrl:
-            "https://naverbooking-phinf.pstatic.net/20230612_144/1686513263098ppWzR_JPEG/%C7%EF%B8%AE%C4%DF%C5%CD_%B4%BA_%C6%F7%BD%BA%C5%CD.jpg", // 5번 이미지
-          themeTitle: "자살 사건 추리",
-          role: "MEMBER" as const,
-          reviewStatus: "NOT_WRITABLE" as const,
-        },
-        {
-          id: 6,
-          title: "공포체험 좋아하시는 분",
-          dateTime: new Date(
-            Date.now() - 20 * 24 * 60 * 60 * 1000
-          ).toISOString(), // 20일 전
-          location: "셜록홈즈 신촌점",
-          participantsNeeded: 3,
-          totalParticipants: 4,
-          themeThumbnailUrl:
-            "https://i.postimg.cc/rs2bByH8/interior-2505229-640.jpg", // 1번 이미지
-          themeTitle: "공포체험",
-          role: "HOST" as const,
-          reviewStatus: "COMPLETED" as const,
-        },
-        {
-          id: 7,
-          title: "미스터리 방 탈출 도전",
-          dateTime: new Date(
-            Date.now() + 7 * 24 * 60 * 60 * 1000
-          ).toISOString(), // 7일 후
-          location: "비밀의 방 강남점",
-          participantsNeeded: 4,
-          totalParticipants: 5,
-          themeThumbnailUrl:
-            "https://i.postimg.cc/7hL7Y0dX/interior-2505229-640.jpg", // 2번 이미지
-          themeTitle: "비밀의 방",
-          role: "HOST" as const,
-          reviewStatus: "NOT_WRITABLE" as const,
-        },
-        {
-          id: 8,
-          title: "유령의 저택 공략 모임",
-          dateTime: new Date(
-            Date.now() + 2 * 24 * 60 * 60 * 1000
-          ).toISOString(), // 2일 후
-          location: "이스케이프 종로점",
-          participantsNeeded: 5,
-          totalParticipants: 6,
-          themeThumbnailUrl: "https://i.postimg.cc/305Ft0M3/theme.jpg",
-          themeTitle: "유령의 저택",
-          role: "MEMBER" as const,
-          reviewStatus: "WRITABLE" as const,
-        },
-        {
-          id: 9,
-          title: "초급자만! 쉬운 테마 함께해요",
-          dateTime: new Date(
-            Date.now() + 5 * 24 * 60 * 60 * 1000
-          ).toISOString(), // 5일 후
-          location: "마스터키 명동점",
-          participantsNeeded: 3,
-          totalParticipants: 4,
-          themeThumbnailUrl: "https://i.postimg.cc/305Ft0M3/theme.jpg",
-          themeTitle: "비밀 사무실",
-          role: "MEMBER" as const,
-          reviewStatus: "WRITABLE" as const,
-        },
-        {
-          id: 10,
-          title: "범죄자의 하우스 도전하실 분",
-          dateTime: new Date(
-            Date.now() - 10 * 24 * 60 * 60 * 1000
-          ).toISOString(), // 10일 전
-          location: "룸이스케이프 신림점",
-          participantsNeeded: 6,
-          totalParticipants: 6,
-          themeThumbnailUrl: "https://i.postimg.cc/305Ft0M3/theme.jpg",
-          themeTitle: "범죄자의 하우스",
-          role: "HOST" as const,
-          reviewStatus: "COMPLETED" as const,
-        },
-        {
-          id: 11,
-          title: "초특급 난이도! 지하실 탈출",
-          dateTime: new Date(
-            Date.now() - 5 * 24 * 60 * 60 * 1000
-          ).toISOString(), // 5일 전
-          location: "키이스케이프 홍대점",
-          participantsNeeded: 4,
-          totalParticipants: 5,
-          themeThumbnailUrl: "https://i.postimg.cc/305Ft0M3/theme.jpg",
-          themeTitle: "지하실",
-          role: "MEMBER" as const,
-          reviewStatus: "NOT_WRITABLE" as const,
-        },
-        {
-          id: 12,
-          title: "마지막 기회, 사망 이스케이프",
-          dateTime: new Date(
-            Date.now() - 7 * 24 * 60 * 60 * 1000
-          ).toISOString(), // 7일 전
-          location: "넥스트에디션 강남점",
-          participantsNeeded: 4,
-          totalParticipants: 4,
-          themeThumbnailUrl: "https://i.postimg.cc/305Ft0M3/theme.jpg",
-          themeTitle: "사망 이스케이프",
-          role: "HOST" as const,
-          reviewStatus: "WRITABLE" as const,
-        },
-      ];
-
-      // 필터링 적용
-      let filteredData = [...mockData];
-
-      // 탭 필터 - 날짜 비교 간소화
-      const now = new Date();
-      // 날짜 표시를 위해 시간 부분 제거
-      now.setHours(0, 0, 0, 0);
-
-      if (activeTab === "upcoming") {
-        filteredData = filteredData.filter((party) => {
-          const partyDate = new Date(party.dateTime);
-          // 같은 날짜도 예정된 모임에 포함
-          return partyDate >= now;
-        });
-      } else {
-        filteredData = filteredData.filter((party) => {
-          const partyDate = new Date(party.dateTime);
-          return partyDate < now;
-        });
-      }
-
-      // 리뷰 상태 필터
-      if (statusFilter !== "ALL") {
-        filteredData = filteredData.filter(
-          (party) => party.reviewStatus === statusFilter
-        );
-      }
-
-      // 역할 필터
-      if (roleFilter !== "ALL") {
-        filteredData = filteredData.filter(
-          (party) => party.role === roleFilter
-        );
-      }
-
-      // 전체 데이터 설정
-      setTotalPages(Math.ceil(filteredData.length / 6));
-
-      // 현재 페이지에 해당하는 데이터만 선택
-      const startIndex = (currentPage - 1) * 6;
-      const endIndex = startIndex + 6;
-      const paginatedData = filteredData.slice(startIndex, endIndex);
-
-      setParties(paginatedData);
+    if (!loginMember) {
+      setError('로그인이 필요합니다.');
       setIsLoading(false);
-    }, 500);
-  }, [activeTab, statusFilter, roleFilter, currentPage]);
+      return;
+    }
+
+    // 전체 데이터를 한 번에 가져오기
+    client.GET('/api/v1/parties/joins/{id}', {
+      params: {
+        path: {
+          id: loginMember.id
+        },
+        query: {
+          page: 0,
+          size: 100 // 충분히 큰 수를 지정하여 모든 데이터를 가져옴
+        }
+      }
+    })
+      .then((response) => {
+        console.log('API 응답 데이터:', response);
+        
+        if (!response.data?.data?.items) {
+          setError('데이터를 불러오는데 실패했습니다.');
+          setIsLoading(false);
+          return;
+        }
+
+        // API 응답 데이터를 PartyType으로 변환
+        const partiesData: PartyType[] = response.data.data.items.map(item => {
+          const id = item.partyId || 0;
+          const title = item.title || '';
+          const dateTime = item.scheduledAt || new Date().toISOString();
+          const location = item.storeName || '';
+          const totalParticipants = item.totalParticipants || 0;
+          const acceptedParticipants = item.acceptedParticipantsCount || 0;
+          const themeThumbnailUrl = item.themeThumbnailUrl || '';
+          const themeTitle = item.themeName || '';
+          
+          return {
+            id,
+            title,
+            dateTime,
+            location,
+            participantsNeeded: Math.max(0, totalParticipants - acceptedParticipants),
+            totalParticipants,
+            themeThumbnailUrl,
+            themeTitle,
+            role: item.hostId === loginMember.id ? "HOST" : "MEMBER",
+            reviewStatus: "WRITABLE" as const
+          };
+        });
+
+        setAllParties(partiesData);
+        setIsLoading(false);
+      })
+      .catch((error: Error) => {
+        console.error('API 요청 에러:', error);
+        setError('데이터를 불러오는 중 오류가 발생했습니다.');
+        setIsLoading(false);
+      });
+  }, [loginMember]);
+
+  // 필터링 로직
+  useEffect(() => {
+    if (allParties.length === 0) return;
+
+    let filteredData = [...allParties];
+
+    // 날짜 기준으로 분류
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    if (activeTab === "upcoming") {
+      filteredData = filteredData.filter((party) => {
+        const partyDate = new Date(party.dateTime);
+        return partyDate >= now;
+      });
+    } else {
+      filteredData = filteredData.filter((party) => {
+        const partyDate = new Date(party.dateTime);
+        return partyDate < now;
+      });
+    }
+
+    // 리뷰 상태 필터
+    if (statusFilter !== "ALL") {
+      filteredData = filteredData.filter(
+        (party) => party.reviewStatus === statusFilter
+      );
+    }
+
+    // 역할 필터
+    if (roleFilter !== "ALL") {
+      filteredData = filteredData.filter(
+        (party) => party.role === roleFilter
+      );
+    }
+
+    setFilteredParties(filteredData);
+    setCurrentPage(1); // 필터가 변경될 때마다 첫 페이지로 리셋
+  }, [allParties, activeTab, statusFilter, roleFilter]);
+
+  // 마감 임박 모임 필터링
+  const getDeadlineParties = () => {
+    const now = new Date();
+    const threeDaysLater = new Date();
+    threeDaysLater.setDate(now.getDate() + 3);
+
+    return allParties.filter(party => {
+      const partyDate = new Date(party.dateTime);
+      return partyDate >= now && partyDate <= threeDaysLater;
+    }).slice(0, 3); // 최대 3개만 표시
+  };
+
+  // 현재 페이지의 파티 목록 계산
+  const getCurrentPageParties = () => {
+    const itemsPerPage = 5;
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredParties.slice(startIndex, endIndex);
+  };
+
+  // 총 페이지 수 계산
+  const totalPages = Math.ceil(filteredParties.length / 5);
 
   // 필터 초기화
   const resetFilters = () => {
     setActiveTab("upcoming");
     setStatusFilter("ALL");
     setRoleFilter("ALL");
-    setCurrentPage(1);
   };
 
   // 날짜 포맷 함수
@@ -386,7 +315,7 @@ export default function HistoryPage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* 마감 임박 모임 카드 */}
-            {parties.slice(0, 3).map((party) => (
+            {getDeadlineParties().map((party) => (
               <div
                 key={`deadline-${party.id}`}
                 className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
@@ -563,181 +492,183 @@ export default function HistoryPage() {
           </div>
         ) : error ? (
           <div className="bg-red-900 text-red-200 p-4 rounded-md">{error}</div>
-        ) : parties.length === 0 ? (
+        ) : filteredParties.length === 0 ? (
           <div className="text-center py-12 text-gray-400">
             <p>조건에 맞는 모임이 없습니다.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4">
-            {parties.map((party) => (
-              <div
-                key={party.id}
-                className="bg-gray-800 rounded-lg border border-gray-700 p-4"
-              >
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`px-2 py-0.5 text-xs rounded-full ${
-                        party.role === "HOST"
-                          ? "bg-blue-900 text-blue-200"
-                          : "bg-gray-700 text-gray-300"
-                      }`}
-                    >
-                      {party.role === "HOST" ? "모임장" : "모임원"}
-                    </span>
+          <>
+            <div className="grid grid-cols-1 gap-4">
+              {getCurrentPageParties().map((party) => (
+                <div
+                  key={party.id}
+                  className="bg-gray-800 rounded-lg border border-gray-700 p-4"
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`px-2 py-0.5 text-xs rounded-full ${
+                          party.role === "HOST"
+                            ? "bg-blue-900 text-blue-200"
+                            : "bg-gray-700 text-gray-300"
+                        }`}
+                      >
+                        {party.role === "HOST" ? "모임장" : "모임원"}
+                      </span>
+                    </div>
+                    <div>{getReviewButton(party)}</div>
                   </div>
-                  <div>{getReviewButton(party)}</div>
-                </div>
-                <div className="flex mt-3 gap-4">
-                  {party.themeThumbnailUrl ? (
-                    <div className="w-24 h-24 bg-gray-700 rounded overflow-hidden relative flex-shrink-0">
+                  <div className="flex mt-3 gap-4">
+                    {party.themeThumbnailUrl ? (
+                      <div className="w-24 h-24 bg-gray-700 rounded overflow-hidden relative flex-shrink-0">
+                        <Image
+                          src={getImageUrl(party.themeThumbnailUrl, party.id)}
+                          alt={party.title}
+                          fill
+                          sizes="(max-width: 96px) 100vw, 96px"
+                          className="object-cover opacity-90"
+                          unoptimized
+                          onError={(e) => {
+                            // 이미지 로드 오류 시 기본 이미지(Base64 데이터 URL)로 대체
+                            const fallbackImage =
+                              "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgZmlsbD0iIzMzMzMzMyIvPjxwYXRoIGQ9Ik00NSA0NUgzMFY3NUg5MFY0NUg3NVYzMEg0NVY0NVpNNzUgOTBIMzBWNzVIOTBWNDVINzVWOTBaIiBmaWxsPSIjNjY2NjY2Ii8+PC9zdmc+";
+                            (e.target as HTMLImageElement).src = fallbackImage;
+                            (e.target as HTMLImageElement).onerror = null; // 이중 호출 방지
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-24 h-24 bg-gray-700 rounded flex-shrink-0 flex items-center justify-center">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-10 w-10 text-gray-500"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <h3 className="font-bold mb-1 text-gray-100">
+                        {party.title}
+                      </h3>
+                      <div className="space-y-1 text-sm text-gray-300">
+                        <p>{formatDate(party.dateTime)}</p>
+                        <p>테마: {party.themeTitle}</p>
+                        <div className="flex items-center">
+                          <p className="flex items-center">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-4 w-4 mr-1 text-gray-400"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                              />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                              />
+                            </svg>
+                            장소: {party.location}
+                          </p>
+                          <button
+                            className="ml-2 text-sm text-[#FFB130] hover:text-[#FFA000] flex items-center"
+                            onClick={() => toggleMap(party.id)}
+                          >
+                            {selectedMapParty === party.id
+                              ? "지도 닫기"
+                              : "지도 보기"}
+                          </button>
+                        </div>
+                        <p>
+                          인원: {party.participantsNeeded} /{" "}
+                          {party.totalParticipants}명
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 지도 이미지 영역 - 고정 이미지 사용 */}
+                  {selectedMapParty === party.id && (
+                    <div className="mt-4 w-full h-64 bg-gray-700 rounded-lg overflow-hidden relative">
                       <Image
-                        src={getImageUrl(party.themeThumbnailUrl, party.id)}
-                        alt={party.title}
+                        src="https://i.postimg.cc/L5Q5s78R/image.png"
+                        alt={`${party.location} 지도`}
                         fill
-                        sizes="(max-width: 96px) 100vw, 96px"
                         className="object-cover opacity-90"
                         unoptimized
-                        onError={(e) => {
-                          // 이미지 로드 오류 시 기본 이미지(Base64 데이터 URL)로 대체
-                          const fallbackImage =
-                            "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgZmlsbD0iIzMzMzMzMyIvPjxwYXRoIGQ9Ik00NSA0NUgzMFY3NUg5MFY0NUg3NVYzMEg0NVY0NVpNNzUgOTBIMzBWNzVIOTBWNDVINzVWOTBaIiBmaWxsPSIjNjY2NjY2Ii8+PC9zdmc+";
-                          (e.target as HTMLImageElement).src = fallbackImage;
-                          (e.target as HTMLImageElement).onerror = null; // 이중 호출 방지
-                        }}
                       />
-                    </div>
-                  ) : (
-                    <div className="w-24 h-24 bg-gray-700 rounded flex-shrink-0 flex items-center justify-center">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-10 w-10 text-gray-500"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
+                      <div className="absolute bottom-2 right-2 bg-gray-800 text-gray-200 px-2 py-1 rounded shadow text-xs">
+                        {party.location}
+                      </div>
                     </div>
                   )}
-                  <div className="flex-1">
-                    <h3 className="font-bold mb-1 text-gray-100">
-                      {party.title}
-                    </h3>
-                    <div className="space-y-1 text-sm text-gray-300">
-                      <p>{formatDate(party.dateTime)}</p>
-                      <p>테마: {party.themeTitle}</p>
-                      <div className="flex items-center">
-                        <p className="flex items-center">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-4 w-4 mr-1 text-gray-400"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                            />
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                            />
-                          </svg>
-                          장소: {party.location}
-                        </p>
-                        <button
-                          className="ml-2 text-sm text-[#FFB130] hover:text-[#FFA000] flex items-center"
-                          onClick={() => toggleMap(party.id)}
-                        >
-                          {selectedMapParty === party.id
-                            ? "지도 닫기"
-                            : "지도 보기"}
-                        </button>
-                      </div>
-                      <p>
-                        인원: {party.participantsNeeded} /{" "}
-                        {party.totalParticipants}명
-                      </p>
-                    </div>
-                  </div>
                 </div>
-
-                {/* 지도 이미지 영역 - 고정 이미지 사용 */}
-                {selectedMapParty === party.id && (
-                  <div className="mt-4 w-full h-64 bg-gray-700 rounded-lg overflow-hidden relative">
-                    <Image
-                      src="https://i.postimg.cc/L5Q5s78R/image.png"
-                      alt={`${party.location} 지도`}
-                      fill
-                      className="object-cover opacity-90"
-                      unoptimized
-                    />
-                    <div className="absolute bottom-2 right-2 bg-gray-800 text-gray-200 px-2 py-1 rounded shadow text-xs">
-                      {party.location}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* 하단 - 페이지네이션 영역 */}
-        {totalPages > 1 && (
-          <div className="flex justify-center mt-6">
-            <nav className="flex items-center">
-              <button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className={`mx-1 p-2 rounded ${
-                  currentPage === 1
-                    ? "text-gray-600 cursor-not-allowed"
-                    : "text-gray-400 hover:text-gray-200"
-                }`}
-              >
-                &lt; 이전
-              </button>
-
-              {Array.from({ length: totalPages }).map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentPage(index + 1)}
-                  className={`mx-1 px-3 py-1 rounded ${
-                    currentPage === index + 1
-                      ? "bg-[#FFB230] text-white"
-                      : "text-gray-400 hover:bg-gray-700"
-                  }`}
-                >
-                  {index + 1}
-                </button>
               ))}
+            </div>
 
-              <button
-                onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                }
-                disabled={currentPage === totalPages}
-                className={`mx-1 p-2 rounded ${
-                  currentPage === totalPages
-                    ? "text-gray-600 cursor-not-allowed"
-                    : "text-gray-400 hover:text-gray-200"
-                }`}
-              >
-                다음 &gt;
-              </button>
-            </nav>
-          </div>
+            {/* 페이지네이션 */}
+            {totalPages > 1 && (
+              <div className="flex justify-center mt-6">
+                <nav className="flex items-center">
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className={`mx-1 p-2 rounded ${
+                      currentPage === 1
+                        ? "text-gray-600 cursor-not-allowed"
+                        : "text-gray-400 hover:text-gray-200"
+                    }`}
+                  >
+                    &lt; 이전
+                  </button>
+
+                  {Array.from({ length: totalPages }).map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentPage(index + 1)}
+                      className={`mx-1 px-3 py-1 rounded ${
+                        currentPage === index + 1
+                          ? "bg-[#FFB230] text-white"
+                          : "text-gray-400 hover:bg-gray-700"
+                      }`}
+                    >
+                      {index + 1}
+                    </button>
+                  ))}
+
+                  <button
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                    }
+                    disabled={currentPage === totalPages}
+                    className={`mx-1 p-2 rounded ${
+                      currentPage === totalPages
+                        ? "text-gray-600 cursor-not-allowed"
+                        : "text-gray-400 hover:text-gray-200"
+                    }`}
+                  >
+                    다음 &gt;
+                  </button>
+                </nav>
+              </div>
+            )}
+          </>
         )}
       </div>
     </main>

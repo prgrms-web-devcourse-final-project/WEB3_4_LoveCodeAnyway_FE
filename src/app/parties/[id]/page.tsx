@@ -123,7 +123,7 @@ export default function PartyDetailPage() {
 
       setLoading(true);
       try {
-        console.log("로그인된 사용자 ID:", loginMember);
+        console.log("로그인된 사용자 ID:", loginMember.id);
 
         const response = await client.GET("/api/v1/parties/{partyId}", {
           params: {
@@ -134,10 +134,10 @@ export default function PartyDetailPage() {
         if (response.data.data) {
           console.log("모임 데이터:", response.data.data);
           console.log("모임장 ID:", response.data.data.hostId);
-          console.log("로그인된 사용자 ID:", loginMember.data.id);
+          console.log("로그인된 사용자 ID:", loginMember.id);
           setPartyData(response.data.data);
           // 사용자 역할 설정
-          if (response.data.data.hostId === loginMember.data.id) {
+          if (response.data.data.hostId === loginMember.id) {
             console.log("사용자 역할: 모임장");
             setUserRole("host");
           } else if (
