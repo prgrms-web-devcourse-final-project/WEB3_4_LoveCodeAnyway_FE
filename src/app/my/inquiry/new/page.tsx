@@ -117,15 +117,15 @@ export default function NewInquiryPage() {
   };
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-gray-900">
       <div className="max-w-3xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-8">문의하기</h1>
-        <p className="text-gray-600 mb-8">
+        <h1 className="text-2xl font-bold mb-8 text-white">문의하기</h1>
+        <p className="text-gray-400 mb-8">
           아래 양식을 작성하여 문의사항을 등록해주세요.
         </p>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-lg">
+          <div className="mb-6 p-4 bg-red-900 text-red-300 rounded-lg border border-red-800">
             {error}
           </div>
         )}
@@ -133,14 +133,14 @@ export default function NewInquiryPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* 문의 유형 */}
           <div className="space-y-2">
-            <label htmlFor="inquiryType" className="block text-sm font-medium">
+            <label htmlFor="inquiryType" className="block text-sm font-medium text-gray-300">
               문의 유형
             </label>
             <select
               id="inquiryType"
               value={inquiryType}
               onChange={(e) => setInquiryType(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600 bg-gray-800 text-gray-300"
               required
             >
               <option value="">선택해주세요</option>
@@ -154,7 +154,7 @@ export default function NewInquiryPage() {
 
           {/* 제목 */}
           <div className="space-y-2">
-            <label htmlFor="title" className="block text-sm font-medium">
+            <label htmlFor="title" className="block text-sm font-medium text-gray-300">
               제목
             </label>
             <input
@@ -162,7 +162,7 @@ export default function NewInquiryPage() {
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600 bg-gray-800 text-gray-300"
               placeholder="제목을 입력하세요"
               required
             />
@@ -170,7 +170,7 @@ export default function NewInquiryPage() {
 
           {/* 내용 */}
           <div className="space-y-2">
-            <label htmlFor="content" className="block text-sm font-medium">
+            <label htmlFor="content" className="block text-sm font-medium text-gray-300">
               내용
             </label>
             <textarea
@@ -178,7 +178,7 @@ export default function NewInquiryPage() {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows={10}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="w-full px-4 py-2 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600 bg-gray-800 text-gray-300 resize-none"
               placeholder="문의 내용을 상세히 작성해주세요"
               required
             />
@@ -186,8 +186,8 @@ export default function NewInquiryPage() {
 
           {/* 첨부파일 */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium">첨부파일</label>
-            <div className="border border-dashed border-gray-300 rounded-lg p-8 cursor-pointer hover:bg-gray-50">
+            <label className="block text-sm font-medium text-gray-300">첨부파일</label>
+            <div className="border border-dashed border-gray-700 rounded-lg p-8 cursor-pointer hover:bg-gray-800">
               <input
                 type="file"
                 className="hidden"
@@ -201,7 +201,7 @@ export default function NewInquiryPage() {
                 className="flex flex-col items-center justify-center cursor-pointer"
               >
                 <svg
-                  className="w-8 h-8 text-gray-400 mb-2"
+                  className="w-8 h-8 text-gray-500 mb-2"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -213,7 +213,7 @@ export default function NewInquiryPage() {
                     d="M12 4v16m8-8H4"
                   />
                 </svg>
-                <p className="text-sm text-gray-600 mb-1">파일 업로드</p>
+                <p className="text-sm text-gray-400 mb-1">파일 업로드</p>
                 <p className="text-xs text-gray-500">
                   PNG, JPG, GIF up to 10MB
                 </p>
@@ -221,10 +221,10 @@ export default function NewInquiryPage() {
             </div>
             {files.length > 0 && (
               <div className="mt-4">
-                <p className="text-sm font-medium mb-2">선택된 파일:</p>
+                <p className="text-sm font-medium mb-2 text-gray-300">선택된 파일:</p>
                 <ul className="space-y-2">
                   {files.map((file, index) => (
-                    <li key={index} className="text-sm text-gray-600">
+                    <li key={index} className="text-sm text-gray-400">
                       {file.name} ({(file.size / 1024 / 1024).toFixed(2)}MB)
                     </li>
                   ))}
@@ -237,14 +237,14 @@ export default function NewInquiryPage() {
           <div className="flex justify-end gap-4 pt-4">
             <Link
               href="/my/inquiry"
-              className="px-6 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+              className="px-6 py-2 text-gray-300 bg-gray-800 rounded-lg hover:bg-gray-700 border border-gray-700"
             >
               취소
             </Link>
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`px-6 py-2 text-white bg-black rounded-lg hover:bg-gray-800 ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+              className={`px-6 py-2 text-white bg-gray-700 rounded-lg hover:bg-gray-600 ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""
                 }`}
             >
               {isSubmitting ? "등록 중..." : "등록하기"}

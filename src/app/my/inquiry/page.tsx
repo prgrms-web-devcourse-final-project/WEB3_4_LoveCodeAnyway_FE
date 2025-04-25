@@ -67,26 +67,26 @@ export default function InquiryPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-200"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-red-500">{error}</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <div className="text-red-400">{error}</div>
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-gray-900">
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold mb-2">1:1 문의</h1>
-          <p className="text-gray-600">
+          <h1 className="text-2xl font-bold mb-2 text-white">1:1 문의</h1>
+          <p className="text-gray-400">
             문의사항을 남겨주세요. 최대한 빠르게 답변드리도록 하겠습니다.
           </p>
         </div>
@@ -95,7 +95,7 @@ export default function InquiryPage() {
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center">
             <select
-              className="px-4 py-2 border rounded-lg mr-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
+              className="px-4 py-2 border border-gray-700 rounded-lg mr-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-600 bg-gray-800 text-gray-200"
               value={inquiryType}
               onChange={(e) => setInquiryType(e.target.value)}
             >
@@ -116,17 +116,17 @@ export default function InquiryPage() {
                     fetchInquiries();
                   }
                 }}
-                className="pl-4 pr-10 py-2 border rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                className="pl-4 pr-10 py-2 border border-gray-700 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-gray-600 bg-gray-800 text-gray-200"
               />
               <button
                 onClick={() => {
                   setCurrentPage(1);
                   fetchInquiries();
                 }}
-                className="absolute right-3 top-1/2 -translate-y-1/2"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
               >
                 <svg
-                  className="w-4 h-4 text-gray-400"
+                  className="w-4 h-4"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -143,7 +143,7 @@ export default function InquiryPage() {
           </div>
           <Link
             href="/my/inquiry/new"
-            className="px-4 py-2 bg-black text-white rounded-lg text-sm hover:bg-gray-800 flex items-center"
+            className="px-4 py-2 bg-gray-800 text-white rounded-lg text-sm hover:bg-gray-700 flex items-center border border-gray-700"
           >
             새 문의하기
             <svg
@@ -164,7 +164,7 @@ export default function InquiryPage() {
 
         {/* 문의 목록 */}
         <div className="w-full">
-          <div className="grid bg-black grid-cols-12 text-sm text-white border-y py-4 px-4">
+          <div className="grid bg-gray-800 grid-cols-12 text-sm text-white border-y border-gray-700 py-4 px-4">
             <div className="col-span-1 text-center">번호</div>
             <div className="col-span-2">분류</div>
             <div className="col-span-4">제목</div>
@@ -178,7 +178,7 @@ export default function InquiryPage() {
               <div
                 key={inquiry.id}
                 onClick={() => router.push(`/my/inquiry/${inquiry.id}`)}
-                className="grid grid-cols-12 text-sm border-b py-4 px-4 hover:bg-gray-50 cursor-pointer"
+                className="grid grid-cols-12 text-sm border-b border-gray-700 py-4 px-4 hover:bg-gray-800 cursor-pointer text-gray-300"
               >
                 <div className="col-span-1 text-center">{inquiry.id}</div>
                 <div className="col-span-2">{inquiry.type}</div>
@@ -194,8 +194,8 @@ export default function InquiryPage() {
                     className={`inline-block px-2 py-1 rounded-full text-xs
                       ${
                         inquiry.answered
-                          ? "bg-green-100 text-green-800"
-                          : "bg-yellow-100 text-yellow-800"
+                          ? "bg-green-900 text-green-300"
+                          : "bg-yellow-900 text-yellow-300"
                       }`}
                   >
                     {inquiry.answered ? "답변완료" : "대기중"}
@@ -204,7 +204,7 @@ export default function InquiryPage() {
               </div>
             ))
           ) : (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-gray-400 bg-gray-800 border-b border-gray-700">
               문의 내역이 없습니다.
             </div>
           )}
@@ -216,7 +216,7 @@ export default function InquiryPage() {
             <button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className="w-8 h-8 flex items-center justify-center border rounded hover:bg-gray-50 disabled:opacity-50"
+              className="w-8 h-8 flex items-center justify-center border border-gray-700 rounded hover:bg-gray-800 disabled:opacity-50 text-gray-300"
             >
               &lt;
             </button>
@@ -227,8 +227,8 @@ export default function InquiryPage() {
                 className={`w-8 h-8 flex items-center justify-center rounded
                   ${
                     page === currentPage
-                      ? "bg-black text-white"
-                      : "border hover:bg-gray-50"
+                      ? "bg-gray-700 text-white"
+                      : "border border-gray-700 hover:bg-gray-800 text-gray-300"
                   }`}
               >
                 {page}
@@ -239,7 +239,7 @@ export default function InquiryPage() {
                 setCurrentPage(Math.min(totalPages, currentPage + 1))
               }
               disabled={currentPage === totalPages}
-              className="w-8 h-8 flex items-center justify-center border rounded hover:bg-gray-50 disabled:opacity-50"
+              className="w-8 h-8 flex items-center justify-center border border-gray-700 rounded hover:bg-gray-800 disabled:opacity-50 text-gray-300"
             >
               &gt;
             </button>

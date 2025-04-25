@@ -86,49 +86,49 @@ export default function Page({ params }: { params: { id: string } }) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-200"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-red-500">{error}</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <div className="text-red-400">{error}</div>
       </div>
     );
   }
 
   if (!inquiry) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-500">문의를 찾을 수 없습니다.</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <div className="text-gray-400">문의를 찾을 수 없습니다.</div>
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-gray-900">
       <div className="max-w-3xl mx-auto px-4 py-8">
         {/* 문의 내용 */}
-        <div className="bg-white rounded-lg shadow-sm mb-6">
+        <div className="bg-gray-800 rounded-lg shadow-sm mb-6 border border-gray-700">
           <div className="p-8">
             <div className="flex justify-between items-start mb-6">
               <div>
-                <span className="text-sm text-gray-600 mb-2 block">
+                <span className="text-sm text-gray-400 mb-2 block">
                   {inquiry.type === "QNA" && "사이트 이용 문의"}
                   {inquiry.type === "REPORT" && "신고"}
                   {inquiry.type === "THEME" && "테마 관련"}
                 </span>
-                <h1 className="text-2xl font-bold">{inquiry.title}</h1>
+                <h1 className="text-2xl font-bold text-white">{inquiry.title}</h1>
               </div>
               <div className="flex items-center gap-2">
                 <span
                   className={`px-3 py-1 text-sm rounded-full ${
                     inquiry.replies?.length > 0
-                      ? "bg-green-100 text-green-800"
-                      : "bg-yellow-100 text-yellow-800"
+                      ? "bg-green-900 text-green-300"
+                      : "bg-yellow-900 text-yellow-300"
                   }`}
                 >
                   {inquiry.replies?.length > 0 ? "답변 완료" : "답변 대기"}
@@ -137,13 +137,13 @@ export default function Page({ params }: { params: { id: string } }) {
                   <div className="flex gap-2">
                     <Link
                       href={`/my/inquiry/edit/${inquiryId}`}
-                      className="px-3 py-1 text-sm text-blue-600 hover:text-blue-800"
+                      className="px-3 py-1 text-sm text-blue-400 hover:text-blue-300"
                     >
                       수정
                     </Link>
                     <button
                       onClick={handleDelete}
-                      className="px-3 py-1 text-sm text-red-600 hover:text-red-800"
+                      className="px-3 py-1 text-sm text-red-400 hover:text-red-300"
                     >
                       삭제
                     </button>
@@ -153,7 +153,7 @@ export default function Page({ params }: { params: { id: string } }) {
             </div>
 
             <div className="space-y-6">
-              <div className="flex justify-between text-sm text-gray-600">
+              <div className="flex justify-between text-sm text-gray-400">
                 <div>
                   <span className="font-medium">작성시간</span>
                   <span className="ml-2">{inquiry.createdAt}</span>
@@ -161,15 +161,15 @@ export default function Page({ params }: { params: { id: string } }) {
               </div>
 
               <div>
-                <h2 className="text-sm font-medium mb-2">내용</h2>
-                <p className="text-gray-700 whitespace-pre-wrap">
+                <h2 className="text-sm font-medium text-gray-300 mb-2">내용</h2>
+                <p className="text-gray-300 whitespace-pre-wrap">
                   {inquiry.content}
                 </p>
               </div>
 
               {inquiry.attachments.length > 0 && (
                 <div>
-                  <h2 className="text-sm font-medium mb-2">첨부 파일</h2>
+                  <h2 className="text-sm font-medium text-gray-300 mb-2">첨부 파일</h2>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {inquiry.attachments.map((file, index) => (
                       <a
@@ -179,7 +179,7 @@ export default function Page({ params }: { params: { id: string } }) {
                         rel="noopener noreferrer"
                         className="block"
                       >
-                        <div className="aspect-square relative rounded-lg overflow-hidden border">
+                        <div className="aspect-square relative rounded-lg overflow-hidden border border-gray-700">
                           <Image
                             src={`/api/v1/posts/attachment/${file.id}`}
                             alt={file.fileName}
@@ -198,13 +198,13 @@ export default function Page({ params }: { params: { id: string } }) {
 
         {/* 답변 내용 */}
         {inquiry.replies?.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm mb-6">
+          <div className="bg-gray-800 rounded-lg shadow-sm mb-6 border border-gray-700">
             <div className="p-8">
-              <h2 className="text-xl font-bold mb-6">답변 내용</h2>
+              <h2 className="text-xl font-bold mb-6 text-white">답변 내용</h2>
               <div className="space-y-6">
                 {inquiry.replies.map((reply, index) => (
                   <div key={index} className="space-y-6">
-                    <div className="flex justify-between text-sm text-gray-600">
+                    <div className="flex justify-between text-sm text-gray-400">
                       <div>
                         <span className="font-medium">닉네임</span>
                         <span className="ml-2">{reply.nickname}</span>
@@ -216,8 +216,8 @@ export default function Page({ params }: { params: { id: string } }) {
                     </div>
 
                     <div>
-                      <h2 className="text-sm font-medium mb-2">내용</h2>
-                      <p className="text-gray-700 whitespace-pre-wrap">
+                      <h2 className="text-sm font-medium text-gray-300 mb-2">내용</h2>
+                      <p className="text-gray-300 whitespace-pre-wrap">
                         {reply.content}
                       </p>
                     </div>
@@ -231,7 +231,7 @@ export default function Page({ params }: { params: { id: string } }) {
         {/* 목록으로 버튼 */}
         <Link
           href="/my/inquiry"
-          className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
+          className="inline-flex items-center text-sm text-gray-400 hover:text-gray-200"
         >
           <svg
             className="w-4 h-4 mr-1"
