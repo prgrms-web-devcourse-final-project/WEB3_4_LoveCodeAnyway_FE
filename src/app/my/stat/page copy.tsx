@@ -80,15 +80,6 @@ const GENRE_COLORS = {
   기타: "#e5e5e5",
 };
 
-// 성향 매핑
-const TENDENCY_MAP = {
-  tendencyStimulating: "자극성",
-  tendencyNarrative: "스토리",
-  tendencySpatial: "인테리어",
-  tendencyActive: "활동성",
-  tendencyLogical: "추론"
-};
-
 export default function StatPage() {
   const router = useRouter();
   const { loginMember, isLogin } = useContext(LoginMemberContext);
@@ -322,15 +313,14 @@ export default function StatPage() {
                   cx="50%"
                   cy="50%"
                   outerRadius="70%"
-                  data={Object.entries(statData.tendencyMap).map(([key, value]) => ({
-                    subject: TENDENCY_MAP[key as keyof typeof TENDENCY_MAP] || key,
-                    value: value * 10,
-                    fullMark: 50
+                  data={Object.entries(statData.tendencyMap).map(([subject, value]) => ({
+                    subject,
+                    value,
                   }))}
                 >
                   <PolarGrid />
                   <PolarAngleAxis dataKey="subject" />
-                  <PolarRadiusAxis angle={30} domain={[0, 50]} />
+                  <PolarRadiusAxis angle={30} domain={[0, 100]} />
                   <Radar
                     name="사용자"
                     dataKey="value"
@@ -338,7 +328,7 @@ export default function StatPage() {
                     fill="#8884d8"
                     fillOpacity={0.6}
                   />
-                  <Tooltip formatter={(value) => [`${value}점`, ""]} />
+                  <Tooltip formatter={(value) => [`${value}`, ""]} />
                 </RadarChart>
               </ResponsiveContainer>
             </div>
