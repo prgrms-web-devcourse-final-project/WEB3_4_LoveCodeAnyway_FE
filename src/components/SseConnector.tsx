@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useContext } from 'react';
 import { useGlobalLoginMember } from "@/stores/auth/loginMember";
 import { AlarmResponse, AlarmType } from "@/types/alarm";
+import { NotificationContext } from "@/app/ClientLayout";
 
 interface NotificationProps {
   onNotification?: (notification: AlarmResponse) => void;
@@ -10,6 +11,7 @@ interface NotificationProps {
 
 export const Notification = ({ onNotification }: NotificationProps) => {
   const { loginMember, isLogin } = useGlobalLoginMember();
+  const { setUnreadCount } = useContext(NotificationContext);
   const eventSourceRef = useRef<EventSource | null>(null);
 
   const connectSSE = () => {
@@ -75,6 +77,10 @@ export const Notification = ({ onNotification }: NotificationProps) => {
         return '/icons/party-cancelled.png';
       case AlarmType.PARTY_REMINDER:
         return '/icons/party-reminder.png';
+      case AlarmType.MESSAGE:
+        return '/icons/message.png';
+      case AlarmType.SUBSCRIBE:
+        return '/icons/subscribe.png';
       default:
         return '/icons/system.png';
     }
@@ -92,6 +98,11 @@ export const Notification = ({ onNotification }: NotificationProps) => {
       });
     } else {
       console.log('브라우저 알림 권한이 없습니다.');
+    }
+
+    // 읽지 않은 알림 개수 업데이트
+    if (!notification.readStatus) {
+      setUnreadCount(prev => prev + 1);
     }
 
     // 상위 컴포넌트로 알림 데이터 전달

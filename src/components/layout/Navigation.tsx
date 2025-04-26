@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { useGlobalLoginMember } from "@/stores/auth/loginMember";
 import { useRouter } from "next/navigation";
+import { NotificationContext } from "@/app/ClientLayout";
+import { Notification } from "@/components/Notification";
 
 // 알림 데이터 타입 직접 정의
 interface Alarm {
@@ -22,9 +24,9 @@ export function Navigation({ activePage }: { activePage?: string }) {
     useGlobalLoginMember();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Alarm[]>([]);
   const [mounted, setMounted] = useState(false);
-  const [eventSource, setEventSource] = useState<EventSource | null>(null);
+  
+  const { notifications, addNotification, unreadCount } = useContext(NotificationContext);
 
   // 드롭다운 요소에 대한 참조 추가
   const profileMenuRef = useRef<HTMLDivElement>(null);
@@ -34,17 +36,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
 
   useEffect(() => {
     setMounted(true);
-    if (isLogin) {
-      fetchNotifications();
-      // SSE 연동 코드 임시 주석 처리
-      // subscribeToNotifications();
-    }
-    return () => {
-      if (eventSource) {
-        eventSource.close();
-      }
-    };
-  }, [isLogin]);
+  }, []);
 
   // 외부 클릭 감지를 위한 이벤트 리스너 추가
   useEffect(() => {
@@ -102,7 +94,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
           alarmType: "MESSAGE",
         },
       ];
-      setNotifications(mockNotifications);
+      // TODO: 실제 API 호출 구현 필요
     } catch (error) {
       console.error("알림 목록 조회 실패:", error);
       // 오류 발생 시 기본 데이터 유지
@@ -121,27 +113,19 @@ export function Navigation({ activePage }: { activePage?: string }) {
 
     sse.onmessage = (event) => {
       const newNotification = JSON.parse(event.data);
-      setNotifications((prev) => [newNotification, ...prev]);
+      // TODO: 실제 API 호출 구현 필요
     };
 
     sse.onerror = () => {
       sse.close();
     };
-
-    setEventSource(sse);
     */
   };
 
   const markAsRead = async (id: number) => {
     try {
       // API 호출 없이 상태만 업데이트
-      setNotifications((prev) =>
-        prev.map((notification) =>
-          notification.id === id
-            ? { ...notification, readStatus: true }
-            : notification
-        )
-      );
+      // TODO: 실제 API 호출 구현 필요
     } catch (error) {
       console.error("알림 읽음 처리 실패:", error);
     }
@@ -150,9 +134,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
   const markAllAsRead = async () => {
     try {
       // API 호출 없이 상태만 업데이트
-      setNotifications((prev) =>
-        prev.map((notification) => ({ ...notification, readStatus: true }))
-      );
+      // TODO: 실제 API 호출 구현 필요
     } catch (error) {
       console.error("전체 알림 읽음 처리 실패:", error);
     }
@@ -243,7 +225,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
                         d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
                       />
                     </svg>
-                    {notifications.some((n) => !n.readStatus) && (
+                    {unreadCount > 0 && (
                       <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
                     )}
                   </button>
@@ -260,112 +242,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
                           </span>
                         </div>
                       </div>
-
-                      <div className="max-h-96 overflow-y-auto">
-                        {notifications.length === 0 ? (
-                          <div className="px-4 py-8 text-center text-gray-500">
-                            알림이 없습니다.
-                          </div>
-                        ) : (
-                          notifications.map((notification) => (
-                            <div
-                              key={notification.id}
-                              className={`px-4 py-3 border-b border-gray-100 ${
-                                !notification.readStatus ? "bg-[#FFFCF7]" : ""
-                              }`}
-                            >
-                              <div className="flex items-start">
-                                <div className="flex-1">
-                                  <div className="flex items-center">
-                                    <span
-                                      className={`text-xs px-2 py-1 rounded-full ${
-                                        notification.alarmType === "SYSTEM"
-                                          ? "bg-orange-100 text-orange-600"
-                                          : notification.alarmType === "MESSAGE"
-                                          ? "bg-blue-100 text-blue-600"
-                                          : "bg-green-100 text-green-600"
-                                      }`}
-                                    >
-                                      {notification.alarmType === "SYSTEM"
-                                        ? "시스템"
-                                        : notification.alarmType === "MESSAGE"
-                                        ? "메시지"
-                                        : notification.alarmType === "SUBSCRIBE"
-                                        ? "구독"
-                                        : "기타"}
-                                    </span>
-                                    <span className="ml-auto text-xs text-gray-400">
-                                      {new Date(
-                                        notification.createdAt
-                                      ).toLocaleDateString("ko-KR", {
-                                        year: "numeric",
-                                        month: "long",
-                                        day: "numeric",
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                      })}
-                                    </span>
-                                  </div>
-                                  <h4 className="font-medium mt-1">
-                                    {notification.title}
-                                  </h4>
-                                  <p className="text-sm text-gray-500 mt-1">
-                                    {notification.content}
-                                  </p>
-
-                                  {!notification.readStatus && (
-                                    <div className="flex justify-end mt-1">
-                                      <button
-                                        onClick={() =>
-                                          markAsRead(notification.id)
-                                        }
-                                        className="text-[#FFB230] text-xs flex items-center"
-                                      >
-                                        <svg
-                                          className="w-4 h-4 mr-1"
-                                          fill="none"
-                                          stroke="currentColor"
-                                          viewBox="0 0 24 24"
-                                        >
-                                          <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth="2"
-                                            d="M5 13l4 4L19 7"
-                                          />
-                                        </svg>
-                                        읽음
-                                      </button>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          ))
-                        )}
-                      </div>
-
-                      <div className="px-4 py-2 border-t border-gray-100">
-                        <button
-                          onClick={markAllAsRead}
-                          className="flex items-center text-[#FFB230] text-sm font-medium"
-                        >
-                          <svg
-                            className="w-5 h-5 mr-1"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                            />
-                          </svg>
-                          전체 읽음
-                        </button>
-                      </div>
+                      <Notification onNewNotification={addNotification} />
                     </div>
                   )}
                 </div>

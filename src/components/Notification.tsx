@@ -1,17 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useGlobalLoginMember } from "@/stores/auth/loginMember";
 import client from "@/lib/backend/client";
-
-interface Alarm {
-  id: number;
-  title: string;
-  content: string;
-  createdAt: string;
-  readStatus: boolean;
-  alarmType: "SYSTEM" | "MESSAGE" | "SUBSCRIBE" | string;
-}
+import { AlarmResponse, AlarmType } from "@/types/alarm";
+import { NotificationContext } from "@/app/ClientLayout";
 
 interface PageDto<T> {
   items: T[];
@@ -22,12 +15,13 @@ interface PageDto<T> {
 }
 
 interface NotificationProps {
-  onNewNotification?: (notification: Alarm) => void;
+  onNewNotification?: (notification: AlarmResponse) => void;
 }
 
 export function Notification({ onNewNotification }: NotificationProps) {
   const { isLogin } = useGlobalLoginMember();
-  const [alarms, setAlarms] = useState<Alarm[]>([]);
+  const { setUnreadCount } = useContext(NotificationContext);
+  const [alarms, setAlarms] = useState<AlarmResponse[]>([]);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -37,16 +31,22 @@ export function Notification({ onNewNotification }: NotificationProps) {
     
     try {
       const response = await client.GET("/alarms/count");
-      console.log("알림 개수:", response.data?.data);
+      if (response.data?.data) {
+        const countData = response.data.data as { unreadCount: number };
+        setUnreadCount(countData.unreadCount);
+      }
     } catch (error) {
       console.error("알림 개수 조회 실패:", error);
     }
   };
 
-  const handleNewNotification = (notification: Alarm) => {
+  const handleNewNotification = (notification: AlarmResponse) => {
     setAlarms(prev => [notification, ...prev]);
     if (onNewNotification) {
       onNewNotification(notification);
+    }
+    if (!notification.readStatus) {
+      setUnreadCount(prev => prev + 1);
     }
   };
 
@@ -63,7 +63,7 @@ export function Notification({ onNewNotification }: NotificationProps) {
           alarm.id === id ? { ...alarm, readStatus: true } : alarm
         )
       );
-      checkUnreadCount();
+      setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
       console.error("알림 읽음 처리 실패:", error);
     }
@@ -73,6 +73,7 @@ export function Notification({ onNewNotification }: NotificationProps) {
     try {
       await client.PATCH("/alarms/read-all", {});
       setAlarms(prev => prev.map(alarm => ({ ...alarm, readStatus: true })));
+      setUnreadCount(0);
     } catch (error) {
       console.error("전체 알림 읽음 처리 실패:", error);
     }
@@ -89,9 +90,11 @@ export function Notification({ onNewNotification }: NotificationProps) {
           size: 10,
         },
       });
+
+      console.log("알림 목록:", response.data);
       
       if (response.data?.data) {
-        const pageData = response.data.data as PageDto<Alarm>;
+        const pageData = response.data.data as PageDto<AlarmResponse>;
         setAlarms(pageData.items || []);
         setTotalPages(pageData.totalPages || 0);
       }
@@ -136,18 +139,18 @@ export function Notification({ onNewNotification }: NotificationProps) {
                       <div className="flex items-center">
                         <span
                           className={`text-xs px-2 py-1 rounded-full ${
-                            alarm.alarmType === "SYSTEM"
+                            alarm.alarmType === AlarmType.SYSTEM
                               ? "bg-orange-100 text-orange-600"
-                              : alarm.alarmType === "MESSAGE"
+                              : alarm.alarmType === AlarmType.MESSAGE
                               ? "bg-blue-100 text-blue-600"
                               : "bg-green-100 text-green-600"
                           }`}
                         >
-                          {alarm.alarmType === "SYSTEM"
+                          {alarm.alarmType === AlarmType.SYSTEM
                             ? "시스템"
-                            : alarm.alarmType === "MESSAGE"
+                            : alarm.alarmType === AlarmType.MESSAGE
                             ? "메시지"
-                            : alarm.alarmType === "SUBSCRIBE"
+                            : alarm.alarmType === AlarmType.SUBSCRIBE
                             ? "모임"
                             : "기타"}
                         </span>

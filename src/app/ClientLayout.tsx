@@ -1,11 +1,29 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { LoginMemberContext, useLoginMember } from "@/stores/auth/loginMember";
 import client from "@/lib/backend/client";
 import { PageLoading } from "@/components/PageLoading";
 import { Navigation } from "@/components/layout/Navigation";
+import { Notification } from "@/components/SseConnector";
+import { AlarmResponse } from "@/types/alarm";
+import React from "react";
+
+// 알림 컨텍스트 생성
+export const NotificationContext = React.createContext<{
+  notifications: AlarmResponse[];
+  addNotification: (notification: AlarmResponse) => void;
+  clearNotifications: () => void;
+  unreadCount: number;
+  setUnreadCount: (count: number) => void;
+}>({
+  notifications: [],
+  addNotification: () => {},
+  clearNotifications: () => {},
+  unreadCount: 0,
+  setUnreadCount: () => {},
+});
 
 export function ClientLayout({
   children,
@@ -20,6 +38,9 @@ export function ClientLayout({
     logoutAndHome,
   } = useLoginMember();
 
+  const [notifications, setNotifications] = useState<AlarmResponse[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+
   const loginMemberContextValue = {
     loginMember,
     setLoginMember,
@@ -28,6 +49,22 @@ export function ClientLayout({
     isLogin,
     logout,
     logoutAndHome,
+  };
+
+  const notificationContextValue = {
+    notifications,
+    addNotification: (notification: AlarmResponse) => {
+      setNotifications((prev) => [notification, ...prev]);
+      if (!notification.readStatus) {
+        setUnreadCount((prev) => prev + 1);
+      }
+    },
+    clearNotifications: () => {
+      setNotifications([]);
+      setUnreadCount(0);
+    },
+    unreadCount,
+    setUnreadCount,
   };
 
   const fetchMember = () => {
@@ -68,8 +105,11 @@ export function ClientLayout({
       disableTransitionOnChange
     >
       <LoginMemberContext value={loginMemberContextValue}>
-        <Navigation />
-        <main>{children}</main>
+        <NotificationContext.Provider value={notificationContextValue}>
+          <Notification onNotification={notificationContextValue.addNotification} />
+          <Navigation />
+          <main>{children}</main>
+        </NotificationContext.Provider>
       </LoginMemberContext>
     </NextThemesProvider>
   );
