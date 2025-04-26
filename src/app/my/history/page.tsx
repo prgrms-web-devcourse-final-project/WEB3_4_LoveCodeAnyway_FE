@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useGlobalLoginMember } from "@/stores/auth/loginMember";
 import client from "@/lib/backend/client";
-import { AxiosResponse } from "axios";
+
 
 // 모임 타입 정의
 type PartyType = {

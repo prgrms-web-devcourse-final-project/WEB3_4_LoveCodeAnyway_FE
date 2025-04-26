@@ -7,6 +7,7 @@ import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import { LoginMemberContext } from "@/stores/auth/loginMember";
 import client from "@/lib/backend/client";
+import UserProfileModal from "@/components/UserProfileModal";
 
 // 기본 이미지 경로
 const DEFAULT_PROFILE_IMAGE = "/profile_default.jpg";
@@ -94,6 +95,7 @@ export default function PartyDetailPage() {
   const [userRole, setUserRole] = useState<"none" | "member" | "host">("none");
   const [kakaoMapLoaded, setKakaoMapLoaded] = useState(false);
   const [map, setMap] = useState<any>(null);
+  const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
 
   // 로그인 확인 및 리다이렉트
   useEffect(() => {
@@ -469,67 +471,59 @@ export default function PartyDetailPage() {
                 모집 현황
               </span>
               <div className="flex items-center">
-                <div className="flex -space-x-2 mr-2 group relative">
+                <div className="flex -space-x-2 mr-2">
                   {partyData.acceptedPartyMembers?.slice(0, 3).map((member) => (
                     <div
                       key={member.id}
-                      className="w-8 h-8 rounded-full overflow-hidden relative border-2 border-gray-700 bg-gray-700 hover:z-10 transition"
+                      className="relative group"
                     >
-                      {member.profilePictureUrl &&
-                      isValidImageUrl(member.profilePictureUrl) ? (
-                        <Image
-                          src={getSafeImageUrl(
-                            member.profilePictureUrl,
-                            DEFAULT_PROFILE_IMAGE
-                          )}
-                          alt={member.nickname || "참가자"}
-                          fill
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="flex items-center justify-center h-full">
-                          <span className="text-gray-400 text-xs">🧑</span>
-                        </div>
-                      )}
-                      <div className="hidden group-hover:block absolute top-10 left-0 bg-gray-800 shadow-md rounded-md p-2 z-20 w-40 border border-gray-700">
+                      <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-gray-700 bg-gray-700">
+                        {member.profilePictureUrl && isValidImageUrl(member.profilePictureUrl) ? (
+                          <Image
+                            src={getSafeImageUrl(member.profilePictureUrl, DEFAULT_PROFILE_IMAGE)}
+                            alt={member.nickname || "참가자"}
+                            fill
+                            className="object-cover rounded-full"
+                          />
+                        ) : (
+                          <div className="flex items-center justify-center h-full rounded-full">
+                            <span className="text-gray-400 text-xs">🧑</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="absolute top-full left-0 mt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 bg-gray-800 shadow-md rounded-md p-2 z-20 w-40 border border-gray-700">
                         <div className="flex items-center mb-2">
-                          <div className="w-6 h-6 rounded-full overflow-hidden mr-2 bg-gray-700 relative">
-                            {member.profilePictureUrl &&
-                            isValidImageUrl(member.profilePictureUrl) ? (
+                          <div className="w-10 h-10 rounded-full overflow-hidden mr-2 bg-gray-700 relative">
+                            {member.profilePictureUrl && isValidImageUrl(member.profilePictureUrl) ? (
                               <Image
-                                src={getSafeImageUrl(
-                                  member.profilePictureUrl,
-                                  DEFAULT_PROFILE_IMAGE
-                                )}
+                                src={getSafeImageUrl(member.profilePictureUrl, DEFAULT_PROFILE_IMAGE)}
                                 alt={member.nickname || ""}
                                 fill
-                                className="object-cover"
+                                className="object-cover rounded-full"
                               />
                             ) : (
-                              <div className="flex items-center justify-center h-full">
-                                <span className="text-gray-400 text-xs">
-                                  🧑
-                                </span>
+                              <div className="flex items-center justify-center h-full rounded-full">
+                                <span className="text-gray-400 text-xs">🧑</span>
                               </div>
                             )}
                           </div>
-                          <div className="flex items-center">
+                          <div className="flex flex-col">
                             <span className="text-sm font-medium text-white">
                               {member.nickname}
                             </span>
                             {member.id === partyData.hostId && (
-                              <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-[#FFB130] text-white rounded-full">
+                              <span className="text-[10px] bg-[#FFB130] text-white rounded-full px-1.5 py-0.5 mt-0.5">
                                 모임장
                               </span>
                             )}
                           </div>
                         </div>
-                        <Link
-                          href={`/profile/${member.id}`}
-                          className="text-xs text-blue-400 hover:underline"
+                        <button
+                          onClick={() => setSelectedMemberId(member.id)}
+                          className="text-xs text-blue-400 hover:underline mt-1"
                         >
                           프로필 보기
-                        </Link>
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -632,12 +626,12 @@ export default function PartyDetailPage() {
                               </span>
                             )}
                           </div>
-                          <Link
-                            href={`/profile/${member.id}`}
-                            className="text-sm text-blue-400 hover:underline"
+                          <button
+                            onClick={() => setSelectedMemberId(member.id)}
+                            className="text-sm text-blue-400 hover:underline mt-1"
                           >
                             프로필 보기
-                          </Link>
+                          </button>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -803,6 +797,13 @@ export default function PartyDetailPage() {
           )}
         </div>
       </main>
+      {selectedMemberId && (
+        <UserProfileModal
+          memberId={selectedMemberId}
+          isOpen={!!selectedMemberId}
+          onClose={() => setSelectedMemberId(null)}
+        />
+      )}
     </div>
   );
 }

@@ -1,43 +1,107 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useGlobalLoginMember } from "@/stores/auth/loginMember";
+import client from "@/lib/backend/client";
 
-// 임시 쪽지 데이터
-const mockMessages = [
-  {
-    id: 1,
-    sender: "김방탈",
-    content: "다음 주 방탈출 모임 일정 협의해주세요.",
-    date: "2024.02.20",
-    isRead: true,
-  },
-  {
-    id: 2,
-    sender: "이방출",
-    content: "새로운 방탈출 카페 추천드립니다!",
-    date: "2024.02.19",
-    isRead: false,
-  },
-  // 추가 데이터
-];
+// Message 타입 정의
+type Message = {
+  id: number;
+  senderId: number;
+  senderNickname: string;
+  receiverId: number;
+  receiverNickname: string;
+  content: string;
+  createdAt: string;
+  read: boolean;
+};
+
+// API 응답 타입 정의
+type ApiResponse = {
+  message: string | null;
+  data: {
+    content: Message[];
+    hasNext: boolean;
+  };
+};
 
 export default function MessagesPage() {
+  const { loginMember } = useGlobalLoginMember();
   const [activeTab, setActiveTab] = useState<"received" | "sent">("received");
   const [selectedMessages, setSelectedMessages] = useState<number[]>([]);
   const [selectAll, setSelectAll] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedMessage, setSelectedMessage] = useState<
-    (typeof mockMessages)[0] | null
-  >(null);
+  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [isReplyModalOpen, setIsReplyModalOpen] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [hasNext, setHasNext] = useState(false);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [replyContent, setReplyContent] = useState("");
+  const [isSending, setIsSending] = useState(false);
+
+  // 메시지 데이터 가져오기
+  const fetchMessages = async (newCursor: string | null = null) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const endpoint = activeTab === "received" ? "/messages/received" : "/messages/sent";
+      const response = await client.GET(endpoint, {
+        params: {
+          query: {
+            cursor: newCursor || undefined,
+            size: 10
+          }
+        }
+      });
+
+      if (response.data?.data) {
+        const newMessages = response.data.data.content;
+        if (Array.isArray(newMessages)) {
+          const validMessages = newMessages.filter((msg): msg is Message => 
+            msg.id !== undefined &&
+            msg.senderId !== undefined &&
+            msg.senderNickname !== undefined &&
+            msg.receiverId !== undefined &&
+            msg.receiverNickname !== undefined &&
+            msg.content !== undefined &&
+            msg.createdAt !== undefined &&
+            msg.read !== undefined
+          );
+
+          setMessages(prev => newCursor ? [...prev, ...validMessages] : validMessages);
+          setHasNext(response.data.data.hasNext ?? false);
+          if (validMessages.length > 0) {
+            setCursor(validMessages[validMessages.length - 1].createdAt);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('메시지 조회 실패:', error);
+      setError('메시지를 불러오는데 실패했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 탭 변경 시 메시지 다시 로드
+  useEffect(() => {
+    if (loginMember) {
+      setMessages([]);
+      setCursor(null);
+      fetchMessages();
+    }
+  }, [activeTab, loginMember]);
 
   // 전체 선택 핸들러
   const handleSelectAll = () => {
     if (selectAll) {
       setSelectedMessages([]);
     } else {
-      setSelectedMessages(mockMessages.map((msg) => msg.id));
+      setSelectedMessages(messages.map((msg) => msg.id));
     }
     setSelectAll(!selectAll);
   };
@@ -53,10 +117,61 @@ export default function MessagesPage() {
     });
   };
 
-  // 쪽지 상세 보기 핸들러
-  const handleOpenMessage = (message: (typeof mockMessages)[0]) => {
+  // 메시지 상세 보기 및 읽음 처리
+  const handleOpenMessage = async (message: Message) => {
     setSelectedMessage(message);
     setIsModalOpen(true);
+
+    // 받은 쪽지함에서만 읽음 상태 업데이트
+    if (activeTab === "received") {
+      try {
+        await client.PATCH("/messages/{id}/read", {
+          params: {
+            path: {
+              id: message.id
+            }
+          }
+        });
+
+        // 메시지 목록 업데이트
+        setMessages(prev => prev.map(msg => 
+          msg.id === message.id ? { ...msg, read: true } : msg
+        ));
+      } catch (error) {
+        console.error('읽음 상태 업데이트 실패:', error);
+      }
+    }
+  };
+
+  // 여러 메시지 읽음 처리
+  const handleMarkAsRead = async () => {
+    if (selectedMessages.length === 0 || activeTab !== "received") return;
+
+    try {
+      // 각 선택된 메시지에 대해 읽음 처리 API 호출
+      await Promise.all(
+        selectedMessages.map(id => 
+          client.PATCH("/messages/{id}/read", {
+            params: {
+              path: {
+                id
+              }
+            }
+          })
+        )
+      );
+
+      // 메시지 목록 업데이트
+      setMessages(prev => prev.map(msg => 
+        selectedMessages.includes(msg.id) ? { ...msg, read: true } : msg
+      ));
+
+      // 선택 초기화
+      setSelectedMessages([]);
+      setSelectAll(false);
+    } catch (error) {
+      console.error('읽음 상태 업데이트 실패:', error);
+    }
   };
 
   // 모달 닫기 핸들러
@@ -64,14 +179,57 @@ export default function MessagesPage() {
     setIsModalOpen(false);
   };
 
+  // 날짜 포맷 함수
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const day = date.getDate().toString().padStart(2, "0");
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+
+    return `${year}.${month}.${day} ${hours}:${minutes}`;
+  };
+
+  // 답장 보내기 핸들러
+  const handleSendReply = async () => {
+    if (!selectedMessage || !replyContent.trim()) return;
+
+    setIsSending(true);
+    try {
+      await client.POST("/messages", {
+        body: {
+          receiverId: selectedMessage.senderId,
+          content: replyContent
+        }
+      });
+
+      // 답장 모달 닫기
+      setIsReplyModalOpen(false);
+      setReplyContent("");
+      
+      // 메시지 목록 새로고침
+      setMessages([]);
+      setCursor(null);
+      fetchMessages();
+    } catch (error) {
+      console.error('답장 전송 실패:', error);
+    } finally {
+      setIsSending(false);
+    }
+  };
+
   return (
-    <main className="min-h-screen" style={{ backgroundColor: "#F9FAFB" }}>
+    <main className="min-h-screen bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex">
           {/* 왼쪽 사이드 메뉴 */}
           <div className="w-[230px] mr-8">
-            <div className="bg-black text-white">
-              <button className="w-full text-left py-3 px-4 flex items-center">
+            <div className="bg-gray-800 text-white">
+              <button 
+                className={`w-full text-left py-3 px-4 flex items-center ${activeTab === "received" ? "bg-gray-700" : ""}`}
+                onClick={() => setActiveTab("received")}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5 mr-2"
@@ -89,13 +247,13 @@ export default function MessagesPage() {
                 받은 쪽지함
               </button>
             </div>
-            <Link
-              href="/my/messages?tab=sent"
-              className="block bg-white border border-t-0 border-gray-300 py-3 px-4 hover:bg-gray-50 flex items-center"
+            <button
+              className={`w-full text-left py-3 px-4 flex items-center border border-t-0 border-gray-700 hover:bg-gray-700 text-white ${activeTab === "sent" ? "bg-gray-700" : ""}`}
+              onClick={() => setActiveTab("sent")}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 mr-2 text-gray-500"
+                className="h-5 w-5 mr-2"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -108,45 +266,48 @@ export default function MessagesPage() {
                 />
               </svg>
               보낸 쪽지함
-            </Link>
+            </button>
           </div>
 
           {/* 오른쪽 컨텐츠 */}
           <div className="flex-1">
             <div className="mb-6">
-              <h2 className="text-xl font-medium">쪽지함</h2>
+              <h2 className="text-xl font-medium text-white">쪽지함</h2>
             </div>
 
             {/* 쪽지 목록 */}
             <div>
               <div className="flex justify-end mb-4 gap-2">
-                <button
-                  className={`px-4 py-2 rounded-md flex items-center justify-center gap-2 border border-gray-300 bg-white text-gray-700 ${
-                    selectedMessages.length > 0
-                      ? "hover:bg-gray-50"
-                      : "opacity-70 cursor-not-allowed"
-                  }`}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
+                {activeTab === "received" && (
+                  <button
+                    onClick={handleMarkAsRead}
+                    className={`px-4 py-2 rounded-md flex items-center justify-center gap-2 border border-gray-700 bg-gray-800 text-gray-300 ${
+                      selectedMessages.length > 0
+                        ? "hover:bg-gray-700"
+                        : "opacity-70 cursor-not-allowed"
+                    }`}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  읽음 표시
-                </button>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    읽음 표시
+                  </button>
+                )}
                 <button
-                  className={`px-4 py-2 rounded-md flex items-center justify-center gap-2 border border-gray-300 bg-white text-gray-700 ${
+                  className={`px-4 py-2 rounded-md flex items-center justify-center gap-2 border border-gray-700 bg-gray-800 text-gray-300 ${
                     selectedMessages.length > 0
-                      ? "hover:bg-gray-50"
+                      ? "hover:bg-gray-700"
                       : "opacity-70 cursor-not-allowed"
                   }`}
                 >
@@ -168,14 +329,14 @@ export default function MessagesPage() {
                 </button>
               </div>
 
-              <div className="bg-white border border-gray-300 rounded-sm">
+              <div className="bg-gray-800 border border-gray-700 rounded-sm">
                 <table className="w-full">
                   <thead>
                     <tr
-                      className="border-b border-gray-300"
-                      style={{ backgroundColor: "#F9FAFB" }}
+                      className="border-b border-gray-700"
+                      style={{ backgroundColor: "#1F2937" }}
                     >
-                      <th className="p-4 text-left w-12">
+                      <th className="p-4 text-center w-12">
                         <input
                           type="checkbox"
                           checked={selectAll}
@@ -183,83 +344,97 @@ export default function MessagesPage() {
                           className="rounded"
                         />
                       </th>
-                      <th className="p-4 text-left font-medium text-sm text-gray-700 w-24">
-                        보낸사람
+                      <th className="p-4 text-center font-medium text-sm text-gray-300 w-24">
+                        {activeTab === "received" ? "보낸사람" : "받는사람"}
                       </th>
-                      <th className="p-4 text-left font-medium text-sm text-gray-700">
+                      <th className="p-4 text-center font-medium text-sm text-gray-300">
                         내용
                       </th>
-                      <th className="p-4 text-left font-medium text-sm text-gray-700 w-24">
+                      <th className="p-4 text-center font-medium text-sm text-gray-300 w-24">
                         날짜
                       </th>
-                      <th className="p-4 text-left font-medium text-sm text-gray-700 w-20">
-                        상태
+                      <th className="p-1 text-center font-medium text-sm text-gray-300 w-20">
+                        {activeTab === "received" ? "상태" : "읽음 여부"}
                       </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {mockMessages.map((message) => (
-                      <tr
-                        key={message.id}
-                        className="border-b border-gray-300 hover:bg-gray-50"
-                      >
-                        <td className="p-4">
-                          <input
-                            type="checkbox"
-                            checked={selectedMessages.includes(message.id)}
-                            onChange={() => handleSelectMessage(message.id)}
-                            className="rounded"
-                          />
-                        </td>
-                        <td className="p-4">{message.sender}</td>
-                        <td className="p-4">
-                          <button
-                            className="text-left hover:text-primary focus:outline-none"
-                            onClick={() => handleOpenMessage(message)}
-                          >
-                            {message.content}
-                          </button>
-                        </td>
-                        <td className="p-4 text-gray-500">{message.date}</td>
-                        <td className="p-4">
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs ${
-                              message.isRead
-                                ? "bg-gray-100 text-gray-600"
-                                : "bg-red-50 text-red-500"
-                            }`}
-                          >
-                            {message.isRead ? "읽음" : "안읽음"}
-                          </span>
+                    {isLoading && messages.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="p-4 text-center text-gray-300">
+                          메시지를 불러오는 중...
                         </td>
                       </tr>
-                    ))}
+                    ) : error ? (
+                      <tr>
+                        <td colSpan={5} className="p-4 text-center text-red-300">
+                          {error}
+                        </td>
+                      </tr>
+                    ) : messages.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="p-4 text-center text-gray-400">
+                          {activeTab === "received" ? "받은 쪽지가 없습니다." : "보낸 쪽지가 없습니다."}
+                        </td>
+                      </tr>
+                    ) : (
+                      messages.map((message) => (
+                        <tr
+                          key={message.id}
+                          className="border-b border-gray-700 hover:bg-gray-700"
+                        >
+                          <td className="p-4">
+                            <input
+                              type="checkbox"
+                              checked={selectedMessages.includes(message.id)}
+                              onChange={() => handleSelectMessage(message.id)}
+                              className="rounded"
+                            />
+                          </td>
+                          <td className="p-4 text-gray-300">
+                            {activeTab === "received" ? message.senderNickname : message.receiverNickname}
+                          </td>
+                          <td className="p-4">
+                            <button
+                              className="text-left hover:text-[#FFB130] focus:outline-none text-gray-300"
+                              onClick={() => handleOpenMessage(message)}
+                            >
+                              {message.content}
+                            </button>
+                          </td>
+                          <td className="p-4 text-gray-400">{formatDate(message.createdAt)}</td>
+                          <td className="p-4">
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs ${
+                                message.read
+                                  ? "bg-gray-700 text-gray-300"
+                                  : "bg-red-900/70 text-red-300"
+                              }`}
+                            >
+                              {message.read ? "읽음" : "안읽음"}
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
 
                 {/* 페이지네이션 */}
-                <div className="flex justify-center p-4">
-                  <div className="flex items-center gap-1">
-                    <button className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-sm hover:bg-gray-50 text-gray-700">
-                      &lt;
-                    </button>
-                    <button className="w-8 h-8 flex items-center justify-center border border-gray-800 rounded-sm bg-black text-white">
-                      1
-                    </button>
-                    <button className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-sm hover:bg-gray-50 text-gray-700">
-                      2
-                    </button>
-                    <button className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-sm hover:bg-gray-50 text-gray-700">
-                      3
-                    </button>
-                    <button className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-sm hover:bg-gray-50 text-gray-700">
-                      &gt;
+                {hasNext && (
+                  <div className="flex justify-center p-4">
+                    <button
+                      onClick={() => fetchMessages(cursor)}
+                      disabled={isLoading}
+                      className="px-4 py-2 bg-gray-700 text-gray-200 rounded-md hover:bg-gray-600 transition-colors disabled:opacity-50"
+                    >
+                      {isLoading ? "불러오는 중..." : "더 보기"}
                     </button>
                   </div>
-                </div>
+                )}
               </div>
 
-              <div className="text-sm text-gray-600 mt-2">전체 20 개</div>
+              <div className="text-sm text-gray-400 mt-2">전체 {messages.length} 개</div>
             </div>
           </div>
         </div>
@@ -272,12 +447,12 @@ export default function MessagesPage() {
             className="fixed inset-0"
             style={{ backgroundColor: "#3D3D3D", opacity: "0.6" }}
           ></div>
-          <div className="bg-white rounded-lg w-full max-w-md p-6 shadow-lg relative z-10">
+          <div className="bg-gray-800 rounded-lg w-full max-w-md p-6 shadow-lg relative z-10">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium">쪽지 보기</h3>
+              <h3 className="text-lg font-medium text-white">쪽지 보기</h3>
               <button
                 onClick={handleCloseModal}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-400 hover:text-gray-300"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -297,18 +472,22 @@ export default function MessagesPage() {
             </div>
 
             <div className="mb-4">
-              <div className="font-medium mb-1">보낸 사람</div>
-              <div className="flex items-center bg-gray-50 p-3 rounded-md">
-                <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-medium text-sm mr-3">
-                  {selectedMessage.sender.charAt(0)}
+              <div className="font-medium mb-1 text-gray-300">
+                {activeTab === "received" ? "보낸 사람" : "받는 사람"}
+              </div>
+              <div className="flex items-center bg-gray-700 p-3 rounded-md">
+                <div className="w-8 h-8 bg-[#FFB130] text-black rounded-full flex items-center justify-center font-medium text-sm mr-3">
+                  {(activeTab === "received" ? selectedMessage.senderNickname : selectedMessage.receiverNickname).charAt(0)}
                 </div>
-                <div className="font-medium">{selectedMessage.sender}</div>
+                <div className="font-medium text-white">
+                  {activeTab === "received" ? selectedMessage.senderNickname : selectedMessage.receiverNickname}
+                </div>
               </div>
             </div>
 
             <div className="mb-6">
-              <div className="font-medium mb-1">내용</div>
-              <div className="bg-gray-50 p-3 rounded-md min-h-[100px]">
+              <div className="font-medium mb-1 text-gray-300">내용</div>
+              <div className="bg-gray-700 p-3 rounded-md min-h-[100px] text-gray-300 whitespace-pre-wrap">
                 {selectedMessage.content}
               </div>
             </div>
@@ -316,19 +495,21 @@ export default function MessagesPage() {
             <div className="flex justify-end gap-2">
               <button
                 onClick={handleCloseModal}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-700 rounded-md text-gray-300 hover:bg-gray-700"
               >
                 닫기
               </button>
-              <button
-                onClick={() => {
-                  setIsModalOpen(false);
-                  setIsReplyModalOpen(true);
-                }}
-                className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800"
-              >
-                답장하기
-              </button>
+              {activeTab === "received" && (
+                <button
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setIsReplyModalOpen(true);
+                  }}
+                  className="px-4 py-2 bg-[#FFB130] text-black rounded-md hover:bg-[#F0A120]"
+                >
+                  답장하기
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -341,12 +522,12 @@ export default function MessagesPage() {
             className="fixed inset-0"
             style={{ backgroundColor: "#3D3D3D", opacity: "0.6" }}
           ></div>
-          <div className="bg-white rounded-lg w-full max-w-md p-6 shadow-lg relative z-10">
+          <div className="bg-gray-800 rounded-lg w-full max-w-md p-6 shadow-lg relative z-10">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium">답장 하기</h3>
+              <h3 className="text-lg font-medium text-white">답장 하기</h3>
               <button
                 onClick={() => setIsReplyModalOpen(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-400 hover:text-gray-300"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -366,32 +547,43 @@ export default function MessagesPage() {
             </div>
 
             <div className="mb-4">
-              <div className="font-medium mb-1">받는 사람</div>
-              <div className="flex items-center bg-gray-50 p-3 rounded-md">
-                <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-medium text-sm mr-3">
-                  {selectedMessage.sender.charAt(0)}
+              <div className="font-medium mb-1 text-gray-300">받는 사람</div>
+              <div className="flex items-center bg-gray-700 p-3 rounded-md">
+                <div className="w-8 h-8 bg-[#FFB130] text-black rounded-full flex items-center justify-center font-medium text-sm mr-3">
+                  {selectedMessage.senderNickname.charAt(0)}
                 </div>
-                <div className="font-medium">{selectedMessage.sender}</div>
+                <div className="font-medium text-white">{selectedMessage.senderNickname}</div>
               </div>
             </div>
 
             <div className="mb-6">
-              <div className="font-medium mb-1">내용</div>
+              <div className="font-medium mb-1 text-gray-300">내용</div>
               <textarea
-                className="w-full border border-gray-200 rounded-md p-3 h-36 focus:outline-none focus:ring-1 focus:ring-black"
+                className="w-full border border-gray-700 rounded-md p-3 h-36 focus:outline-none focus:ring-1 focus:ring-[#FFB130] bg-gray-700 text-gray-300"
                 placeholder="내용을 입력하세요"
+                value={replyContent}
+                onChange={(e) => setReplyContent(e.target.value)}
               />
             </div>
 
             <div className="flex justify-end gap-2">
               <button
-                onClick={() => setIsReplyModalOpen(false)}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                onClick={() => {
+                  setIsReplyModalOpen(false);
+                  setReplyContent("");
+                }}
+                className="px-4 py-2 border border-gray-700 rounded-md text-gray-300 hover:bg-gray-700"
               >
                 닫기
               </button>
-              <button className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800">
-                보내기
+              <button 
+                onClick={handleSendReply}
+                disabled={isSending || !replyContent.trim()}
+                className={`px-4 py-2 bg-[#FFB130] text-black rounded-md hover:bg-[#F0A120] ${
+                  isSending || !replyContent.trim() ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+              >
+                {isSending ? "전송 중..." : "보내기"}
               </button>
             </div>
           </div>
