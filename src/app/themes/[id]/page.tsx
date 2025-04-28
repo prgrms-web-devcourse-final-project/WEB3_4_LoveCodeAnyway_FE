@@ -542,7 +542,7 @@ export default function ThemeDetailPage() {
               희망 테마 설정
             </Link>
             <Link
-              href={`/parties/create?themeId=${themeId}&themeName=${encodeURIComponent(themeDetail.name || '')}`}
+              href={`/parties/new?themeId=${themeId}&themeName=${encodeURIComponent(themeDetail.name || '')}`}
               className="flex-1 px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFA000] transition-colors text-center shadow-sm whitespace-nowrap"
             >
               모임 만들기

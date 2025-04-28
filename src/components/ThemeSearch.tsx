@@ -99,7 +99,7 @@ export function ThemeSearch({
           </button>
           {showCreateButton && (
             <Link
-              href="/parties/create"
+              href="/parties/new"
               className="px-4 h-10 flex items-center bg-black text-white text-sm rounded-lg hover:bg-gray-800"
             >
               모임 등록

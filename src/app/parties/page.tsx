@@ -298,7 +298,7 @@ export default function PartiesPage() {
           <h1 className="text-3xl font-bold text-white">모임 목록</h1>
           {isLogin && (
             <Link
-              href="/parties/create"
+              href="/parties/new"
               className="bg-black text-white px-5 py-2 rounded-full font-medium hover:bg-gray-800 transition"
             >
               모임 만들기

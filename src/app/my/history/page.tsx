@@ -412,7 +412,7 @@ export default function HistoryPage() {
               나의 모임 히스토리
             </h1>
             <Link
-              href="/parties/create"
+              href="/parties/new"
               className="bg-[#FFB230] text-white px-4 py-2 text-sm font-medium rounded-md"
             >
               모임 만들기
