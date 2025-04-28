@@ -32,7 +32,6 @@ export function KakaoMap({ width = '100%', height = '256px', address, storeName,
           return;
         }
 
-        console.log('Kakao API Key:', process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY);
         const script = document.createElement('script');
         script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY}&libraries=services&autoload=false`;
         script.type = "text/javascript";
@@ -43,7 +42,7 @@ export function KakaoMap({ width = '100%', height = '256px', address, storeName,
         };
         script.onerror = (error) => {
           console.error('Failed to load Kakao Maps SDK:', error);
-          reject(new Error('Kakao 지도 SDK를 로드하는데 실패했습니다. API 키와 도메인 설정을 확인해주세요.'));
+          reject(error);
         };
         document.head.appendChild(script);
       });
@@ -116,7 +115,7 @@ export function KakaoMap({ width = '100%', height = '256px', address, storeName,
       })
       .catch((error) => {
         console.error('Failed to initialize Kakao Maps:', error);
-        setError(`카카오맵 초기화에 실패했습니다: ${error.message || '알 수 없는 오류'}`);
+        setError('카카오맵 초기화에 실패했습니다.');
       });
   }, [address, storeName, name]);
 
