@@ -34,7 +34,7 @@ export default function SignupPage() {
         // 응답이 성공(200)이면 로그인된 상태
         if (response.ok) {
           console.log("이미 로그인된 상태입니다. 마이페이지로 이동합니다.");
-          router.replace("/my");
+          router.replace("/my/profile");
           return;
         }
       } catch (error) {

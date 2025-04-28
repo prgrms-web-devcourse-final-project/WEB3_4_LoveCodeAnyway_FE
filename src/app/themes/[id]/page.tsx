@@ -536,7 +536,7 @@ export default function ThemeDetailPage() {
               예약하러 가기
             </Link>
             <Link
-              href="/my/"
+              href="/my/profile"
               className="flex-1 px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFA000] transition-colors text-center shadow-sm whitespace-nowrap"
             >
               희망 테마 설정

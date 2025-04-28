@@ -277,7 +277,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
                       className="absolute right-0 -mt-1 w-48 bg-[#FFF8EC] rounded-lg shadow-lg py-1 z-50"
                     >
                       <Link
-                        href="/my"
+                        href="/my/profile"
                         className="block px-4 py-3 text-base font-medium text-gray-500 hover:bg-[#FFFCF7]"
                       >
                         마이페이지

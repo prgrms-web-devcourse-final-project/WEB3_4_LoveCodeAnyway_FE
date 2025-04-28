@@ -274,7 +274,7 @@ export default function ProfileEditPage() {
 
       // 성공 메시지 표시
       alert("프로필이 성공적으로 업데이트되었습니다");
-      router.push("/my");
+      router.push("/my/profile");
     } catch (err) {
       setError("프로필 업데이트 중 오류가 발생했습니다");
       setIsSubmitting(false);
@@ -676,7 +676,7 @@ export default function ProfileEditPage() {
             <div className="pt-4 flex gap-3">
               <button
                 type="button"
-                onClick={() => router.push("/my")}
+                onClick={() => router.push("/my/profile")}
                 className="w-1/2 py-4 bg-gray-600 text-white rounded-xl transition-all hover:bg-gray-500"
               >
                 취소
