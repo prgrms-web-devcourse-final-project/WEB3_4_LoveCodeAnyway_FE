@@ -410,7 +410,7 @@ export default function MyPage() {
               </div>
             </div>
             <Link
-              href="/my/edit"
+              href="/my/profile/edit"
               className="px-6 py-2.5 bg-gray-700 text-white rounded-full hover:bg-gray-600 transition-colors font-medium text-sm shadow-sm flex items-center gap-2"
             >
               <svg
