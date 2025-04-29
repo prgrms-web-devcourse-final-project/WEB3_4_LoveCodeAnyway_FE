@@ -29,10 +29,23 @@ interface UserProfile {
   };
 }
 
+interface ReviewStats {
+  averageScore: number;
+  totalReviews: number;
+  positiveCount: number;
+  negativeCount: number;
+  noShowCount: number;
+  keywords: Array<{
+    keyword: string;
+    count: number;
+  }>;
+}
+
 const DEFAULT_PROFILE_IMAGE = "/profile_default.jpg";
 
 export default function UserProfileModal({ memberId, isOpen, onClose }: UserProfileModalProps) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
@@ -40,6 +53,7 @@ export default function UserProfileModal({ memberId, isOpen, onClose }: UserProf
   useEffect(() => {
     if (isOpen && memberId) {
       fetchUserProfile();
+      fetchReviewStats();
     }
   }, [isOpen, memberId]);
 
@@ -63,6 +77,24 @@ export default function UserProfileModal({ memberId, isOpen, onClose }: UserProf
       setError("프로필 정보를 불러오는데 실패했습니다.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchReviewStats = async () => {
+    try {
+      const response = await client.GET("/members/{memberId}/review", {
+        params: {
+          path: {
+            memberId: memberId,
+          },
+        },
+      });
+
+      if (response.data) {
+        setReviewStats(response.data.data);
+      }
+    } catch (err) {
+      console.error("리뷰 통계 로드 중 오류:", err);
     }
   };
 
@@ -118,31 +150,11 @@ export default function UserProfileModal({ memberId, isOpen, onClose }: UserProf
                     />
                   </div>
                   <div className="ml-4 mb-2 flex-1">
-                    <div className="flex items-center justify-between">
-                      <h2 className="text-2xl font-bold text-white">
-                        {profile.profile.nickname}
-                      </h2>
-                      <button
-                        onClick={() => setIsMessageModalOpen(true)}
-                        className="px-3 py-1.5 bg-[#FFB130] hover:bg-[#F0A420] text-white rounded-lg flex items-center gap-2 text-sm"
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                          />
-                        </svg>
-                        쪽지 보내기
-                      </button>
-                    </div>
-                    <div className="flex items-center mt-1">
+                    <h2 className="text-2xl font-bold text-white">
+                      {profile.profile.nickname}
+                    </h2>
+                    <p className="text-white mt-2">{profile.profile.introduction}</p>
+                    <div className="flex items-center mt-2">
                       <span className="text-gray-400 text-sm">매너 점수:</span>
                       <span className="ml-1 text-[#FFB130] font-medium">
                         {profile.profile.mannerScore}
@@ -150,13 +162,6 @@ export default function UserProfileModal({ memberId, isOpen, onClose }: UserProf
                     </div>
                   </div>
                 </div>
-
-                {profile.profile.introduction && (
-                  <div className="mb-6">
-                    <h3 className="text-sm font-medium text-gray-400 mb-2">소개</h3>
-                    <p className="text-white">{profile.profile.introduction}</p>
-                  </div>
-                )}
 
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className="bg-gray-700 rounded-lg p-4">
@@ -212,6 +217,56 @@ export default function UserProfileModal({ memberId, isOpen, onClose }: UserProf
                     </div>
                   </div>
                 )}
+
+                {reviewStats && (
+                  <div className="mt-6">
+                    <h3 className="text-sm font-medium text-gray-400 mb-3">리뷰 통계</h3>
+                    <div className="flex gap-2">
+                      <div className="bg-gray-700 rounded-lg p-3 flex-1 text-center">
+                        <div className="text-gray-400 text-xs">평균</div>
+                        <div className="text-white text-sm font-medium mt-0.5">{reviewStats.averageScore.toFixed(1)}</div>
+                      </div>
+                      <div className="bg-gray-700 rounded-lg p-3 flex-1 text-center">
+                        <div className="text-gray-400 text-xs">총 리뷰</div>
+                        <div className="text-white text-sm font-medium mt-0.5">{reviewStats.totalReviews}</div>
+                      </div>
+                      <div className="bg-gray-700 rounded-lg p-3 flex-1 text-center">
+                        <div className="text-gray-400 text-xs">긍정</div>
+                        <div className="text-white text-sm font-medium mt-0.5">{reviewStats.positiveCount}</div>
+                      </div>
+                      <div className="bg-gray-700 rounded-lg p-3 flex-1 text-center">
+                        <div className="text-gray-400 text-xs">부정</div>
+                        <div className="text-white text-sm font-medium mt-0.5">{reviewStats.negativeCount}</div>
+                      </div>
+                      <div className="bg-gray-700 rounded-lg p-3 flex-1 text-center">
+                        <div className="text-gray-400 text-xs">노쇼</div>
+                        <div className="text-white text-sm font-medium mt-0.5">{reviewStats.noShowCount}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-6 flex justify-end">
+                  <button
+                    onClick={() => setIsMessageModalOpen(true)}
+                    className="px-4 py-2 bg-[#FFB130] hover:bg-[#F0A420] text-white rounded-lg flex items-center gap-2"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                      />
+                    </svg>
+                    쪽지 보내기
+                  </button>
+                </div>
               </div>
             </>
           ) : null}

@@ -172,27 +172,6 @@ export default function PartyDetailPage() {
     fetchPartyDetail();
   }, [partyId, baseUrl, isLogin, router, loginMember]);
 
-  // 참가 신청 처리
-  // // 예전코드
-  // const handleJoinRequest = async () => {
-  //   if (!partyId) return;
-
-  //   try {
-  //     await axios.post(
-  //       `${baseUrl}/api/v1/parties/${partyId}/apply`,
-  //       {},
-  //       {
-  //         withCredentials: true,
-  //       }
-  //     );
-  //     alert("참가 신청이 완료되었습니다.");
-  //     // 페이지 새로고침
-  //     window.location.reload();
-  //   } catch (error) {
-  //     console.error("참가 신청 중 오류:", error);
-  //     alert("참가 신청 중 오류가 발생했습니다.");
-  //   }
-  // };
   const handleJoinRequest = async () => {
     if (!partyId) return;
 
@@ -214,26 +193,6 @@ export default function PartyDetailPage() {
     }
   };
 
-  // 참가 취소 처리
-  //예전코드
-  // const handleCancelJoin = async () => {
-  //   if (!partyId) return;
-
-  //   try {
-  //     await axios.delete(
-  //       `${baseUrl}/api/v1/parties/${partyId}/join`,
-  //       {
-  //         withCredentials: true,
-  //       }
-  //     );
-  //     alert("참가가 취소되었습니다.");
-  //     // 페이지 새로고침
-  //     window.location.reload();
-  //   } catch (error) {
-  //     console.error("참가 취소 중 오류:", error);
-  //     alert("참가 취소 중 오류가 발생했습니다.");
-  //   }
-  // };
   const handleCancelJoin = async () => {
     if (!partyId) return;
 
@@ -319,36 +278,6 @@ export default function PartyDetailPage() {
       console.error("모임 취소 중 오류:", error);
       alert("모임 취소 중 오류가 발생했습니다.");
     }
-  };
-
-  // OpenStreetMap 정적 지도 URL 생성 함수
-  const getMapImageUrl = (address?: string) => {
-    if (!address) return "";
-
-    // 서울 중심 좌표로 기본 설정 (실제로는 위치에 따라 달라져야 함)
-    let lat = 37.5665;
-    let lon = 126.978;
-
-    // 위치에 따라 좌표 조정 (샘플용)
-    if (address.includes("홍대")) {
-      lat = 37.557;
-      lon = 126.923;
-    } else if (address.includes("강남")) {
-      lat = 37.498;
-      lon = 127.027;
-    } else if (address.includes("건대")) {
-      lat = 37.54;
-      lon = 127.069;
-    } else if (address.includes("신촌")) {
-      lat = 37.555;
-      lon = 126.936;
-    } else if (address.includes("종로")) {
-      lat = 37.57;
-      lon = 126.981;
-    }
-
-    // OpenStreetMap 기반 정적 이미지 URL
-    return `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lon}&zoom=14&size=600x400&maptype=mapnik&markers=${lat},${lon},lightblue`;
   };
 
   if (loading) {
@@ -473,7 +402,60 @@ export default function PartyDetailPage() {
               </span>
               <div className="flex items-center">
                 <div className="flex -space-x-2 mr-2">
-                  {partyData.acceptedPartyMembers?.slice(0, 3).map((member) => (
+                  {/* 모임장 정보 추가 */}
+                  <div
+                    key={partyData.hostId}
+                    className="relative group"
+                  >
+                    <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-[#FFB130] bg-gray-700">
+                      {partyData.hostProfilePictureUrl && isValidImageUrl(partyData.hostProfilePictureUrl) ? (
+                        <Image
+                          src={getSafeImageUrl(partyData.hostProfilePictureUrl, DEFAULT_PROFILE_IMAGE)}
+                          alt={partyData.hostNickname || "모임장"}
+                          fill
+                          className="object-cover rounded-full"
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center h-full rounded-full">
+                          <span className="text-gray-400 text-xs">🧑</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="absolute top-full left-0 mt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 bg-gray-800 shadow-md rounded-md p-2 z-20 w-40 border border-gray-700">
+                      <div className="flex items-center mb-2">
+                        <div className="w-10 h-10 rounded-full overflow-hidden mr-2 bg-gray-700 relative">
+                          {partyData.hostProfilePictureUrl && isValidImageUrl(partyData.hostProfilePictureUrl) ? (
+                            <Image
+                              src={getSafeImageUrl(partyData.hostProfilePictureUrl, DEFAULT_PROFILE_IMAGE)}
+                              alt={partyData.hostNickname || ""}
+                              fill
+                              className="object-cover rounded-full"
+                            />
+                          ) : (
+                            <div className="flex items-center justify-center h-full rounded-full">
+                              <span className="text-gray-400 text-xs">🧑</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium text-white">
+                            {partyData.hostNickname}
+                          </span>
+                          <span className="text-[10px] bg-[#FFB130] text-white rounded-full px-1.5 py-0.5 mt-0.5 flex items-center justify-center">
+                            모임장
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setSelectedMemberId(partyData.hostId)}
+                        className="text-xs text-blue-400 hover:underline mt-1"
+                      >
+                        프로필 보기
+                      </button>
+                    </div>
+                  </div>
+                  {/* 일반 참가자들 */}
+                  {partyData.acceptedPartyMembers?.filter(member => member.id !== partyData.hostId).slice(0, 2).map((member) => (
                     <div
                       key={member.id}
                       className="relative group"
@@ -513,7 +495,7 @@ export default function PartyDetailPage() {
                               {member.nickname}
                             </span>
                             {member.id === partyData.hostId && (
-                              <span className="text-[10px] bg-[#FFB130] text-white rounded-full px-1.5 py-0.5 mt-0.5">
+                              <span className="text-[10px] bg-[#FFB130] text-white rounded-full px-1.5 py-0.5 mt-0.5 flex items-center justify-center">
                                 모임장
                               </span>
                             )}

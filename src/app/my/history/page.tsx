@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useGlobalLoginMember } from "@/stores/auth/loginMember";
 import client from "@/lib/backend/client";
+import PartyHistoryModal from "@/components/PartyHistoryModal";
 
 
 // 모임 타입 정의
@@ -67,6 +68,8 @@ export default function HistoryPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedMapParty, setSelectedMapParty] = useState<number | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPartyId, setSelectedPartyId] = useState<number | null>(null);
 
   // 모임 데이터 가져오기
   useEffect(() => {
@@ -233,6 +236,18 @@ export default function HistoryPage() {
     return imageUrls[partyId % 5];
   };
 
+  // 모달 열기 함수
+  const openModal = (partyId: number) => {
+    setSelectedPartyId(partyId);
+    setIsModalOpen(true);
+  };
+
+  // 모달 닫기 함수
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedPartyId(null);
+  };
+
   // 리뷰 버튼 표시 여부 및 스타일 결정 함수
   const getReviewButton = (party: PartyType) => {
     const now = new Date();
@@ -244,12 +259,12 @@ export default function HistoryPage() {
     } else if (party.reviewStatus === "WRITABLE") {
       // 리뷰 작성 가능한 경우
       return (
-        <Link
-          href={`/my/review/write/${party.id}`}
+        <button
+          onClick={() => openModal(party.id)}
           className="px-3 py-1 bg-[#FFB130] text-white text-xs rounded hover:bg-[#FFA000] transition-colors"
         >
           리뷰 작성
-        </Link>
+        </button>
       );
     } else if (party.reviewStatus === "COMPLETED") {
       // 리뷰 작성 완료된 경우
@@ -671,6 +686,13 @@ export default function HistoryPage() {
           </>
         )}
       </div>
+
+      {/* 모달 컴포넌트 추가 */}
+      <PartyHistoryModal
+        partyId={selectedPartyId || 0}
+        isOpen={isModalOpen}
+        onClose={closeModal}
+      />
     </main>
   );
 }
