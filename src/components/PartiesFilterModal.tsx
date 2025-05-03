@@ -8,33 +8,34 @@ interface Tag {
   name: string;
 }
 
-interface SubRegionsResponse {
-  id: number;
-  subRegion: string;
-}
-
 interface Region {
   id: number;
   subRegion: string;
 }
 
-interface ApiResponse<T> {
-  data: T;
+interface FilterValues {
+  regions: string[];
+  genres: number[];
+  dates: string[];
+  subRegions: string[];
+  genreNames: string[];
 }
 
 interface ThemeFilterModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onApply: (filters: any) => void;
+  onApply: (filters: FilterValues) => void;
+  currentFilters?: FilterValues;
 }
 
-export function ThemeFilterModalForParties({
+export function PartiesFilterModal({
   isOpen,
   onClose,
   onApply,
+  currentFilters
 }: ThemeFilterModalProps) {
-  const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
-  const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
+  const [selectedRegions, setSelectedRegions] = useState<string[]>(currentFilters?.regions || []);
+  const [selectedGenres, setSelectedGenres] = useState<number[]>(currentFilters?.genres || []);
   const [activeRegion, setActiveRegion] = useState("서울");
   const [tags, setTags] = useState<Tag[]>([]);
   const [regions, setRegions] = useState<Region[]>([]);
@@ -56,8 +57,11 @@ export function ThemeFilterModalForParties({
     if (isOpen) {
       fetchTags();
       fetchRegions();
+      setSelectedRegions(currentFilters?.regions || []);
+      setSelectedGenres(currentFilters?.genres || []);
+      setSelectedDates(currentFilters?.dates ? currentFilters.dates.map(date => new Date(date)) : []);
     }
-  }, [isOpen]);
+  }, [isOpen, currentFilters]);
 
   const fetchRegions = async () => {
     setLoadingRegions(true);
@@ -103,11 +107,16 @@ export function ThemeFilterModalForParties({
   };
 
   const handleRegionToggle = (regionId: number) => {
-    setSelectedRegions((prev) =>
-      prev.includes(regionId.toString())
-        ? prev.filter((r) => r !== regionId.toString())
-        : [...prev, regionId.toString()]
-    );
+    const region = regions.find(r => r.id === regionId);
+    
+    setSelectedRegions((prev) => {
+      const regionIdStr = regionId.toString();
+      if (prev.includes(regionIdStr)) {
+        return prev.filter((r) => r !== regionIdStr);
+      } else {
+        return [...prev, regionIdStr];
+      }
+    });
   };
 
   const handleGenreToggle = (tagId: number) => {
@@ -142,24 +151,38 @@ export function ThemeFilterModalForParties({
   };
 
   const handleApply = () => {
-    const filters = {
+    const selectedSubRegions = selectedRegions.map(regionId => {
+      const region = regions.find(r => r.id === parseInt(regionId));
+      return region ? region.subRegion : '';
+    }).filter(Boolean);
+
+    const selectedGenreNames = selectedGenres.map(genreId => {
+      const tag = tags.find(t => t.id === genreId);
+      return tag ? tag.name : '';
+    }).filter(Boolean);
+
+    const filters: FilterValues = {
       regions: selectedRegions,
       genres: selectedGenres,
       dates: selectedDates.map(date => format(date, "yyyy. M. d.")),
+      subRegions: selectedSubRegions,
+      genreNames: selectedGenreNames
     };
-    console.log("필터 적용 - 전달되는 값:", {
-      regions: selectedRegions,
-      genres: selectedGenres,
-      dates: selectedDates,
-      formattedFilters: filters
-    });
     onApply(filters);
     onClose();
   };
 
   const getSelectedFiltersText = () => {
     const regionText =
-      selectedRegions.length > 0 ? `지역: ${selectedRegions.join(", ")}` : "";
+      selectedRegions.length > 0
+        ? `지역: ${selectedRegions
+            .map((regionId) => {
+              const region = regions.find((r) => r.id === parseInt(regionId));
+              return region ? region.subRegion : "";
+            })
+            .filter(Boolean)
+            .join(", ")}`
+        : "";
 
     const genreText =
       selectedGenres.length > 0

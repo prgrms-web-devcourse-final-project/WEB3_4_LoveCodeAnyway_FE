@@ -119,7 +119,6 @@ export default function ThemeDetailPage() {
         const response = await client.GET(`/api/v1/themes/${themeId}`);
 
         if (response?.data?.data) {
-          console.log(response.data.data);
           setThemeDetail(response.data.data);
         } else {
           throw new Error("응답 데이터가 올바르지 않습니다.");
@@ -313,22 +312,7 @@ export default function ThemeDetailPage() {
           </div>
           <div className="flex justify-between items-center">
             <div className="flex gap-6">
-              {themeDetail.diaryBasedThemeStat && (
-                <>
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-400">유저 탈출률</span>
-                    <span className="font-bold text-xl text-white">
-                      {themeDetail.diaryBasedThemeStat.escapeResult || 0}%
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-400">노힌트 탈출률</span>
-                    <span className="font-bold text-xl text-white">
-                      {themeDetail.diaryBasedThemeStat.noHintEscapeRate || 0}%
-                    </span>
-                  </div>
-                </>
-              )}
+              {/* Empty div to maintain layout balance */}
             </div>
             <div className="flex gap-6">
               <div className="flex items-center gap-2">

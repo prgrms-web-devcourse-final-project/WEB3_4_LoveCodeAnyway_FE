@@ -4,14 +4,26 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ThemeFilterModal } from "./ThemeFilterModal";
-import { ThemeFilterModalForParties } from "./ThemeFilterModalForParties";
+
+interface FilterValues {
+  regions: string[];      // 지역 ID 배열
+  genres: number[];       // 장르 ID 배열
+  participant: string;    // 참여 인원
+  subRegions: string[];  // 지역 이름 배열 (표시용)
+  genreNames: string[];  // 장르 이름 배열 (표시용)
+}
 
 interface ThemeSearchProps {
   showCreateButton?: boolean;
   onSearch?: (keyword: string) => void;
-  onFilterApply?: (filters: any) => void;
+  onFilterApply?: (filters: FilterValues) => void;
   onFilterChange?: (filterType: string, value: string) => void;
   filterType?: 'theme' | 'party';
+  searchTerm: string;
+  onSearchTermChange: (term: string) => void;
+  isFilterModalOpen: boolean;
+  onFilterModalOpenChange: (isOpen: boolean) => void;
+  currentFilters?: FilterValues;
 }
 
 export function ThemeSearch({
@@ -19,11 +31,11 @@ export function ThemeSearch({
   onSearch,
   onFilterApply,
   onFilterChange,
-  filterType = 'theme',
+  searchTerm,
+  onSearchTermChange,
+  isFilterModalOpen,
+  onFilterModalOpenChange,
 }: ThemeSearchProps) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (onSearch) {
@@ -31,7 +43,7 @@ export function ThemeSearch({
     }
   };
 
-  const handleFilterApply = (filters: any) => {
+  const handleFilterApply = (filters: FilterValues) => {
     if (onFilterApply) {
       onFilterApply(filters);
     }
@@ -41,7 +53,7 @@ export function ThemeSearch({
       onFilterChange("region", filters.regions[0]);
     }
 
-    setIsFilterModalOpen(false);
+    onFilterModalOpenChange(false);
   };
 
   return (
@@ -61,15 +73,15 @@ export function ThemeSearch({
             <input
               type="text"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => onSearchTermChange(e.target.value)}
               placeholder="테마 이름으로 검색"
-              className="w-full pl-9 pr-4 py-2.5 h-10 border border-gray-700 rounded-lg focus:outline-none focus:border-gray-700 placeholder:text-gray-400"
+              className="w-full pl-9 pr-4 py-2.5 h-10 border border-gray-700 rounded-lg focus:outline-none focus:border-gray-700 placeholder:text-gray-400 text-white bg-gray-800"
             />
           </form>
         </div>
         <div className="flex gap-2">
           <button
-            onClick={() => setIsFilterModalOpen(true)}
+            onClick={() => onFilterModalOpenChange(true)}
             className="px-4 h-10 bg-black text-white text-sm rounded-lg hover:bg-gray-800 flex items-center gap-1.5"
           >
             <svg
@@ -108,19 +120,13 @@ export function ThemeSearch({
         </div>
       </div>
 
-      {filterType === 'theme' ? (
+
         <ThemeFilterModal
           isOpen={isFilterModalOpen}
-          onClose={() => setIsFilterModalOpen(false)}
+          onClose={() => onFilterModalOpenChange(false)}
           onApply={handleFilterApply}
         />
-      ) : (
-        <ThemeFilterModalForParties
-          isOpen={isFilterModalOpen}
-          onClose={() => setIsFilterModalOpen(false)}
-          onApply={handleFilterApply}
-        />
-      )}
+    
     </div>
   );
 }

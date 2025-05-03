@@ -1,15 +1,14 @@
 "use client";
 
 import { useState, useEffect, useContext, useRef, useCallback } from "react";
-import { Navigation } from "@/components/Navigation";
 import { PartyCard } from "@/components/PartyCard";
-import { ThemeSearch } from "@/components/ThemeSearch";
+import { PartySearch } from "@/components/PartySearch";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { getParties } from "@/lib/api/party";
 import { PageLoading } from "@/components/PageLoading";
 import { LoginMemberContext } from "@/stores/auth/loginMember";
 import client from "@/lib/backend/client";
+import { PartiesFilterModal } from "@/components/PartiesFilterModal";
 
 // API에서 받는 모임 데이터 타입
 interface PartyMainResponse {
@@ -22,8 +21,17 @@ interface PartyMainResponse {
   partyId?: number;
   title?: string;
   scheduledAt?: string;
-  acceptedParticipantCount?: number;
+  acceptedParticipantsCount?: number;
   totalParticipants?: number;
+  hostNickname?: string;
+  hostProfilePictureUrl?: string;
+}
+
+interface SearchCondition {
+  keyword: string;
+  regionIds: number[];
+  dates: string[];
+  tagsIds: number[];
 }
 
 // API에서 받는 응답 형태
@@ -44,17 +52,36 @@ export default function PartiesPage() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [filterRegions, setFilterRegions] = useState<string[]>([]);
+  const [filterSubRegions, setFilterSubRegions] = useState<string[]>([]);
   const [filterGenres, setFilterGenres] = useState<string[]>([]);
+  const [filterGenreNames, setFilterGenreNames] = useState<string[]>([]);
   const [filterDates, setFilterDates] = useState<string[]>([]);
   const [hasMore, setHasMore] = useState(true);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const observer = useRef<IntersectionObserver | null>(null);
   const ITEMS_PER_PAGE = 30;
 
   // URL 파라미터에서 테마 정보를 읽어와서 초기 검색어 설정
   useEffect(() => {
     const themeName = searchParams.get('themeName');
+    const themeId = searchParams.get('themeId');
+
     if (themeName) {
       setSearchKeyword(themeName);
+    }
+
+    if (themeId) {
+      // themeId가 있는 경우 해당 테마로 필터링된 검색 조건 생성
+      const searchCondition: SearchCondition = {
+        keyword: themeName || "",
+        regionIds: [],
+        dates: [],
+        tagsIds: [parseInt(themeId)]
+      };
+      loadParties(true, searchCondition);
+    } else if (!initialLoading) {
+      // themeId가 없는 경우에만 일반 검색 조건으로 로드
+      loadParties(true);
     }
   }, [searchParams]);
 
@@ -62,7 +89,7 @@ export default function PartiesPage() {
   const lastPartyElementRef = useCallback((node: HTMLDivElement) => {
     if (loading) return;
     if (observer.current) observer.current.disconnect();
-    
+
     observer.current = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting && hasMore) {
         loadParties(false);
@@ -73,7 +100,7 @@ export default function PartiesPage() {
   }, [loading, hasMore]);
 
   // 모임 데이터 로드
-  const loadParties = async (reset = false) => {
+  const loadParties = async (reset = false, customSearchCondition?: SearchCondition) => {
     if (loading || (!hasMore && !reset)) return;
 
     setLoading(true);
@@ -86,7 +113,7 @@ export default function PartiesPage() {
       const lastParty = parties[parties.length - 1];
       const lastId = reset ? undefined : lastParty?.partyId;
 
-      const searchCondition = {
+      const searchCondition = customSearchCondition || {
         keyword: searchKeyword || "",
         regionIds: filterRegions.length > 0 ? filterRegions.map(id => parseInt(id)) : [],
         dates: filterDates,
@@ -106,18 +133,14 @@ export default function PartiesPage() {
       if (response?.data?.data) {
         const newParties = response.data.data.content || [];
         const hasNext = response.data.data.hasNext || false;
-        
-        // 새로운 데이터가 없거나 기존 데이터와 동일한 경우 hasMore를 false로 설정
+
         if (newParties.length === 0 || (newParties[0]?.partyId === lastId)) {
           setHasMore(false);
         } else {
           setHasMore(hasNext);
         }
-        
+
         setParties(prev => reset ? newParties : [...prev, ...newParties]);
-        
-        console.log("파티 데이터 로드 완료:", newParties);
-        console.log("다음 페이지 존재 여부:", hasNext);
       }
     } catch (error) {
       console.error("모임 데이터 로드 중 오류 발생:", error);
@@ -130,32 +153,17 @@ export default function PartiesPage() {
 
   // 초기 데이터 로드
   useEffect(() => {
-    loadParties(true);
+    if (!searchParams.get('themeId')) {
+      loadParties(true);
+    }
   }, []);
 
   // 필터 상태가 변경될 때마다 API 요청
   useEffect(() => {
-    if (!initialLoading) {
+    if (!initialLoading && !searchParams.get('themeId')) {
       loadParties(true);
     }
   }, [searchKeyword, filterRegions, filterGenres, filterDates]);
-
-  // 더미 데이터 생성 함수
-  const generateDummyParties = () => {
-    return Array(8).fill(0).map((_, index) => ({
-      id: index + 1,
-      partyId: index + 1,
-      title: `방탈출 모임 ${index + 1}`,
-      themeName: ["좀비 연구소", "비밀의 방", "사망 이스케이프", "유령의 저택"][index % 4],
-      themeThumbnailUrl: index % 2 === 0
-        ? "https://i.postimg.cc/PJNVr12v/theme.jpg"
-        : "https://i.postimages.org/PJNVr12v/theme.jpg",
-      storeName: ["이스케이프 홍대점", "솔버 강남점", "마스터키 명동점", "키이스케이프 건대점"][index % 4],
-      scheduledAt: new Date(Date.now() + (index % 3) * 2 * 24 * 60 * 60 * 1000).toISOString(),
-      acceptedParticipantCount: Math.floor(Math.random() * 3) + 2,
-      totalParticipants: 6
-    }));
-  };
 
   // 검색 처리
   const handleSearch = (keyword: string) => {
@@ -179,42 +187,40 @@ export default function PartiesPage() {
 
   // 필터 적용 처리
   const handleFilterApply = (filters: any) => {
-    console.log("페이지에서 받은 필터 값:", filters);
-    
     // 지역 필터 처리
-    if (filters.regions && filters.regions.length > 0) {
-      setFilterRegions(filters.regions);
-    } else {
-      setFilterRegions([]);
-    }
+    const newRegions = filters.regions || [];
+    const newSubRegions = filters.subRegions || [];
+    const newGenres = filters.genres || [];
+    const newGenreNames = filters.genreNames || [];
+    const newDates = filters.dates ? filters.dates.map((date: string) => convertToISODate(date)) : [];
 
-    // 장르 필터 처리
-    if (filters.genres && filters.genres.length > 0) {
-      setFilterGenres(filters.genres);
-    } else {
-      setFilterGenres([]);
-    }
+    // 새로운 검색 조건 생성
+    const newSearchCondition: SearchCondition = {
+      keyword: searchKeyword || "",
+      regionIds: newRegions.map((id: string) => parseInt(id)),
+      dates: newDates,
+      tagsIds: newGenres.map((id: string) => parseInt(id))
+    };
 
-    // 날짜 필터 처리
-    if (filters.dates && filters.dates.length > 0) {
-      setFilterDates(filters.dates.map((date: string) => convertToISODate(date)));
-    } else {
-      setFilterDates([]);
-    }
-
-    // 필터 설정 후 바로 API 요청
-    loadParties(true);
+    // 상태 업데이트와 API 요청
+    Promise.all([
+      setFilterRegions(newRegions),
+      setFilterSubRegions(newSubRegions),
+      setFilterGenres(newGenres),
+      setFilterGenreNames(newGenreNames),
+      setFilterDates(newDates)
+    ]).then(() => {
+      loadParties(true, newSearchCondition);
+    });
   };
 
   // 카드 클릭 처리
   const handleCardClick = (party: PartyMainResponse) => {
-    console.log("이동할 모임:", party);
     if (party && (party.id || party.partyId)) {
       // id 또는 partyId 중 존재하는 값 사용
       const partyId = party.id || party.partyId;
       router.push(`/parties/${partyId}`);
     } else {
-      console.error("모임의 ID가 없습니다", party);
     }
   };
 
@@ -270,13 +276,12 @@ export default function PartiesPage() {
         ? new Date(party.scheduledAt).toLocaleDateString()
         : "날짜 정보 없음",
       location: party.storeName || "위치 정보 없음",
-      participants: `${party.acceptedParticipantCount || 0}/${
-        party.totalParticipants || 0
-      }`,
+      participants: `${party.acceptedParticipantsCount || 0}/${party.totalParticipants || 0
+        }`,
       tags: party.themeName ? [party.themeName] : ["테마 정보 없음"],
       host: {
-        name: "모임장",
-        image: "/profile_man.jpg",
+        name: party.hostNickname || "모임장",
+        image: party.hostProfilePictureUrl || "/profile_man.jpg",
       },
     };
 
@@ -289,6 +294,58 @@ export default function PartiesPage() {
         <PartyCard room={cardData} />
       </div>
     );
+  };
+
+  // 필터 초기화 함수
+  const resetAllFilters = () => {
+    setSearchKeyword("");
+    setFilterRegions([]);
+    setFilterSubRegions([]);
+    setFilterGenres([]);
+    setFilterGenreNames([]);
+    setFilterDates([]);
+
+    // 모든 필터가 초기화된 상태로 API 요청
+    const emptySearchCondition: SearchCondition = {
+      keyword: "",
+      regionIds: [],
+      dates: [],
+      tagsIds: []
+    };
+    loadParties(true, emptySearchCondition);
+  };
+
+  // 특정 필터만 제거하는 함수
+  const removeFilter = (filterType: 'keyword' | 'region' | 'genre' | 'date') => {
+    const currentSearchCondition: SearchCondition = {
+      keyword: searchKeyword || "",
+      regionIds: filterRegions.length > 0 ? filterRegions.map((id: string) => parseInt(id)) : [],
+      dates: filterDates,
+      tagsIds: filterGenres.length > 0 ? filterGenres.map((id: string) => parseInt(id)) : []
+    };
+
+    switch (filterType) {
+      case 'keyword':
+        setSearchKeyword("");
+        currentSearchCondition.keyword = "";
+        break;
+      case 'region':
+        setFilterRegions([]);
+        setFilterSubRegions([]);
+        currentSearchCondition.regionIds = [];
+        break;
+      case 'genre':
+        setFilterGenres([]);
+        setFilterGenreNames([]);
+        currentSearchCondition.tagsIds = [];
+        break;
+      case 'date':
+        setFilterDates([]);
+        currentSearchCondition.dates = [];
+        break;
+    }
+
+    loadParties(true, currentSearchCondition);
   };
 
   return (
@@ -308,23 +365,30 @@ export default function PartiesPage() {
 
         {/* 검색 및 필터 섹션 */}
         <div className="space-y-3">
-          <ThemeSearch
+          <PartySearch
             onSearch={handleSearch}
             onFilterChange={handleFilterChange}
             onFilterApply={handleFilterApply}
-            filterType="party"
+            searchTerm={searchKeyword}
+            onSearchTermChange={setSearchKeyword}
+            isFilterModalOpen={isFilterModalOpen}
+            onFilterModalOpenChange={setIsFilterModalOpen}
+            currentFilters={{
+              regions: filterRegions,
+              genres: filterGenres.map(id => parseInt(id)),
+              dates: filterDates,
+              subRegions: filterSubRegions,
+              genreNames: filterGenreNames
+            }}
           />
-          
+
           {/* 활성화된 필터 표시 */}
           <div className="flex flex-wrap gap-2">
             {searchKeyword && (
               <div className="inline-flex items-center px-2 py-1 bg-gray-700 text-white rounded-full text-xs">
                 <span>검색어: {searchKeyword}</span>
                 <button
-                  onClick={() => {
-                    setSearchKeyword("");
-                    loadParties(true);
-                  }}
+                  onClick={() => removeFilter('keyword')}
                   className="ml-1.5 hover:text-gray-300"
                 >
                   <svg
@@ -343,14 +407,11 @@ export default function PartiesPage() {
                 </button>
               </div>
             )}
-            {filterRegions.length > 0 && (
+            {filterSubRegions.length > 0 && (
               <div className="inline-flex items-center px-2 py-1 bg-gray-700 text-white rounded-full text-xs">
-                <span>지역: {filterRegions.join(", ")}</span>
+                <span>지역: {filterSubRegions.join(", ")}</span>
                 <button
-                  onClick={() => {
-                    setFilterRegions([]);
-                    loadParties(true);
-                  }}
+                  onClick={() => removeFilter('region')}
                   className="ml-1.5 hover:text-gray-300"
                 >
                   <svg
@@ -369,14 +430,11 @@ export default function PartiesPage() {
                 </button>
               </div>
             )}
-            {filterGenres.length > 0 && (
+            {filterGenreNames.length > 0 && (
               <div className="inline-flex items-center px-2 py-1 bg-gray-700 text-white rounded-full text-xs">
-                <span>장르: {filterGenres.join(", ")}</span>
+                <span>장르: {filterGenreNames.join(", ")}</span>
                 <button
-                  onClick={() => {
-                    setFilterGenres([]);
-                    loadParties(true);
-                  }}
+                  onClick={() => removeFilter('genre')}
                   className="ml-1.5 hover:text-gray-300"
                 >
                   <svg
@@ -397,12 +455,9 @@ export default function PartiesPage() {
             )}
             {filterDates.length > 0 && (
               <div className="inline-flex items-center px-2 py-1 bg-gray-700 text-white rounded-full text-xs">
-                <span>날짜: {filterDates.join(", ")}</span>
+                <span>날짜: {filterDates.map(date => new Date(date).toLocaleDateString()).join(", ")}</span>
                 <button
-                  onClick={() => {
-                    setFilterDates([]);
-                    loadParties(true);
-                  }}
+                  onClick={() => removeFilter('date')}
                   className="ml-1.5 hover:text-gray-300"
                 >
                   <svg
@@ -423,13 +478,7 @@ export default function PartiesPage() {
             )}
             {(searchKeyword || filterRegions.length > 0 || filterGenres.length > 0 || filterDates.length > 0) && (
               <button
-                onClick={() => {
-                  setSearchKeyword("");
-                  setFilterRegions([]);
-                  setFilterGenres([]);
-                  setFilterDates([]);
-                  loadParties(true);
-                }}
+                onClick={resetAllFilters}
                 className="inline-flex items-center px-2 py-1 bg-black text-white rounded-full text-xs hover:bg-gray-800"
               >
                 필터 초기화
@@ -437,6 +486,19 @@ export default function PartiesPage() {
             )}
           </div>
         </div>
+
+        <PartiesFilterModal
+          isOpen={isFilterModalOpen}
+          onClose={() => setIsFilterModalOpen(false)}
+          onApply={handleFilterApply}
+          currentFilters={{
+            regions: filterRegions,
+            genres: filterGenres.map(id => parseInt(id)),
+            dates: filterDates,
+            subRegions: filterSubRegions,
+            genreNames: filterGenreNames
+          }}
+        />
 
         {initialLoading ? (
           <PageLoading />

@@ -16,21 +16,23 @@ import {
 import { ko } from "date-fns/locale";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 
-interface CalendarProps {
+interface HistoryCalendarProps {
   selectedDate: Date | null;
   onChange: (date: Date) => void;
   markedDates?: Date[];
   startDate?: Date | null;
   endDate?: Date | null;
+  onMonthChange?: (date: Date) => void;
 }
 
-export function Calendar({
+export function HistoryCalendar({
   selectedDate,
   onChange,
   markedDates = [],
   startDate,
   endDate,
-}: CalendarProps) {
+  onMonthChange,
+}: HistoryCalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const monthStart = startOfMonth(currentMonth);
@@ -42,8 +44,17 @@ export function Calendar({
 
   const weekDays = ["일", "월", "화", "수", "목", "금", "토"];
 
-  const goToPreviousMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
-  const goToNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
+  const goToPreviousMonth = () => {
+    const newMonth = subMonths(currentMonth, 1);
+    setCurrentMonth(newMonth);
+    onMonthChange?.(newMonth);
+  };
+
+  const goToNextMonth = () => {
+    const newMonth = addMonths(currentMonth, 1);
+    setCurrentMonth(newMonth);
+    onMonthChange?.(newMonth);
+  };
 
   const isMarkedDate = (date: Date) =>
     markedDates.some((markedDate) => isSameDay(date, markedDate));
@@ -98,13 +109,16 @@ export function Calendar({
               className={`
                 h-10 flex flex-col items-center justify-center relative
                 ${isCurrentMonth ? "text-white" : "text-gray-500"}
-                ${isMarked ? "bg-[#FFB130]" : isInRange ? "bg-[#FFB130]/30" : "hover:bg-gray-700"}
+                ${isSelected ? "bg-gray-700" : "hover:bg-gray-700"}
                 rounded-lg transition-colors
               `}
             >
               <span className={isMarked ? "font-bold" : ""}>
                 {format(day, "d")}
               </span>
+              {isMarked && (
+                <div className="absolute bottom-1 w-1.5 h-1.5 bg-[#FFB130] rounded-full" />
+              )}
             </button>
           );
         })}
