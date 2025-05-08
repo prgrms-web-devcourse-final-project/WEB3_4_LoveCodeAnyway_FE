@@ -1,8 +1,10 @@
-import { useState, useRef } from 'react'
-import { useRouter } from 'next/navigation'
-import client from '@/lib/backend/client'
-import { ThemeSearchModal } from '@/components/theme/ThemeSearchModalForDiary'
+'use client'
+
 import { NewThemesModal } from '@/components/NewThemesModal'
+import { ThemeSearchModal } from '@/components/theme/ThemeSearchModalForDiary'
+import client from '@/lib/backend/client'
+import { useRouter } from 'next/navigation'
+import { useRef, useState } from 'react'
 
 // 테마 타입 정의
 type Theme = {

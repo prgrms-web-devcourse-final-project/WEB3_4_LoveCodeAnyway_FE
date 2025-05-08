@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useEffect, useContext } from 'react'
+import UserProfileModal from '@/components/UserProfileModal'
+import { KakaoMap } from '@/components/common/KakaoMap'
+import client from '@/lib/backend/client'
+import { LoginMemberContext } from '@/stores/auth/loginMember'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
-import { LoginMemberContext } from '@/stores/auth/loginMember'
-import client from '@/lib/backend/client'
-import UserProfileModal from '@/components/UserProfileModal'
-import { KakaoMap } from '@/components/common/KakaoMap'
+import { useContext, useEffect, useState } from 'react'
 
 // 기본 이미지 경로
 const DEFAULT_PROFILE_IMAGE = '/profile_default.jpg'
@@ -90,8 +90,6 @@ export default function PartyDetailPage() {
     const [error, setError] = useState<string | null>(null)
     const [isRequestsOpen, setIsRequestsOpen] = useState(false)
     const [userRole, setUserRole] = useState<'none' | 'member' | 'host'>('none')
-    const [kakaoMapLoaded, setKakaoMapLoaded] = useState(false)
-    const [map, setMap] = useState<any>(null)
     const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null)
 
     // 로그인 확인 및 리다이렉트
