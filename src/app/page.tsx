@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import client from '@/lib/backend/client'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Swiper, SwiperSlide } from 'swiper/react'
+import { useEffect, useState } from 'react'
 import { Autoplay, Navigation as SwiperNavigation } from 'swiper/modules'
-import client from '@/lib/backend/client'
+import { Swiper, SwiperSlide } from 'swiper/react'
 
 // Import Swiper styles
 import 'swiper/css'
@@ -244,15 +244,17 @@ export default function HomePage() {
                                                       <div className="text-gray-300 text-sm">{party.storeName}</div>
                                                       <div className="text-red-500 text-sm font-medium">
                                                           {(() => {
-                                                              const scheduledDate = new Date(party.scheduledAt);
-                                                              const today = new Date();
-                                                              const diffTime = scheduledDate.getTime() - today.getTime();
-                                                              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                                                              
-                                                              if (diffDays === 0) return '오늘마감';
-                                                              if (diffDays === 1) return 'D-1';
-                                                              if (diffDays < 0) return '마감';
-                                                              return `D-${diffDays}`;
+                                                              const scheduledDate = new Date(party.scheduledAt)
+                                                              const today = new Date()
+                                                              const diffTime = scheduledDate.getTime() - today.getTime()
+                                                              const diffDays = Math.ceil(
+                                                                  diffTime / (1000 * 60 * 60 * 24),
+                                                              )
+
+                                                              if (diffDays === 0) return '오늘마감'
+                                                              if (diffDays === 1) return 'D-1'
+                                                              if (diffDays < 0) return '마감'
+                                                              return `D-${diffDays}`
                                                           })()}
                                                       </div>
                                                   </div>
@@ -302,14 +304,16 @@ export default function HomePage() {
                                                           {party.acceptedParticipantCount}/{party.totalParticipants}명
                                                       </span>
                                                       <span className="mx-2">•</span>
-                                                      <span>{new Date(party.scheduledAt).toLocaleString('ko-KR', {
-                                                          year: 'numeric',
-                                                          month: '2-digit',
-                                                          day: '2-digit',
-                                                          hour: '2-digit',
-                                                          minute: '2-digit',
-                                                          hour12: false
-                                                      })}</span>
+                                                      <span>
+                                                          {new Date(party.scheduledAt).toLocaleString('ko-KR', {
+                                                              year: 'numeric',
+                                                              month: '2-digit',
+                                                              day: '2-digit',
+                                                              hour: '2-digit',
+                                                              minute: '2-digit',
+                                                              hour12: false,
+                                                          })}
+                                                      </span>
                                                   </div>
                                               </div>
                                           </Link>

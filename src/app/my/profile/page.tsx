@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
 import { HistoryCalendar } from '@/components/HistoryCalendar'
+import WishesThemesModal from '@/components/WishesThemesModal'
 import client from '@/lib/backend/client'
 import { useGlobalLoginMember } from '@/stores/auth/loginMember'
-import WishesThemesModal from '@/components/WishesThemesModal'
+import Image from 'next/image'
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
 
 // 타입 정의
 type UserProfile = {
@@ -31,11 +31,6 @@ type WishTheme = {
     recommendedParticipants: string
     tags: string[]
     thumbnailUrl: string
-}
-
-type WishThemesResponse = {
-    message: string
-    data: WishTheme[]
 }
 
 type CalendarDiary = {
@@ -64,44 +59,6 @@ type PartyHistory = {
     acceptedParticipantsCount: number
 }
 
-// API Response Types
-type ApiResponse<T> = {
-    data: {
-        data: T
-    }
-}
-
-type MemberStats = {
-    totalCount: number
-    successRate: number
-    noHintSuccessRate: number
-}
-
-type DiaryEntry = {
-    id: number
-    escapeDate: string
-    themeName: string
-    escapeResult: boolean
-    storeName: string
-    elapsedTime: number
-    hintCount: number
-    tags: string[]
-    thumbnailUrl: string
-}
-
-type PartyJoinData = {
-    items: Array<{
-        partyId: number
-        title: string
-        themeName: string
-        storeName: string
-        scheduledAt: string
-        acceptedParticipantsCount: number
-        totalParticipants: number
-        thumbnailUrl: string
-    }>
-}
-
 export default function MyPage() {
     const { isLogin, loginMember } = useGlobalLoginMember()
     const [selectedDate, setSelectedDate] = useState<Date | null>(null)
@@ -116,7 +73,7 @@ export default function MyPage() {
     // 프로필 정보 가져오기
     const fetchUserProfile = async () => {
         try {
-            if (!isLogin || !loginMember) {
+            if (!isLogin) {
                 throw new Error('로그인이 필요합니다.')
             }
 
@@ -176,7 +133,7 @@ export default function MyPage() {
     // 달력 데이터 가져오기
     const fetchCalendarDiaries = async (targetMonth?: Date) => {
         try {
-            if (!isLogin || !loginMember) {
+            if (!isLogin) {
                 throw new Error('로그인이 필요합니다.')
             }
 
@@ -220,7 +177,7 @@ export default function MyPage() {
     // 모임 히스토리 가져오기
     const fetchPartyHistories = async () => {
         try {
-            if (!isLogin || !loginMember) {
+            if (!isLogin) {
                 throw new Error('로그인이 필요합니다.')
             }
 
@@ -270,7 +227,7 @@ export default function MyPage() {
 
     // 컴포넌트 마운트 시 데이터 로딩
     useEffect(() => {
-        if (!isLogin || !loginMember?.id) {
+        if (!isLogin) {
             setError('로그인이 필요합니다.')
             setIsLoading(false)
             return
