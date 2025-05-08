@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { Calendar } from "./Calendar";
+import { format } from "date-fns";
 import client from "@/lib/backend/client";
 
 interface Tag {
@@ -11,17 +13,12 @@ interface Region {
   subRegion: string;
 }
 
-interface Participant {
-  id: string;
-  name: string;
-}
-
 interface FilterValues {
-  regions: string[];      // 지역 ID 배열
-  genres: number[];       // 장르 ID 배열
-  participant: string;    // 참여 인원
-  subRegions: string[];  // 지역 이름 배열 (표시용)
-  genreNames: string[];  // 장르 이름 배열 (표시용)
+  regions: string[];
+  genres: number[];
+  dates: string[];
+  subRegions: string[];
+  genreNames: string[];
 }
 
 interface ThemeFilterModalProps {
@@ -31,7 +28,7 @@ interface ThemeFilterModalProps {
   currentFilters?: FilterValues;
 }
 
-export function ThemeFilterModal({
+export function PartiesFilterModal({
   isOpen,
   onClose,
   onApply,
@@ -39,23 +36,12 @@ export function ThemeFilterModal({
 }: ThemeFilterModalProps) {
   const [selectedRegions, setSelectedRegions] = useState<string[]>(currentFilters?.regions || []);
   const [selectedGenres, setSelectedGenres] = useState<number[]>(currentFilters?.genres || []);
-  const [selectedParticipant, setSelectedParticipant] = useState<string>(currentFilters?.participant || "");
   const [activeRegion, setActiveRegion] = useState("서울");
   const [tags, setTags] = useState<Tag[]>([]);
   const [regions, setRegions] = useState<Region[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingRegions, setLoadingRegions] = useState(false);
-
-  const participants: Participant[] = [
-    { id: "1", name: "1명" },
-    { id: "2", name: "2명" },
-    { id: "3", name: "3명" },
-    { id: "4", name: "4명" },
-    { id: "5", name: "5명" },
-    { id: "6", name: "6명" },
-    { id: "7", name: "7명" },
-    { id: "8", name: "8명 이상" },
-  ];
+  const [selectedDates, setSelectedDates] = useState<Date[]>([]);
 
   const majorRegions = [
     { id: "서울", name: "서울" },
@@ -71,10 +57,9 @@ export function ThemeFilterModal({
     if (isOpen) {
       fetchTags();
       fetchRegions();
-      // 모달이 열릴 때 currentFilters 값으로 상태 초기화
       setSelectedRegions(currentFilters?.regions || []);
       setSelectedGenres(currentFilters?.genres || []);
-      setSelectedParticipant(currentFilters?.participant || "");
+      setSelectedDates(currentFilters?.dates ? currentFilters.dates.map(date => new Date(date)) : []);
     }
   }, [isOpen, currentFilters]);
 
@@ -122,6 +107,8 @@ export function ThemeFilterModal({
   };
 
   const handleRegionToggle = (regionId: number) => {
+    const region = regions.find(r => r.id === regionId);
+    
     setSelectedRegions((prev) => {
       const regionIdStr = regionId.toString();
       if (prev.includes(regionIdStr)) {
@@ -138,22 +125,29 @@ export function ThemeFilterModal({
     );
   };
 
-  const handleParticipantToggle = (participant: string) => {
-    setSelectedParticipant(
-      selectedParticipant === participant ? "" : participant
-    );
-  };
-
   const handleRegionClick = async (majorRegion: string) => {
     setActiveRegion(majorRegion);
     await fetchRegions();
   };
 
+  const handleDateSelect = (date: Date) => {
+    setSelectedDates(prev => {
+      const dateStr = date.toISOString().split('T')[0];
+      const exists = prev.some(d => d.toISOString().split('T')[0] === dateStr);
+      
+      if (exists) {
+        return prev.filter(d => d.toISOString().split('T')[0] !== dateStr);
+      } else {
+        return [...prev, date];
+      }
+    });
+  };
+
   const handleReset = () => {
     setSelectedRegions([]);
     setSelectedGenres([]);
-    setSelectedParticipant("");
     setActiveRegion("서울");
+    setSelectedDates([]);
   };
 
   const handleApply = () => {
@@ -170,7 +164,7 @@ export function ThemeFilterModal({
     const filters: FilterValues = {
       regions: selectedRegions,
       genres: selectedGenres,
-      participant: selectedParticipant,
+      dates: selectedDates.map(date => format(date, "yyyy. M. d.")),
       subRegions: selectedSubRegions,
       genreNames: selectedGenreNames
     };
@@ -201,11 +195,11 @@ export function ThemeFilterModal({
             .join(", ")}`
         : "";
 
-    const participantText = selectedParticipant
-      ? `인원: ${selectedParticipant}명`
+    const dateText = selectedDates.length > 0
+      ? `날짜: ${selectedDates.map(date => date.toLocaleDateString()).join(", ")}`
       : "";
 
-    const texts = [regionText, genreText, participantText].filter(Boolean);
+    const texts = [regionText, genreText, dateText].filter(Boolean);
     return texts.join(" | ");
   };
 
@@ -219,7 +213,7 @@ export function ThemeFilterModal({
       ></div>
       <div className="bg-gray-800 rounded-2xl w-full max-w-[1105px] p-4 md:p-8 mx-4 my-4 shadow-lg relative">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-white">검색 필터 - 테마</h2>
+          <h2 className="text-xl font-bold text-white">검색 필터 - 모임</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-300"
@@ -271,7 +265,7 @@ export function ThemeFilterModal({
             <div className="bg-gray-800 rounded-2xl p-4 md:p-6 border border-gray-700 h-[480px] overflow-auto">
               <h3 className="text-lg font-medium mb-4 text-center text-white">지역별</h3>
               <div className="flex h-[calc(100%-40px)]">
-              <div className="w-[120px] md:w-[140px] bg-gray-700 rounded-xl p-2 md:p-4 border border-gray-700">
+                <div className="w-[120px] md:w-[140px] bg-gray-700 rounded-xl p-2 md:p-4 border border-gray-700">
                   {majorRegions.map((region) => (
                     <button
                       key={region.id}
@@ -301,7 +295,7 @@ export function ThemeFilterModal({
                           <div className="relative flex items-center">
                             <input
                               type="checkbox"
-                              id={region.subRegion}
+                              id={region.id.toString()}
                               checked={selectedRegions.includes(
                                 region.id.toString()
                               )}
@@ -322,7 +316,7 @@ export function ThemeFilterModal({
                               />
                             </svg>
                             <label
-                              htmlFor={region.subRegion}
+                              htmlFor={region.id.toString()}
                               className={`ml-2 text-sm cursor-pointer select-none ${
                                 selectedRegions.includes(region.id.toString())
                                   ? "text-[#FFB230] font-medium"
@@ -370,21 +364,47 @@ export function ThemeFilterModal({
 
           <div className="flex-1">
             <div className="bg-gray-800 rounded-2xl p-4 md:p-6 border border-gray-700 h-[480px] overflow-auto">
-              <h3 className="text-lg font-medium mb-4 text-center text-white">인원별</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
-                {participants.map((participant) => (
-                  <button
-                    key={participant.id}
-                    onClick={() => handleParticipantToggle(participant.id)}
-                    className={`text-sm rounded-lg border px-2 md:px-3 py-2 transition-colors ${
-                      selectedParticipant === participant.id
-                        ? "bg-[#FFB230] text-white border-[#FFB230]"
-                        : "border-gray-600 text-gray-300 hover:bg-gray-700"
-                    }`}
-                  >
-                    {participant.name}
-                  </button>
-                ))}
+              <h3 className="text-lg font-medium mb-4 text-center text-white">날짜별</h3>
+              <div className="flex flex-col items-center">
+                <Calendar
+                  selectedDate={null}
+                  onChange={handleDateSelect}
+                  markedDates={selectedDates}
+                />
+                <div className="mt-4 grid grid-cols-3 gap-1.5 w-full">
+                  {selectedDates.map((date) => (
+                    <div
+                      key={date.toISOString()}
+                      className="inline-flex items-center justify-between px-2 py-0.5 bg-[#FFB230] text-white rounded-full text-xs"
+                    >
+                      {format(date, "MM.dd")}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDateSelect(date);
+                        }}
+                        className="ml-0.5 hover:text-gray-200"
+                      >
+                        <svg
+                          className="w-3 h-3"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                  {selectedDates.length === 0 && (
+                    <p className="text-xs text-gray-400 col-span-3">날짜를 선택하세요 (여러 날짜 선택 가능)</p>
+                  )}
+                </div>
               </div>
             </div>
           </div>

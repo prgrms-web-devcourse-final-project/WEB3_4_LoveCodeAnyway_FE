@@ -43,9 +43,9 @@ export function ThemeCard({ room }: { room: EscapeRoom }) {
 
   return (
     <Link href={`/themes/${room.id}`}>
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden cursor-pointer hover:shadow-sm transition-shadow">
+      <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden cursor-pointer hover:shadow-sm transition-shadow">
         {/* 이미지 섹션 */}
-        <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
+        <div className="relative aspect-[4/3] bg-gray-700 overflow-hidden">
           {!imageError ? (
             <img
               src={imageUrl}
@@ -68,12 +68,12 @@ export function ThemeCard({ room }: { room: EscapeRoom }) {
         </div>
 
         <div className="p-5">
-          <h3 className="font-bold text-lg mb-3 truncate">{room.title}</h3>
-          <p className="text-gray-600 text-sm mb-3 truncate">
+          <h3 className="font-bold text-lg mb-3 truncate text-white">{room.title}</h3>
+          <p className="text-gray-400 text-sm mb-3 truncate">
             {room.category || "미스터리 룸 강남점"}
           </p>
           <div className="flex items-center mb-4">
-            <div className="flex items-center text-gray-700 text-sm mr-4">
+            <div className="flex items-center text-gray-300 text-sm mr-4">
               <Image
                 src="/time.svg"
                 alt="시간"
@@ -85,7 +85,7 @@ export function ThemeCard({ room }: { room: EscapeRoom }) {
                 {room.subInfo?.includes("분") ? room.subInfo : "60분"}
               </span>
             </div>
-            <div className="flex items-center text-gray-700 text-sm">
+            <div className="flex items-center text-gray-300 text-sm">
               <Image
                 src="/members.svg"
                 alt="인원"
@@ -124,8 +124,8 @@ export function ThemeCard({ room }: { room: EscapeRoom }) {
                   textColorClass = "text-indigo-700";
                   break;
                 default:
-                  bgColorClass = "bg-gray-100";
-                  textColorClass = "text-gray-700";
+                  bgColorClass = "bg-gray-700";
+                  textColorClass = "text-gray-300";
               }
 
               return (
@@ -138,7 +138,7 @@ export function ThemeCard({ room }: { room: EscapeRoom }) {
               );
             })}
             {(room.tags || []).length > 3 && (
-              <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-sm">
+              <span className="px-3 py-1 bg-gray-700 text-gray-300 text-xs rounded-sm">
                 +{(room.tags || []).length - 3}
               </span>
             )}

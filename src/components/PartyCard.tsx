@@ -30,11 +30,11 @@ export function PartyCard({ room, onClick }: PartyCardProps) {
 
   return (
     <div
-      className="bg-white rounded-2xl border border-gray-200 overflow-hidden cursor-pointer hover:shadow-sm transition-shadow"
+      className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden cursor-pointer hover:shadow-sm transition-shadow"
       onClick={handleClick}
     >
       {/* 이미지 섹션 */}
-      <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
+      <div className="relative aspect-[4/3] bg-gray-700 overflow-hidden">
         {room.image && isValidImageUrl(room.image) ? (
           <Image
             src={room.image}
@@ -48,7 +48,7 @@ export function PartyCard({ room, onClick }: PartyCardProps) {
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
             <svg
-              className="w-16 h-16 text-gray-400"
+              className="w-16 h-16 text-gray-600"
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -66,11 +66,11 @@ export function PartyCard({ room, onClick }: PartyCardProps) {
       </div>
 
       <div className="p-5">
-        <h3 className="font-bold text-lg mb-3">{room.title}</h3>
-        <p className="text-gray-600 text-sm mb-3">{room.category}</p>
+        <h3 className="font-bold text-lg mb-3 text-white">{room.title}</h3>
+        <p className="text-gray-400 text-sm mb-3">{room.category}</p>
 
         <div className="space-y-2 mb-3">
-          <div className="flex items-center text-gray-700 text-sm">
+          <div className="flex items-center text-gray-400 text-sm">
             <Image
               src="/calendar.svg"
               alt="날짜"
@@ -80,7 +80,7 @@ export function PartyCard({ room, onClick }: PartyCardProps) {
             />
             <span>{room.date}</span>
           </div>
-          <div className="flex items-center text-gray-700 text-sm">
+          <div className="flex items-center text-gray-400 text-sm">
             <Image
               src="/members.svg"
               alt="인원"
@@ -90,7 +90,7 @@ export function PartyCard({ room, onClick }: PartyCardProps) {
             />
             <span>{room.participants}</span>
           </div>
-          <div className="flex items-center text-gray-700 text-sm">
+          <div className="flex items-center text-gray-400 text-sm">
             <svg
               className="w-4 h-4 mr-1.5"
               viewBox="0 0 24 24"
@@ -127,7 +127,7 @@ export function PartyCard({ room, onClick }: PartyCardProps) {
                 />
               </div>
             )}
-            <span className="text-sm text-gray-700">{room.host.name}</span>
+            <span className="text-sm text-gray-400">{room.host.name}</span>
           </div>
         )}
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { client } from "@/lib/api/client";
 import { XMarkIcon } from "@heroicons/react/24/outline";
@@ -50,7 +50,8 @@ interface DiaryRequestDto {
 }
 
 // 메인 컴포넌트
-export default function NewDiaryPage() {
+export default function EditDiaryPage({ params }: { params: Promise<{ id: string }> }) {
+  const unwrappedParams = use(params);
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -76,10 +77,9 @@ export default function NewDiaryPage() {
   const [participants, setParticipants] = useState("");
 
   // 이미지 관련 상태
-  const [escapeImages, setEscapeImages] = useState<string[]>([]);
-  const [newEscapeImage, setNewEscapeImage] = useState("");
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [existingImageUrl, setExistingImageUrl] = useState<string | undefined>(undefined);
 
   // 평가 관련 상태
   const [ratings, setRatings] = useState({
@@ -94,19 +94,89 @@ export default function NewDiaryPage() {
   });
 
   // 장치 관련 상태
-  const [deviceRatio, setDeviceRatio] = useState(0);
+  const [deviceRatio, setDeviceRatio] = useState(50);
   const [noDevice, setNoDevice] = useState(false);
 
   // 탈출 정보 관련 상태
   const [hintCount, setHintCount] = useState<number | null>(null);
-  const [isSuccess, setIsSuccess] = useState<boolean>(true);
+  const [isSuccess, setIsSuccess] = useState<boolean | null>(null);
   const [timeType, setTimeType] = useState<"진행 시간" | "잔여 시간">("진행 시간");
-  const [time, setTime] = useState("00:00");
+  const [time, setTime] = useState("");
 
   // 소감 관련 상태
   const [comment, setComment] = useState("");
 
   // ==================== API 호출 함수 ====================
+
+  // 기존 일지 데이터 불러오기
+  useEffect(() => {
+    const fetchDiary = async () => {
+      try {
+        const response = await client.get(`/api/v1/diaries/${unwrappedParams.id}`, {
+          withCredentials: true,
+        });
+
+        if (!response.data?.data) {
+          throw new Error("일지 데이터를 불러오는데 실패했습니다.");
+        }
+
+        const diaryData = response.data.data;
+
+        // 테마 정보 설정
+        setSelectedTheme({
+          id: diaryData.themeId.toString(),
+          name: diaryData.themeName,
+          storeName: diaryData.storeName,
+        });
+
+        // 기본 정보 설정
+        setDate(diaryData.escapeDate);
+        setParticipants(diaryData.participants);
+
+        // 평가 정보 설정
+        setRatings({
+          interior: diaryData.interior,
+          composition: diaryData.question,
+          story: diaryData.story,
+          production: diaryData.production,
+          satisfaction: diaryData.satisfaction,
+          difficulty: diaryData.difficulty,
+          horror: diaryData.fear,
+          activity: diaryData.activity,
+        });
+
+        // 장치 정보 설정
+        setDeviceRatio(diaryData.deviceRatio);
+        setNoDevice(diaryData.deviceRatio === 0);
+
+        // 탈출 정보 설정
+        setHintCount(diaryData.hintCount);
+        setIsSuccess(diaryData.escapeResult);
+        setTimeType("진행 시간"); // 기본값으로 설정
+        setTime(formatTime(diaryData.elapsedTime));
+
+        // 소감 설정
+        setComment(diaryData.review || "");
+
+        // 기존 이미지 설정
+        if (diaryData.imageUrl) {
+          setExistingImageUrl(diaryData.imageUrl);
+        }
+      } catch (error) {
+        console.error("Error fetching diary:", error);
+        alert("일지 데이터를 불러오는데 실패했습니다.");
+      }
+    };
+
+    fetchDiary();
+  }, [unwrappedParams.id]);
+
+  // 시간 형식 변환 함수
+  const formatTime = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
 
   // 테마 검색 API 호출
   const searchThemes = async (keyword: string) => {
@@ -115,9 +185,7 @@ export default function NewDiaryPage() {
     try {
       setIsLoadingThemes(true);
       const response = await client.get(
-        `/api/v1/themes/search?keyword=${encodeURIComponent(
-          keyword
-        )}`,
+        `/api/v1/themes/search?keyword=${encodeURIComponent(keyword)}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -227,7 +295,7 @@ export default function NewDiaryPage() {
     setUploadedFile(null);
   };
 
-  // 탈출일지 등록 API 호출
+  // 탈출일지 수정 API 호출
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -247,7 +315,7 @@ export default function NewDiaryPage() {
     }
 
     try {
-      // 1. 먼저 일지 등록
+      // 1. 일지 수정
       const diaryRequest: DiaryRequestDto = {
         themeId: parseInt(selectedTheme.id),
         escapeDate: date,
@@ -268,7 +336,7 @@ export default function NewDiaryPage() {
         review: comment,
       };
 
-      const diaryResponse = await client.post("/api/v1/diaries", diaryRequest, {
+      const diaryResponse = await client.put(`/api/v1/diaries/${unwrappedParams.id}`, diaryRequest, {
         withCredentials: true,
         headers: {
           "Content-Type": "application/json",
@@ -276,26 +344,9 @@ export default function NewDiaryPage() {
         },
       });
 
-      if (diaryResponse.data?.errorCode) {
-        // 특정 에러 코드에 따른 처리
-        switch (diaryResponse.data.errorCode) {
-          case "DIARY_008":
-            alert("이미 등록된 테마입니다.");
-            return;
-          case "DIARY_003":
-            alert("남은 시간은 테마 시간보다 작아야합니다.");
-            return;
-          default:
-            alert(diaryResponse.data.message || "일지 등록에 실패했습니다.");
-            return;
-        }
-      }
-
       if (!diaryResponse.data?.data?.id) {
-        throw new Error("일지 등록에 실패했습니다.");
+        throw new Error("일지 수정에 실패했습니다.");
       }
-
-      const diaryId = diaryResponse.data.data.id;
 
       // 2. 이미지가 있는 경우 업로드
       if (uploadedFile) {
@@ -303,7 +354,7 @@ export default function NewDiaryPage() {
         formData.append("file", uploadedFile);
         formData.append("target", "DIARY");
 
-        await client.post(`/api/v1/upload/image/${diaryId}`, formData, {
+        await client.post(`/api/v1/upload/image/${unwrappedParams.id}`, formData, {
           withCredentials: true,
           headers: {
             "Content-Type": "multipart/form-data",
@@ -312,7 +363,7 @@ export default function NewDiaryPage() {
         });
       }
 
-      alert("탈출일지가 성공적으로 등록되었습니다.");
+      alert("탈출일지가 성공적으로 수정되었습니다.");
       router.push("/my/diary");
     } catch (error: any) {
       console.error("Form submission error:", error);
@@ -326,10 +377,10 @@ export default function NewDiaryPage() {
             alert("남은 시간은 테마 시간보다 작아야합니다.");
             break;
           default:
-            alert(error.response.data.message || "탈출일지 등록에 실패했습니다.");
+            alert(error.response.data.message || "탈출일지 수정에 실패했습니다.");
         }
       } else {
-        alert("탈출일지 등록에 실패했습니다. 다시 시도해주세요.");
+        alert("탈출일지 수정에 실패했습니다. 다시 시도해주세요.");
       }
     }
   };
@@ -365,29 +416,16 @@ export default function NewDiaryPage() {
     }));
   };
 
-  // 이미지 관련 핸들러
-  const addEscapeImage = () => {
-    if (newEscapeImage.trim()) {
-      setEscapeImages((prev) => [...prev, newEscapeImage]);
-      setNewEscapeImage("");
-    }
-  };
-
-  const removeEscapeImage = (index: number) => {
-    setEscapeImages((prev) => prev.filter((_, i) => i !== index));
-  };
-
   // 새 테마 등록 핸들러
   const handleThemeCreated = (theme: { id: string; name: string; storeName: string }) => {
     setSelectedTheme(theme);
-    setIsNewThemeModalOpen(false);
   };
 
   // ==================== 렌더링 ====================
   return (
     <main className="min-h-screen bg-gray-900">
       <div className="max-w-3xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-8 text-center text-white">탈출일지 작성</h1>
+        <h1 className="text-2xl font-bold mb-8 text-center text-white">탈출일지 수정</h1>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* 섹션 1: 테마 선택 */}
@@ -421,14 +459,14 @@ export default function NewDiaryPage() {
                 />
                 <button
                   type="button"
-                  className="px-4 py-2 bg-[#FFB130] text-black rounded-lg"
+                  className="px-4 py-2 bg-[#FFB130] text-black rounded-lg hover:bg-[#F0A120] transition-colors"
                   onClick={() => setIsThemeModalOpen(true)}
                 >
                   테마 검색
                 </button>
                 <button
                   type="button"
-                  className="px-4 py-2 bg-gray-600 text-white rounded-lg"
+                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                   onClick={openNewThemeModal}
                 >
                   새 테마 등록
@@ -479,44 +517,26 @@ export default function NewDiaryPage() {
                   </p>
                 </div>
 
-                {/* 선택된 파일 목록 표시 */}
-                {uploadedFile && (
+                {/* 기존 이미지 또는 새로 선택한 이미지 표시 */}
+                {(existingImageUrl || uploadedFile) && (
                   <div className="relative mt-2 mb-4">
                     <div className="bg-gray-700 h-24 rounded-lg flex items-center justify-center overflow-hidden">
                       <img
-                        src={URL.createObjectURL(uploadedFile)}
+                        src={uploadedFile ? URL.createObjectURL(uploadedFile) : existingImageUrl}
                         alt="Preview"
                         className="h-full object-cover"
                       />
                     </div>
                     <button
                       type="button"
-                      onClick={removeUploadedFile}
+                      onClick={() => {
+                        setUploadedFile(null);
+                        setExistingImageUrl(undefined);
+                      }}
                       className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs"
                     >
                       ×
                     </button>
-                  </div>
-                )}
-
-                {escapeImages.length > 0 && (
-                  <div className="grid grid-cols-2 gap-2 mt-2">
-                    {escapeImages.map((url, index) => (
-                      <div key={`url-${index}`} className="relative">
-                        <div className="bg-gray-700 h-24 rounded-lg flex items-center justify-center overflow-hidden">
-                          <span className="text-xs text-gray-300 break-all px-2">
-                            {url}
-                          </span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => removeEscapeImage(index)}
-                          className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
                   </div>
                 )}
               </div>
@@ -628,8 +648,6 @@ export default function NewDiaryPage() {
             <h2 className="text-lg font-semibold mb-4 text-white">탈출 정보</h2>
 
             <div className="flex items-start gap-4">
-              
-
               {/* 탈출 여부 */}
               <div className="w-1/3">
                 <h3 className="text-md font-medium mb-2 text-white">탈출 여부</h3>
@@ -750,9 +768,9 @@ export default function NewDiaryPage() {
           <div className="flex justify-center">
             <button
               type="submit"
-              className="px-8 py-3 bg-black text-white font-medium rounded-lg"
+              className="px-8 py-3 bg-[#FFB130] text-black font-medium rounded-lg hover:bg-[#F0A120] transition-colors"
             >
-              일지 등록
+              일지 수정
             </button>
           </div>
         </form>

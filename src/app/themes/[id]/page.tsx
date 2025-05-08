@@ -6,6 +6,8 @@ import { useParams, useRouter } from "next/navigation";
 import { StarRating } from "@/components/StarRating";
 import Image from "next/image";
 import { PageLoading } from "@/components/PageLoading";
+import client from "@/lib/backend/client";
+import { KakaoMap } from "@/components/KakaoMap";
 
 // API 응답 타입과 일치하는 인터페이스
 interface ThemeDetailResponse {
@@ -114,28 +116,10 @@ export default function ThemeDetailPage() {
     const fetchThemeDetail = async () => {
       setLoading(true);
       try {
-        const response = await fetch(
-          `${
-            process.env.NODE_ENV === "development"
-              ? "http://localhost:8080"
-              : "https://api.ddobang.site"
-          }/api/v1/themes/${themeId}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            credentials: "include",
-          }
-        );
+        const response = await client.GET(`/api/v1/themes/${themeId}`);
 
-        if (!response.ok) {
-          throw new Error("테마 정보를 불러오는데 실패했습니다.");
-        }
-
-        const data = await response.json();
-        if (data && data.data) {
-          setThemeDetail(data.data);
+        if (response?.data?.data) {
+          setThemeDetail(response.data.data);
         } else {
           throw new Error("응답 데이터가 올바르지 않습니다.");
         }
@@ -154,9 +138,21 @@ export default function ThemeDetailPage() {
     }
   }, [themeId]);
 
+  const handleSetWishTheme = async () => {
+    try {
+      await client.POST(`/api/v1/themes/${themeId}/wishes`, {
+        withCredentials: true
+      });
+      router.push("/my/profile");
+    } catch (error) {
+      console.error("희망 테마 설정 에러:", error);
+      // 에러 처리 로직 추가
+    }
+  };
+
   if (loading) {
     return (
-      <main className="bg-gray-50 min-h-screen">
+      <main className="bg-gray-900 min-h-screen">
         <PageLoading isLoading={loading} />
       </main>
     );
@@ -164,11 +160,11 @@ export default function ThemeDetailPage() {
 
   if (error || !themeDetail) {
     return (
-      <main className="bg-gray-50 min-h-screen">
+      <main className="bg-gray-900 min-h-screen">
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-8">
-          <div className="bg-white rounded-2xl p-8 shadow-sm text-center">
-            <h1 className="text-2xl font-bold mb-4">오류 발생</h1>
-            <p className="text-gray-600 mb-6">
+          <div className="bg-gray-800 rounded-2xl p-8 shadow-sm text-center">
+            <h1 className="text-2xl font-bold mb-4 text-white">오류 발생</h1>
+            <p className="text-gray-400 mb-6">
               {error || "테마 정보를 불러올 수 없습니다."}
             </p>
             <button
@@ -210,15 +206,15 @@ export default function ThemeDetailPage() {
     : [];
 
   return (
-    <main className="bg-gray-50 min-h-screen">
+    <main className="bg-gray-900 min-h-screen">
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-8">
         {/* 섹션 1: 테마 정보 */}
         <div className="mb-8">
           <div className="mb-2">
-            <h1 className="text-2xl font-bold mb-1">{themeDetail.name}</h1>
-            <span className="text-gray-500">{themeDetail.storeInfo?.name}</span>
+            <h1 className="text-2xl font-bold mb-1 text-white">{themeDetail.name}</h1>
+            <span className="text-gray-400">{themeDetail.storeInfo?.name}</span>
           </div>
-          <div className="flex items-center gap-4 text-sm text-gray-500 mb-2">
+          <div className="flex items-center gap-4 text-sm text-gray-400 mb-2">
             <div className="flex items-center gap-2">
               <svg
                 className="w-4 h-4"
@@ -258,23 +254,23 @@ export default function ThemeDetailPage() {
               const getTagStyle = (type: string) => {
                 switch (type.toLowerCase()) {
                   case "미스터리":
-                    return "bg-purple-100 text-purple-800";
+                    return "bg-purple-900 text-purple-200";
                   case "추리":
-                    return "bg-blue-100 text-blue-800";
+                    return "bg-blue-900 text-blue-200";
                   case "공포":
-                    return "bg-red-100 text-red-800";
+                    return "bg-red-900 text-red-200";
                   case "액션":
-                    return "bg-orange-100 text-orange-800";
+                    return "bg-orange-900 text-orange-200";
                   case "sf":
-                    return "bg-cyan-100 text-cyan-800";
+                    return "bg-cyan-900 text-cyan-200";
                   case "판타지":
-                    return "bg-indigo-100 text-indigo-800";
+                    return "bg-indigo-900 text-indigo-200";
                   case "어드벤처":
-                    return "bg-green-100 text-green-800";
+                    return "bg-green-900 text-green-200";
                   case "퍼즐":
-                    return "bg-yellow-100 text-yellow-800";
+                    return "bg-yellow-900 text-yellow-200";
                   default:
-                    return "bg-gray-100 text-gray-800";
+                    return "bg-gray-700 text-gray-200";
                 }
               };
 
@@ -290,7 +286,7 @@ export default function ThemeDetailPage() {
               );
             })}
           </div>
-          <div className="relative w-full h-[400px] bg-gray-100 rounded-2xl overflow-hidden mb-4">
+          <div className="relative w-full h-[400px] bg-gray-800 rounded-2xl overflow-hidden mb-4">
             {themeDetail.thumbnailUrl ? (
               <img
                 src={getProxyImageUrl(themeDetail.thumbnailUrl)}
@@ -316,26 +312,11 @@ export default function ThemeDetailPage() {
           </div>
           <div className="flex justify-between items-center">
             <div className="flex gap-6">
-              {themeDetail.diaryBasedThemeStat && (
-                <>
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-600">유저 탈출률</span>
-                    <span className="font-bold text-xl">
-                      {themeDetail.diaryBasedThemeStat.escapeResult || 0}%
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-600">노힌트 탈출률</span>
-                    <span className="font-bold text-xl">
-                      {themeDetail.diaryBasedThemeStat.noHintEscapeRate || 0}%
-                    </span>
-                  </div>
-                </>
-              )}
+              {/* Empty div to maintain layout balance */}
             </div>
             <div className="flex gap-6">
               <div className="flex items-center gap-2">
-                <span className="text-gray-600">난이도</span>
+                <span className="text-gray-400">난이도</span>
                 <StarRating
                   rating={themeDetail.officialDifficulty || 0}
                   maxRating={5}
@@ -343,8 +324,8 @@ export default function ThemeDetailPage() {
               </div>
               {themeDetail.price && (
                 <div className="flex items-center gap-2">
-                  <span className="text-gray-600">가격</span>
-                  <span className="font-medium">
+                  <span className="text-gray-400">가격</span>
+                  <span className="font-medium text-white">
                     {themeDetail.price.toLocaleString()}원
                   </span>
                 </div>
@@ -352,37 +333,31 @@ export default function ThemeDetailPage() {
             </div>
           </div>
         </div>
+        
 
         {/* 섹션 2: 설명 및 위치 */}
-        <section className="bg-white rounded-2xl p-8 mb-8 shadow-sm">
+        <section className="bg-gray-800 rounded-2xl p-8 mb-8 shadow-sm">
           <div className="flex flex-col md:flex-row gap-8">
-            <div className="w-full md:w-1/2 border-r border-gray-100 pr-8">
-              <h2 className="text-2xl font-bold mb-4">테마 설명</h2>
-              <p className="text-gray-600 leading-relaxed whitespace-pre-line">
+            <div className="w-full md:w-1/2 border-r border-gray-700 pr-8">
+              <h2 className="text-2xl font-bold mb-4 text-white">테마 설명</h2>
+              <p className="text-gray-300 leading-relaxed whitespace-pre-line">
                 {themeDetail.description || "테마 설명이 없습니다."}
               </p>
             </div>
             {themeDetail.storeInfo && (
               <div className="w-full md:w-1/2">
-                <h2 className="text-2xl font-bold mb-4">매장 위치</h2>
-                <div className="h-64 bg-gray-200 rounded-lg mb-4 relative">
-                  {/* 고정 이미지 사용 */}
-                  <Image
-                    src="https://i.postimg.cc/L5Q5s78R/image.png"
-                    alt={`${themeDetail.storeInfo.name} 지도`}
-                    fill
-                    className="object-cover rounded-lg"
-                    unoptimized
+                <h2 className="text-2xl font-bold mb-4 text-white">매장 위치</h2>
+                <div className="h-64 bg-gray-700 rounded-lg mb-4 relative">
+                  <KakaoMap 
+                    address={themeDetail.storeInfo.address || ""} 
+                    storeName={themeDetail.storeInfo.name}
                   />
-                  <div className="absolute bottom-2 right-2 bg-white px-2 py-1 rounded shadow text-xs">
-                    {themeDetail.storeInfo.name || ""}
-                  </div>
                 </div>
                 <div className="space-y-2">
-                  <p className="text-gray-600">
+                  <p className="text-gray-300">
                     {themeDetail.storeInfo.address}
                   </p>
-                  <p className="text-gray-600">
+                  <p className="text-gray-300">
                     {themeDetail.storeInfo.phoneNumber}
                   </p>
                 </div>
@@ -393,42 +368,42 @@ export default function ThemeDetailPage() {
 
         {/* 섹션 3: 평가 및 통계 */}
         {themeDetail.diaryBasedThemeStat && (
-          <section className="bg-white rounded-2xl p-8 shadow-sm">
+          <section className="bg-gray-800 rounded-2xl p-8 shadow-sm">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* 유저 평가 */}
               <div>
-                <h2 className="text-2xl font-bold mb-6">유저 평가</h2>
+                <h2 className="text-2xl font-bold mb-6 text-white">유저 평가</h2>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">만족도</span>
+                    <span className="text-gray-300">만족도</span>
                     <StarRating
                       rating={themeDetail.diaryBasedThemeStat.satisfaction || 0}
                       maxRating={5}
                     />
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">연출</span>
+                    <span className="text-gray-300">연출</span>
                     <StarRating
                       rating={themeDetail.diaryBasedThemeStat.production || 0}
                       maxRating={5}
                     />
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">스토리</span>
+                    <span className="text-gray-300">스토리</span>
                     <StarRating
                       rating={themeDetail.diaryBasedThemeStat.story || 0}
                       maxRating={5}
                     />
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">문제</span>
+                    <span className="text-gray-300">문제</span>
                     <StarRating
                       rating={themeDetail.diaryBasedThemeStat.question || 0}
                       maxRating={5}
                     />
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">인테리어</span>
+                    <span className="text-gray-300">인테리어</span>
                     <StarRating
                       rating={themeDetail.diaryBasedThemeStat.interior || 0}
                       maxRating={5}
@@ -439,11 +414,11 @@ export default function ThemeDetailPage() {
 
               {/* 플레이 특성 */}
               <div>
-                <h2 className="text-2xl font-bold mb-6">플레이 특성</h2>
+                <h2 className="text-2xl font-bold mb-6 text-white">플레이 특성</h2>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">난이도</span>
-                    <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <span className="text-gray-300">난이도</span>
+                    <div className="w-32 h-2 bg-gray-700 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-yellow-500 rounded-full"
                         style={{
@@ -456,8 +431,8 @@ export default function ThemeDetailPage() {
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">공포도</span>
-                    <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <span className="text-gray-300">공포도</span>
+                    <div className="w-32 h-2 bg-gray-700 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-red-500 rounded-full"
                         style={{
@@ -469,8 +444,8 @@ export default function ThemeDetailPage() {
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">활동성</span>
-                    <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <span className="text-gray-300">활동성</span>
+                    <div className="w-32 h-2 bg-gray-700 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-green-500 rounded-full"
                         style={{
@@ -482,8 +457,8 @@ export default function ThemeDetailPage() {
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">기믹/장치</span>
-                    <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <span className="text-gray-300">기믹/장치</span>
+                    <div className="w-32 h-2 bg-gray-700 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-blue-500 rounded-full"
                         style={{
@@ -503,26 +478,26 @@ export default function ThemeDetailPage() {
             </div>
 
             {/* 통계 */}
-            <div className="mt-8 pt-8 border-t border-gray-200">
-              <h2 className="text-2xl font-bold mb-6">통계</h2>
+            <div className="mt-8 pt-8 border-t border-gray-700">
+              <h2 className="text-2xl font-bold mb-6 text-white">통계</h2>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <div className="bg-gray-50 rounded-lg p-5 text-center">
-                  <div className="text-4xl font-bold mb-2">
+                <div className="bg-gray-700 rounded-lg p-5 text-center">
+                  <div className="text-4xl font-bold mb-2 text-white">
                     {themeDetail.diaryBasedThemeStat.escapeResult || 0}%
                   </div>
-                  <div className="text-gray-500">유저 탈출률</div>
+                  <div className="text-gray-400">유저 탈출률</div>
                 </div>
-                <div className="bg-gray-50 rounded-lg p-5 text-center">
-                  <div className="text-4xl font-bold mb-2">
+                <div className="bg-gray-700 rounded-lg p-5 text-center">
+                  <div className="text-4xl font-bold mb-2 text-white">
                     {themeDetail.diaryBasedThemeStat.noHintEscapeRate || 0}%
                   </div>
-                  <div className="text-gray-500">노힌트 탈출률</div>
+                  <div className="text-gray-400">노힌트 탈출률</div>
                 </div>
-                <div className="bg-gray-50 rounded-lg p-5 text-center">
-                  <div className="text-4xl font-bold mb-2">
+                <div className="bg-gray-700 rounded-lg p-5 text-center">
+                  <div className="text-4xl font-bold mb-2 text-white">
                     {themeDetail.diaryBasedThemeStat.escapeTimeAvg || 0}개
                   </div>
-                  <div className="text-gray-500">평균 힌트</div>
+                  <div className="text-gray-400">평균 힌트</div>
                 </div>
               </div>
             </div>
@@ -556,20 +531,20 @@ export default function ThemeDetailPage() {
             >
               예약하러 가기
             </Link>
-            <Link
-              href="/my/"
+            <button
+              onClick={handleSetWishTheme}
               className="flex-1 px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFA000] transition-colors text-center shadow-sm whitespace-nowrap"
             >
               희망 테마 설정
-            </Link>
+            </button>
             <Link
-              href="/par"
+              href={`/parties/new?themeId=${themeId}&themeName=${encodeURIComponent(themeDetail.name || '')}`}
               className="flex-1 px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFA000] transition-colors text-center shadow-sm whitespace-nowrap"
             >
               모임 만들기
             </Link>
             <Link
-              href="/themes"
+              href={`/parties?themeId=${themeId}&themeName=${encodeURIComponent(themeDetail.name || '')}`}
               className="flex-1 px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFA000] transition-colors text-center shadow-sm whitespace-nowrap"
             >
               모임찾기

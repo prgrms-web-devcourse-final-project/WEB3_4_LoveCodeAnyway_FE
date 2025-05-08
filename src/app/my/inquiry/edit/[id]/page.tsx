@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import client from "@/lib/backend/client";
@@ -32,14 +32,63 @@ const inquiryTypes = [
   "테마 관련",
 ];
 
-export default function NewInquiryPage() {
+interface InquiryDetail {
+  id: number;
+  type: "QNA" | "REPORT" | "THEME";
+  title: string;
+  content: string;
+  attachments: {
+    id: number;
+    fileName: string;
+  }[];
+}
+
+export default function EditInquiryPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const [inquiryType, setInquiryType] = useState("");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [files, setFiles] = useState<File[]>([]);
+  const [existingFiles, setExistingFiles] = useState<{ id: number; fileName: string }[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const inquiryId = Number(params.id);
+
+  useEffect(() => {
+    const fetchInquiryDetail = async () => {
+      try {
+        setIsLoading(true);
+        const response = await client.GET("/api/v1/boards/{id}", {
+          params: {
+            path: {
+              id: inquiryId,
+            },
+          },
+        });
+
+        if (response.data?.data) {
+          const data = response.data.data as InquiryDetail;
+          setInquiryType(
+            data.type === "QNA" ? "사이트 이용 문의" :
+            data.type === "REPORT" ? "신고" : "테마 관련"
+          );
+          setTitle(data.title);
+          setContent(data.content);
+          setExistingFiles(data.attachments);
+        } else {
+          setError("해당 문의를 찾을 수 없습니다.");
+        }
+      } catch (error) {
+        console.error("문의 상세 조회 에러:", error);
+        setError("문의 내용을 불러오는데 실패했습니다.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchInquiryDetail();
+  }, [inquiryId]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -74,21 +123,24 @@ export default function NewInquiryPage() {
       setIsSubmitting(true);
       setError(null);
 
-      // 1. 문의 등록
-      const postResponse = await client.POST("/api/v1/boards", {
+      // 1. 문의 수정
+      const putResponse = await client.PUT("/api/v1/boards/{id}", {
+        params: {
+          path: {
+            id: inquiryId,
+          },
+        },
         body: {
           type: inquiryTypeMap[inquiryType as keyof typeof inquiryTypeMap],
           title,
           content,
-          attachments: [], // 초기에는 빈 배열로 보냄
+          attachments: existingFiles.map(file => file.id),
         },
       });
 
-      if (!postResponse.data?.data?.id) {
-        throw new Error("문의 등록에 실패했습니다.");
+      if (!putResponse.data?.data?.id) {
+        throw new Error("문의 수정에 실패했습니다.");
       }
-
-      const postId = postResponse.data.data.id;
 
       // 2. 파일이 있는 경우 첨부파일 업로드
       if (files.length > 0) {
@@ -100,28 +152,44 @@ export default function NewInquiryPage() {
         await client.POST("/api/v1/upload/attachment/{postId}", {
           params: {
             path: {
-              postId,
+              postId: inquiryId,
             },
           },
-          body: formData,
+          body: formData as any,
         });
       }
 
       router.push("/my/inquiry");
     } catch (error) {
-      console.error("문의 등록 에러:", error);
-      setError("문의 등록에 실패했습니다. 다시 시도해주세요.");
+      console.error("문의 수정 에러:", error);
+      setError("문의 수정에 실패했습니다. 다시 시도해주세요.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-200"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <div className="text-red-400">{error}</div>
+      </div>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-gray-900">
       <div className="max-w-3xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-8 text-white">문의하기</h1>
+        <h1 className="text-2xl font-bold mb-8 text-white">문의 수정</h1>
         <p className="text-gray-400 mb-8">
-          아래 양식을 작성하여 문의사항을 등록해주세요.
+          아래 양식을 수정하여 문의사항을 업데이트해주세요.
         </p>
 
         {error && (
@@ -187,6 +255,28 @@ export default function NewInquiryPage() {
           {/* 첨부파일 */}
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-300">첨부파일</label>
+            
+            {/* 기존 첨부파일 */}
+            {existingFiles.length > 0 && (
+              <div className="mb-4">
+                <p className="text-sm font-medium mb-2 text-gray-300">기존 첨부파일:</p>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                  {existingFiles.map((file) => (
+                    <div key={file.id} className="relative">
+                      <div className="aspect-square relative rounded-lg overflow-hidden border border-gray-700">
+                        <img
+                          src={`${API_BASE_URL}/api/v1/boards/attachment/${file.id}`}
+                          alt={file.fileName}
+                          className="object-cover w-full h-full"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 새 첨부파일 */}
             <div className="border border-dashed border-gray-700 rounded-lg p-8 cursor-pointer hover:bg-gray-800">
               <input
                 type="file"
@@ -213,7 +303,7 @@ export default function NewInquiryPage() {
                     d="M12 4v16m8-8H4"
                   />
                 </svg>
-                <p className="text-sm text-gray-400 mb-1">파일 업로드</p>
+                <p className="text-sm text-gray-400 mb-1">새 파일 업로드</p>
                 <p className="text-xs text-gray-500">
                   PNG, JPG, GIF up to 10MB
                 </p>
@@ -221,7 +311,7 @@ export default function NewInquiryPage() {
             </div>
             {files.length > 0 && (
               <div className="mt-4">
-                <p className="text-sm font-medium mb-2 text-gray-300">선택된 파일:</p>
+                <p className="text-sm font-medium mb-2 text-gray-300">선택된 새 파일:</p>
                 <ul className="space-y-2">
                   {files.map((file, index) => (
                     <li key={index} className="text-sm text-gray-400">
@@ -236,7 +326,7 @@ export default function NewInquiryPage() {
           {/* 버튼 */}
           <div className="flex justify-end gap-4 pt-4">
             <Link
-              href="/my/inquiry"
+              href={`/my/inquiry/${inquiryId}`}
               className="px-6 py-2 text-gray-300 bg-gray-800 rounded-lg hover:bg-gray-700 border border-gray-700"
             >
               취소
@@ -247,7 +337,7 @@ export default function NewInquiryPage() {
               className={`px-6 py-2 text-white bg-gray-700 rounded-lg hover:bg-gray-600 ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""
                 }`}
             >
-              {isSubmitting ? "등록 중..." : "등록하기"}
+              {isSubmitting ? "수정 중..." : "수정하기"}
             </button>
           </div>
         </form>
