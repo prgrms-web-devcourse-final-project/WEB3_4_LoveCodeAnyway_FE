@@ -1,14 +1,12 @@
-import createClient from "openapi-fetch";
+import createClient from 'openapi-fetch'
 
-import type { paths } from "@/lib/backend/apiV1/schema";
+import type { paths } from '@/lib/backend/apiV1/schema'
 
-const baseUrl =
-  process.env.NODE_ENV === "development"
-    ? "http://localhost:8080/"
-    : "https://api.ddobang.site/";
+const baseUrl = process.env.NEXT_PUBLIC_API_URL
 
 const client = createClient<paths>({
-  baseUrl,
-  credentials: "include",
-});
-export default client;
+    baseUrl,
+    credentials: 'include',
+})
+
+export default client
