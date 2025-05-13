@@ -1,4 +1,4 @@
-import { Calendar } from '@/components/Calendar'
+import { Calendar } from '@/components/common/Calendar'
 import client from '@/lib/backend/client'
 import { format } from 'date-fns'
 import { useEffect, useState } from 'react'

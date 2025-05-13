@@ -1,8 +1,8 @@
 'use client'
 
+import { PageLoading } from '@/components/common/PageLoading'
 import { Navigation } from '@/components/layout/Navigation'
-import { PageLoading } from '@/components/PageLoading'
-import { Notification } from '@/components/SseConnector'
+import { Notification } from '@/components/layout/SseConnector'
 import client from '@/lib/backend/client'
 import { LoginMemberContext, useLoginMember } from '@/stores/auth/loginMember'
 import { AlarmResponse } from '@/types/alarm'

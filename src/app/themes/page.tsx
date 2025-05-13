@@ -1,6 +1,6 @@
 'use client'
 
-import { PageLoading } from '@/components/PageLoading'
+import { PageLoading } from '@/components/common/PageLoading'
 import { ThemeCard } from '@/components/theme/ThemeCard'
 import { ThemeSearch } from '@/components/theme/ThemeSearch'
 import client from '@/lib/backend/client'

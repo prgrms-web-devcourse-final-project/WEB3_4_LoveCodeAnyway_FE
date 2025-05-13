@@ -1,7 +1,7 @@
 'use client'
 
 import { NotificationContext } from '@/app/ClientLayout'
-import { Notification } from '@/components/Notification'
+import { Notification } from '@/components/layout/Notification'
 import { useGlobalLoginMember } from '@/stores/auth/loginMember'
 import Image from 'next/image'
 import Link from 'next/link'

@@ -1,8 +1,8 @@
 'use client'
 
 import { KakaoMap } from '@/components/common/KakaoMap'
-import { PageLoading } from '@/components/PageLoading'
-import { StarRating } from '@/components/StarRating'
+import { PageLoading } from '@/components/common/PageLoading'
+import { StarRating } from '@/components/stat/StarRating'
 import client from '@/lib/backend/client'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'

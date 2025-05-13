@@ -1,6 +1,6 @@
 'use client'
 
-import { NewThemesModal } from '@/components/NewThemesModal'
+import { NewThemesModal } from '@/components/theme/NewThemesModal'
 import { ThemeSearchModal } from '@/components/theme/ThemeSearchModalForDiary'
 import client from '@/lib/backend/client'
 import { useRouter } from 'next/navigation'

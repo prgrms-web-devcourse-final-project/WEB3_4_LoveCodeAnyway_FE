@@ -1,7 +1,7 @@
 import client from '@/lib/backend/client'
 import { format } from 'date-fns'
 import { useEffect, useState } from 'react'
-import { Calendar } from '../Calendar'
+import { Calendar } from '../common/Calendar'
 
 interface Tag {
     id: number
