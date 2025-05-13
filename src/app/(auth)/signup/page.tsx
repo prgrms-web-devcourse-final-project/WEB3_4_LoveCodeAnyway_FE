@@ -8,13 +8,10 @@ import { useRouter } from 'next/navigation'
 import { ChangeEvent, FormEvent, useEffect, useState } from 'react'
 
 // 태그 타입 정의
-interface Tag {
-    id: number // 필수 필드로 변경
-    name: string // 필수 필드로 변경
-}
+type Tag = Required<components['schemas']['ThemeTagResponse']>
 
 export default function SignupPage() {
-    const { loginMember, isLogin } = useGlobalLoginMember()
+    const { isLogin } = useGlobalLoginMember()
     const router = useRouter()
 
     // 로그인 상태 확인 및 리다이렉트
@@ -55,9 +52,6 @@ export default function SignupPage() {
                     setIsLoading(false)
                     return
                 }
-
-                console.log('태그 데이터 응답:', data)
-
                 // API 응답 구조에 맞게 처리
                 if (data?.data) {
                     // id와 name이 모두 있는 태그만 필터링
@@ -198,9 +192,9 @@ export default function SignupPage() {
                 // 임의의 diaryId 생성 (현재 시간 기준)
                 const randomDiaryId = Date.now().toString()
 
-                // 이미지 업로드 API 호출 (OpenAPI 스키마에 정의되지 않은 엔드포인트)
+                // 이미지 업로드 API 호출 (multipart/form-data는 fetch 사용)
                 const uploadResponse = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/upload/image/${randomDiaryId}`,
+                    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/upload/image/${randomDiaryId}?target=PROFILE`,
                     {
                         method: 'POST',
                         body: formData,

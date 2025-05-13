@@ -1,5 +1,6 @@
 'use client'
 
+import { components } from '@/lib/backend/apiV1/schema'
 import client from '@/lib/backend/client'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -16,30 +17,27 @@ import 'swiper/css/pagination'
 const tags = ['#전체', '#공포', '#추리', '#액션', '#판타지', '#SF']
 
 // 테마 타입 정의
-type Theme = {
-    id: number
-    name: string
-    storeName: string
-    thumbnailUrl?: string
-    tags?: string[]
-    rating?: number
-    region?: string
-    playTime?: string
-    recommendedPlayers?: string
-    genre?: string
-}
+type Theme = components['schemas']['ThemesResponse']
 
 // 모임 타입 정의
-type Party = {
-    id: number
-    themeId: number
-    themeName: string
-    themeThumbnailUrl?: string
-    storeName: string
-    title: string
-    scheduledAt: string
-    acceptedParticipantCount: number
-    totalParticipants: number
+type Party = components['schemas']['PartyMainResponse']
+
+// 날짜 계산 함수
+const getPartyStatus = (scheduledAt: string | undefined) => {
+    if (!scheduledAt) return null
+    try {
+        const date = new Date(scheduledAt)
+        const now = new Date()
+        const timeDiff = date.getTime() - now.getTime()
+        const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24))
+
+        if (daysDiff === 0) return '오늘마감'
+        if (daysDiff === 1) return 'D-1'
+        if (daysDiff < 0) return '마감'
+        return `D-${daysDiff}`
+    } catch {
+        return null
+    }
 }
 
 export default function HomePage() {
@@ -82,7 +80,7 @@ export default function HomePage() {
                     },
                 },
             })
-            setRankingThemes(response.data.data || [])
+            setRankingThemes(response.data?.data ?? [])
         } catch (error) {
             console.error('랭킹 테마 조회 실패:', error)
             setRankingThemes([])
@@ -102,9 +100,11 @@ export default function HomePage() {
                         tagName,
                     },
                 },
-                baseUrl: process.env.NEXT_PUBLIC_API_URL,
             })
-            setNewThemes(response.data.data || [])
+            setNewThemes(response.data?.data ?? [])
+        } catch (error) {
+            console.error('신규 테마 조회 실패:', error)
+            setNewThemes([])
         } finally {
             setIsLoadingNew(false)
         }
@@ -114,10 +114,13 @@ export default function HomePage() {
     const fetchParties = async () => {
         setIsLoadingParties(true)
         try {
-            const response = await client.GET('/api/v1/parties/main', {
-                baseUrl: process.env.NEXT_PUBLIC_API_URL,
-            })
-            setParties(response.data.data || [])
+            const response = await client.GET('/api/v1/parties/main')
+            if (response.data?.data) {
+                setParties(response.data.data)
+            } else {
+                console.warn('모임 데이터가 없습니다.')
+                setParties([])
+            }
         } catch (error) {
             console.error('모임 조회 실패:', error)
             setParties([])
@@ -243,19 +246,7 @@ export default function HomePage() {
                                                   <div className="flex items-center justify-between mb-3">
                                                       <div className="text-gray-300 text-sm">{party.storeName}</div>
                                                       <div className="text-red-500 text-sm font-medium">
-                                                          {(() => {
-                                                              const scheduledDate = new Date(party.scheduledAt)
-                                                              const today = new Date()
-                                                              const diffTime = scheduledDate.getTime() - today.getTime()
-                                                              const diffDays = Math.ceil(
-                                                                  diffTime / (1000 * 60 * 60 * 24),
-                                                              )
-
-                                                              if (diffDays === 0) return '오늘마감'
-                                                              if (diffDays === 1) return 'D-1'
-                                                              if (diffDays < 0) return '마감'
-                                                              return `D-${diffDays}`
-                                                          })()}
+                                                          {getPartyStatus(party.scheduledAt)}
                                                       </div>
                                                   </div>
 
@@ -304,16 +295,18 @@ export default function HomePage() {
                                                           {party.acceptedParticipantCount}/{party.totalParticipants}명
                                                       </span>
                                                       <span className="mx-2">•</span>
-                                                      <span>
-                                                          {new Date(party.scheduledAt).toLocaleString('ko-KR', {
-                                                              year: 'numeric',
-                                                              month: '2-digit',
-                                                              day: '2-digit',
-                                                              hour: '2-digit',
-                                                              minute: '2-digit',
-                                                              hour12: false,
-                                                          })}
-                                                      </span>
+                                                      {party.scheduledAt && (
+                                                          <span>
+                                                              {new Date(party.scheduledAt).toLocaleString('ko-KR', {
+                                                                  year: 'numeric',
+                                                                  month: '2-digit',
+                                                                  day: '2-digit',
+                                                                  hour: '2-digit',
+                                                                  minute: '2-digit',
+                                                                  hour12: false,
+                                                              })}
+                                                          </span>
+                                                      )}
                                                   </div>
                                               </div>
                                           </Link>
@@ -393,30 +386,14 @@ export default function HomePage() {
                                         <SwiperSlide key={theme.id}>
                                             <Link href={`/themes/${theme.id}`} className="relative block group h-full">
                                                 <div className="aspect-[3/4] bg-gray-700 rounded-lg overflow-hidden flex items-center justify-center relative">
-                                                    {theme.thumbnailUrl ? (
+                                                    {theme.thumbnailUrl && (
                                                         <Image
                                                             src={theme.thumbnailUrl}
-                                                            alt={theme.name}
+                                                            alt={theme.name ?? '테마 이미지'}
                                                             fill
                                                             className="object-cover"
+                                                            unoptimized
                                                         />
-                                                    ) : (
-                                                        <svg
-                                                            width="64"
-                                                            height="64"
-                                                            viewBox="0 0 24 24"
-                                                            fill="none"
-                                                            stroke="#FFB230"
-                                                            strokeWidth="1.5"
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            className="theme-image"
-                                                        >
-                                                            <path d="M14.5 3H6a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8.5L14.5 3Z"></path>
-                                                            <polyline points="14 3 14 9 20 9"></polyline>
-                                                            <circle cx="10" cy="13" r="2"></circle>
-                                                            <path d="m20 17-1.5-1.5a2 2 0 0 0-3 0L10 22"></path>
-                                                        </svg>
                                                     )}
 
                                                     {/* 랭킹 뱃지 */}
@@ -431,12 +408,12 @@ export default function HomePage() {
                                                         <h3 className="font-medium mb-1 text-lg">{theme.name}</h3>
                                                         <p className="text-sm">{theme.storeName}</p>
                                                         <div className="flex items-center mt-2 text-xs">
-                                                            <span>{theme.playTime || '60분'}</span>
+                                                            <span>{theme.runtime ? `${theme.runtime}분` : '60분'}</span>
                                                             <span className="mx-2">•</span>
-                                                            <span>{theme.recommendedPlayers || '2-4인'}</span>
+                                                            <span>{theme.recommendedParticipants || '2-4인'}</span>
                                                             <span className="mx-2">•</span>
                                                             <span>
-                                                                {theme.genre || popularActiveTag.replace('#', '')}
+                                                                {theme.tags?.[0] || popularActiveTag.replace('#', '')}
                                                             </span>
                                                         </div>
                                                     </div>
@@ -512,35 +489,37 @@ export default function HomePage() {
                                 }}
                                 className="py-4"
                             >
-                                {newThemes.map((theme) => (
+                                {newThemes.map((theme, index) => (
                                     <SwiperSlide key={theme.id}>
-                                        <Link href={`/themes/${theme.id}`} className="group">
-                                            <div className="relative aspect-[3/4] bg-gray-800 rounded-lg overflow-hidden">
-                                                {theme.thumbnailUrl ? (
+                                        <Link href={`/themes/${theme.id}`} className="relative block group h-full">
+                                            <div className="aspect-[3/4] bg-gray-700 rounded-lg overflow-hidden flex items-center justify-center relative">
+                                                {theme.thumbnailUrl && (
                                                     <Image
                                                         src={theme.thumbnailUrl}
-                                                        alt={theme.name}
+                                                        alt={theme.name ?? '테마 이미지'}
                                                         fill
-                                                        className="object-cover transition-transform group-hover:scale-105"
+                                                        className="object-cover"
+                                                        unoptimized
                                                     />
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center bg-gray-700">
-                                                        <span className="text-gray-400">이미지 없음</span>
-                                                    </div>
                                                 )}
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-                                                <div className="absolute bottom-0 left-0 right-0 p-4">
-                                                    <h3 className="text-lg font-bold text-white mb-1">{theme.name}</h3>
-                                                    <p className="text-sm text-gray-300 mb-2">{theme.storeName}</p>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {theme.tags?.map((tag, index) => (
-                                                            <span
-                                                                key={index}
-                                                                className="px-2 py-1 text-xs bg-gray-700/80 text-gray-300 rounded-full"
-                                                            >
-                                                                #{tag}
-                                                            </span>
-                                                        ))}
+
+                                                {/* 랭킹 뱃지 */}
+                                                <div className="absolute top-4 left-4">
+                                                    <span className="bg-[#FFB130] text-white px-3 py-1 rounded-lg text-sm font-bold">
+                                                        {index + 1}위
+                                                    </span>
+                                                </div>
+
+                                                {/* 오버레이 정보 */}
+                                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 text-white">
+                                                    <h3 className="font-medium mb-1 text-lg">{theme.name}</h3>
+                                                    <p className="text-sm">{theme.storeName}</p>
+                                                    <div className="flex items-center mt-2 text-xs">
+                                                        <span>{theme.runtime ? `${theme.runtime}분` : '60분'}</span>
+                                                        <span className="mx-2">•</span>
+                                                        <span>{theme.recommendedParticipants || '2-4인'}</span>
+                                                        <span className="mx-2">•</span>
+                                                        <span>{theme.tags?.[0] || newActiveTag.replace('#', '')}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -548,16 +527,6 @@ export default function HomePage() {
                                     </SwiperSlide>
                                 ))}
                             </Swiper>
-
-                            {/* 신규 테마 더보기 버튼 */}
-                            <div className="flex justify-center mt-8">
-                                <Link
-                                    href="/themes"
-                                    className="px-6 py-2 border border-[#FFB130] text-[#FFB130] rounded-full hover:bg-[#FFB130] hover:text-white transition-colors"
-                                >
-                                    더보기
-                                </Link>
-                            </div>
                         </div>
                     ) : (
                         <EmptyState />
