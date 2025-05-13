@@ -4,29 +4,17 @@ import { PageLoading } from '@/components/common/PageLoading'
 import { PartiesFilterModal } from '@/components/party/PartiesFilterModal'
 import { PartyCard } from '@/components/party/PartyCard'
 import { PartySearch } from '@/components/party/PartySearch'
+import { components } from '@/lib/backend/apiV1/schema'
 import client from '@/lib/backend/client'
 import { LoginMemberContext } from '@/stores/auth/loginMember'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useContext, useEffect, useRef, useState } from 'react'
 
-// API에서 받는 모임 데이터 타입
-interface PartyMainResponse {
-    themeId?: number
-    themeName?: string
-    themeThumbnailUrl?: string
-    storeId?: number
-    storeName?: string
-    id?: number
-    partyId?: number
-    title?: string
-    scheduledAt?: string
-    acceptedParticipantsCount?: number
-    totalParticipants?: number
-    hostNickname?: string
-    hostProfilePictureUrl?: string
-}
+type PartySearchCondition = components['schemas']['PartySearchCondition']
+type PartySummaryResponse = components['schemas']['PartySummaryResponse']
 
+// API에서 받는 모임 데이터 타입
 interface SearchCondition {
     keyword: string
     regionIds: number[]
@@ -38,7 +26,7 @@ export default function PartiesPage() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const { isLogin } = useContext(LoginMemberContext)
-    const [parties, setParties] = useState<PartyMainResponse[]>([])
+    const [parties, setParties] = useState<PartySummaryResponse[]>([])
     const [loading, setLoading] = useState(false)
     const [initialLoading, setInitialLoading] = useState(true)
     const [searchKeyword, setSearchKeyword] = useState('')
@@ -94,7 +82,7 @@ export default function PartiesPage() {
     )
 
     // 모임 데이터 로드
-    const loadParties = async (reset = false, customSearchCondition?: SearchCondition) => {
+    const loadParties = async (reset = false, customSearchCondition?: PartySearchCondition) => {
         if (loading || (!hasMore && !reset)) return
 
         setLoading(true)
@@ -209,12 +197,9 @@ export default function PartiesPage() {
     }
 
     // 카드 클릭 처리
-    const handleCardClick = (party: PartyMainResponse) => {
-        if (party && (party.id || party.partyId)) {
-            // id 또는 partyId 중 존재하는 값 사용
-            const partyId = party.id || party.partyId
-            router.push(`/parties/${partyId}`)
-        } else {
+    const handleCardClick = (party: PartySummaryResponse) => {
+        if (party?.partyId) {
+            router.push(`/parties/${party.partyId}`)
         }
     }
 
@@ -246,43 +231,14 @@ export default function PartiesPage() {
             ))
     }
 
-    const renderPartyCard = (party: PartyMainResponse, index: number) => {
-        // 이미지 URL 처리 함수
-        const getImageUrl = (url?: string) => {
-            if (!url) return 'https://i.postimg.cc/PJNVr12v/theme.jpg'
-
-            // 내부 경로인 경우 그대로 사용
-            if (url.startsWith('/')) {
-                return url
-            }
-
-            // 외부 이미지 URL은 그대로 사용
-            return url
-        }
-
-        // PartyCard 컴포넌트에 필요한 데이터 구조로 변환
-        const cardData = {
-            id: (party.id || party.partyId)?.toString() || '',
-            image: getImageUrl(party.themeThumbnailUrl),
-            title: party.title || '제목 없음',
-            category: '모임',
-            date: party.scheduledAt ? new Date(party.scheduledAt).toLocaleDateString() : '날짜 정보 없음',
-            location: party.storeName || '위치 정보 없음',
-            participants: `${party.acceptedParticipantsCount || 0}/${party.totalParticipants || 0}`,
-            tags: party.themeName ? [party.themeName] : ['테마 정보 없음'],
-            host: {
-                name: party.hostNickname || '모임장',
-                image: party.hostProfilePictureUrl || '/profile_man.jpg',
-            },
-        }
-
+    const renderPartyCard = (party: PartySummaryResponse, index: number) => {
         return (
             <div
-                key={`party-${party.id || party.partyId}-${index}`}
+                key={`party-${party.partyId}-${index}`}
                 onClick={() => handleCardClick(party)}
                 className="cursor-pointer"
             >
-                <PartyCard room={cardData} />
+                <PartyCard party={party} />
             </div>
         )
     }
@@ -471,7 +427,7 @@ export default function PartiesPage() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                             {parties.map((party, index) => (
                                 <div
-                                    key={`party-${party.id || party.partyId}-${index}`}
+                                    key={`party-${party.partyId}-${index}`}
                                     ref={index === parties.length - 1 ? lastPartyElementRef : undefined}
                                 >
                                     {renderPartyCard(party, index)}
