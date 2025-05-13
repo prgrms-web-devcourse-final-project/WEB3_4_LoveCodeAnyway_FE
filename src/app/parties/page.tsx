@@ -34,15 +34,6 @@ interface SearchCondition {
     tagsIds: number[]
 }
 
-// API에서 받는 응답 형태
-interface SuccessResponseSliceDtoPartySummaryResponse {
-    message?: string
-    data?: {
-        content?: PartyMainResponse[]
-        hasNext?: boolean
-    }
-}
-
 export default function PartiesPage() {
     const router = useRouter()
     const searchParams = useSearchParams()

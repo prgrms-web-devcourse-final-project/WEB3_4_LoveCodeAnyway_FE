@@ -1,40 +1,15 @@
 'use client'
 
+import { paths } from '@/lib/backend/apiV1/schema'
 import client from '@/lib/backend/client'
-import { DiaryDetail } from '@/types/Diary'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { use, useEffect, useState } from 'react'
 import 'slick-carousel/slick/slick-theme.css'
 import 'slick-carousel/slick/slick.css'
 
-// API 응답을 DiaryDetail 타입으로 변환하는 함수
-const convertApiToDiaryDetail = (apiData: any): DiaryDetail => {
-    return {
-        id: apiData.id?.toString() || '',
-        themeName: apiData.themeName || '',
-        storeName: apiData.storeName || '',
-        isSuccess: apiData.escapeResult || false,
-        playDate: apiData.escapeDate || '',
-        escapeTime: apiData.elapsedTime?.toString() || '',
-        hintCount: apiData.hintCount || 0,
-        themeImage: apiData.thumbnailUrl || '',
-        escapeImages: apiData.imageUrl ? [apiData.imageUrl] : [],
-        participants: apiData.participants || '',
-        ratings: {
-            interior: apiData.interior || 0,
-            composition: apiData.question || 0,
-            story: apiData.story || 0,
-            production: apiData.production || 0,
-            satisfaction: apiData.satisfaction || 0,
-            deviceRatio: apiData.deviceRatio || 0,
-            difficulty: apiData.difficulty || 0,
-            horror: apiData.fear || 0,
-            activity: apiData.activity || 0,
-        },
-        comment: apiData.review || '',
-    }
-}
+// API 응답 타입 정의
+type DiaryResponse = paths['/api/v1/diaries/{id}']['get']['responses']['200']['content']['application/json']['data']
 
 // 원형 그래프 컴포넌트
 const CircularRating = ({ value, label }: { value: number; label: string }) => {
@@ -72,27 +47,6 @@ const CircularRating = ({ value, label }: { value: number; label: string }) => {
     )
 }
 
-// 플레이 정보 카드 컴포넌트
-const PlayInfoCard = ({
-    icon,
-    label,
-    value,
-    bgColor = 'bg-white',
-}: {
-    icon: React.ReactNode
-    label: string
-    value: string | number
-    bgColor?: string
-}) => {
-    return (
-        <div className={`${bgColor} rounded-lg shadow p-6 flex flex-col items-center justify-center min-w-[200px]`}>
-            <div className="mb-2">{icon}</div>
-            <div className="text-2xl font-bold mb-1">{value}</div>
-            <div className="text-gray-500 text-sm">{label}</div>
-        </div>
-    )
-}
-
 // 이미지 모달 컴포넌트
 const ImageModal = ({ imageUrl, onClose }: { imageUrl: string; onClose: () => void }) => {
     return (
@@ -111,7 +65,7 @@ const ImageModal = ({ imageUrl, onClose }: { imageUrl: string; onClose: () => vo
 
 export default function Page({ params }: { params: Promise<{ id: string }> }) {
     const unwrappedParams = use(params)
-    const [diary, setDiary] = useState<DiaryDetail | null>(null)
+    const [diary, setDiary] = useState<DiaryResponse | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [showImageModal, setShowImageModal] = useState(false)
@@ -124,11 +78,19 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
         }
 
         try {
-            const response = await client.delete(`/api/v1/diaries/${unwrappedParams.id}`, {
-                withCredentials: true,
+            const { data, error } = await client.DELETE('/api/v1/diaries/{id}', {
+                params: {
+                    path: {
+                        id: Number(unwrappedParams.id),
+                    },
+                },
             })
 
-            if (response.status === 200) {
+            if (error) {
+                throw error
+            }
+
+            if (data) {
                 alert('탈출일지가 성공적으로 삭제되었습니다.')
                 router.push('/my/diary')
             }
@@ -143,25 +105,23 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
             try {
                 setIsLoading(true)
 
-                const response = await client.get(`/api/v1/diaries/${unwrappedParams.id}`, {
-                    withCredentials: true,
+                const { data, error } = await client.GET('/api/v1/diaries/{id}', {
+                    params: {
+                        path: {
+                            id: Number(unwrappedParams.id),
+                        },
+                    },
                 })
 
-                if (!response.data?.data) {
+                if (error) {
+                    throw error
+                }
+
+                if (!data?.data) {
                     throw new Error('일지 데이터를 불러오는데 실패했습니다.')
                 }
 
-                console.log(response.data.data)
-
-                // API 응답을 DiaryDetail 타입으로 변환
-                const diaryData = convertApiToDiaryDetail(response.data.data)
-
-                // 시간 형식 변환 (초 -> 분:초)
-                const minutes = Math.floor(response.data.data.elapsedTime / 60)
-                const seconds = response.data.data.elapsedTime % 60
-                diaryData.escapeTime = `${minutes}분 ${seconds}초`
-
-                setDiary(diaryData)
+                setDiary(data.data)
                 setError(null)
             } catch (err) {
                 console.error('Error details:', err)
@@ -232,8 +192,12 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
                 {/* 테마 이미지 섹션 */}
                 <div className="bg-gray-800 rounded-lg overflow-hidden mb-6 shadow-sm relative">
                     <div className="h-[300px] relative">
-                        {diary.themeImage ? (
-                            <img src={diary.themeImage} alt={diary.themeName} className="w-full h-full object-cover" />
+                        {diary.thumbnailUrl ? (
+                            <img
+                                src={diary.thumbnailUrl}
+                                alt={diary.themeName}
+                                className="w-full h-full object-cover"
+                            />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center bg-gray-700">
                                 <svg
@@ -268,9 +232,9 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
                         <h2 className="text-lg font-semibold mb-4 text-white">탈출 사진</h2>
                         <div className="flex-1 relative h-[200px]">
                             <div className="absolute inset-0 rounded-lg overflow-hidden bg-gray-700">
-                                {diary.escapeImages && diary.escapeImages.length > 0 ? (
+                                {diary.imageUrl ? (
                                     <img
-                                        src={diary.escapeImages[0]}
+                                        src={diary.imageUrl}
                                         alt="탈출 사진"
                                         className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
                                         onClick={() => setShowImageModal(true)}
@@ -323,7 +287,7 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
                                         </div>
                                         <div>
                                             <p className="text-xs text-gray-400">플레이 날짜</p>
-                                            <p className="text-sm font-medium text-white">{diary.playDate}</p>
+                                            <p className="text-sm font-medium text-white">{diary.escapeDate}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -362,16 +326,16 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
                             <div className="grid grid-cols-3 gap-4">
                                 <div
                                     className={`bg-gray-700 p-4 rounded-lg ${
-                                        diary.isSuccess ? 'bg-green-900/30' : 'bg-red-900/30'
+                                        diary.escapeResult ? 'bg-green-900/30' : 'bg-red-900/30'
                                     }`}
                                 >
                                     <div className="flex flex-col items-center">
                                         <div
                                             className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
-                                                diary.isSuccess ? 'bg-green-800' : 'bg-red-800'
+                                                diary.escapeResult ? 'bg-green-800' : 'bg-red-800'
                                             }`}
                                         >
-                                            {diary.isSuccess ? (
+                                            {diary.escapeResult ? (
                                                 <svg
                                                     className="w-5 h-5 text-green-400"
                                                     fill="none"
@@ -403,7 +367,7 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
                                         </div>
                                         <div className="text-center">
                                             <p className="text-sm font-medium mb-1 text-white">
-                                                {diary.isSuccess ? '성공' : '실패'}
+                                                {diary.escapeResult ? '성공' : '실패'}
                                             </p>
                                             <p className="text-xs text-gray-400">탈출 성공</p>
                                         </div>
@@ -427,7 +391,13 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
                                             </svg>
                                         </div>
                                         <div className="text-center">
-                                            <p className="text-sm font-medium mb-1 text-white">{diary.escapeTime}</p>
+                                            <p className="text-sm font-medium mb-1 text-white">
+                                                {diary.elapsedTime
+                                                    ? `${Math.floor(diary.elapsedTime / 60)}분 ${
+                                                          diary.elapsedTime % 60
+                                                      }초`
+                                                    : '-'}
+                                            </p>
                                             <p className="text-xs text-gray-400">탈출 시간</p>
                                         </div>
                                     </div>
@@ -468,9 +438,9 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
                     <div className="mb-8">
                         <h3 className="text-md font-medium mb-4 text-gray-300">테마 특성</h3>
                         <div className="flex justify-around items-center text-white">
-                            <CircularRating value={diary.ratings.difficulty} label="난이도" />
-                            <CircularRating value={diary.ratings.horror} label="공포도" />
-                            <CircularRating value={diary.ratings.activity} label="활동성" />
+                            <CircularRating value={diary.difficulty ?? 0} label="난이도" />
+                            <CircularRating value={diary.fear ?? 0} label="공포도" />
+                            <CircularRating value={diary.activity ?? 0} label="활동성" />
                         </div>
                     </div>
 
@@ -482,12 +452,12 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
                         <h3 className="text-md font-medium mb-4 text-gray-300">상세 평가</h3>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                             {[
-                                { id: 'interior', label: '인테리어', color: 'yellow' },
-                                { id: 'composition', label: '문제 구성', color: 'yellow' },
-                                { id: 'story', label: '스토리', color: 'yellow' },
-                                { id: 'production', label: '연출', color: 'yellow' },
-                                { id: 'satisfaction', label: '만족도', color: 'yellow' },
-                                { id: 'deviceRatio', label: '장치 비중', color: 'yellow' },
+                                { id: 'interior', label: '인테리어', value: diary.interior },
+                                { id: 'question', label: '문제 구성', value: diary.question },
+                                { id: 'story', label: '스토리', value: diary.story },
+                                { id: 'production', label: '연출', value: diary.production },
+                                { id: 'satisfaction', label: '만족도', value: diary.satisfaction },
+                                { id: 'deviceRatio', label: '장치 비중', value: diary.deviceRatio },
                             ].map((item) => (
                                 <div key={item.id} className="bg-gray-700 p-4 rounded-lg">
                                     <p className="text-gray-300 mb-2 text-sm">{item.label}</p>
@@ -496,9 +466,7 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
                                             <svg
                                                 key={i}
                                                 className={`w-5 h-5 ${
-                                                    i < diary.ratings[item.id as keyof typeof diary.ratings]
-                                                        ? 'text-[#FFB130]'
-                                                        : 'text-gray-600'
+                                                    i < (item.value ?? 0) ? 'text-[#FFB130]' : 'text-gray-600'
                                                 }`}
                                                 fill="currentColor"
                                                 viewBox="0 0 20 20"
@@ -517,13 +485,13 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
                 <div className="bg-gray-800 rounded-lg shadow-sm mb-6 p-6">
                     <h2 className="text-lg font-semibold mb-6 text-white">리뷰</h2>
                     <div className="bg-gray-700 p-6 rounded-lg">
-                        <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">{diary.comment}</p>
+                        <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">{diary.review}</p>
                     </div>
                 </div>
 
                 {/* 이미지 모달 */}
-                {showImageModal && diary?.escapeImages && diary.escapeImages.length > 0 && (
-                    <ImageModal imageUrl={diary.escapeImages[0]} onClose={() => setShowImageModal(false)} />
+                {showImageModal && diary.imageUrl && (
+                    <ImageModal imageUrl={diary.imageUrl} onClose={() => setShowImageModal(false)} />
                 )}
             </div>
         </main>
