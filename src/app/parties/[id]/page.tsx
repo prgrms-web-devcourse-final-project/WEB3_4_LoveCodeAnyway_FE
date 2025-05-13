@@ -1,7 +1,7 @@
 'use client'
 
-import UserProfileModal from '@/components/my/UserProfileModal'
 import { KakaoMap } from '@/components/common/KakaoMap'
+import UserProfileModal from '@/components/my/UserProfileModal'
 import client from '@/lib/backend/client'
 import { LoginMemberContext } from '@/stores/auth/loginMember'
 import Image from 'next/image'
@@ -757,7 +757,7 @@ export default function PartyDetailPage() {
                                 모임 미실행
                             </button>
                             <Link
-                                href={`/parties/edit/${partyId}`}
+                                href={`/parties/${partyId}/edit`}
                                 className="px-6 py-3 bg-[#FFB130] text-white rounded-lg hover:bg-[#F0A420] transition"
                             >
                                 모임 정보 수정

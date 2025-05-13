@@ -1,12 +1,12 @@
 'use client'
 
-import Link from 'next/link'
-import { DiaryDetail } from '@/types/Diary'
-import { useEffect, useState, use } from 'react'
 import client from '@/lib/backend/client'
-import 'slick-carousel/slick/slick.css'
-import 'slick-carousel/slick/slick-theme.css'
+import { DiaryDetail } from '@/types/Diary'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { use, useEffect, useState } from 'react'
+import 'slick-carousel/slick/slick-theme.css'
+import 'slick-carousel/slick/slick.css'
 
 // API 응답을 DiaryDetail 타입으로 변환하는 함수
 const convertApiToDiaryDetail = (apiData: any): DiaryDetail => {
@@ -215,7 +215,7 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
                     </Link>
                     <div className="flex gap-2">
                         <Link
-                            href={`/my/diary/edit/${diary.id}`}
+                            href={`/my/diary/${diary.id}/edit`}
                             className="px-4 py-2 bg-[#FFB130] text-black rounded-lg hover:bg-[#F0A120] transition-colors"
                         >
                             수정하기

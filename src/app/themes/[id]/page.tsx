@@ -130,8 +130,12 @@ export default function ThemeDetailPage() {
 
     const handleSetWishTheme = async () => {
         try {
-            await client.POST(`/api/v1/themes/${themeId}/wishes`, {
-                withCredentials: true,
+            await client.POST('/api/v1/themes/{id}/wishes', {
+                params: {
+                    path: {
+                        id: Number(themeId),
+                    },
+                },
             })
             router.push('/my/profile')
         } catch (error) {
