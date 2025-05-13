@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import Image from 'next/image'
-import { useGlobalLoginMember } from '@/stores/auth/loginMember'
-import { useRouter } from 'next/navigation'
 import client from '@/lib/backend/client'
+import { useGlobalLoginMember } from '@/stores/auth/loginMember'
+import Image from 'next/image'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 interface TagType {
     id: number
@@ -13,7 +13,7 @@ interface TagType {
 
 export default function ProfileEditPage() {
     const router = useRouter()
-    const { loginMember, setLoginMember } = useGlobalLoginMember()
+    const { isLogin, loginMember, setLoginMember } = useGlobalLoginMember()
 
     // 프로필 데이터 상태
     const [profile, setProfile] = useState({
@@ -67,7 +67,7 @@ export default function ProfileEditPage() {
 
     // 페이지 로드 시 사용자 정보 가져오기
     useEffect(() => {
-        if (!loginMember?.id) {
+        if (!isLogin) {
             router.push('/login')
             return
         }
@@ -203,7 +203,10 @@ export default function ProfileEditPage() {
                 // 이미지 업로드 API 호출
                 try {
                     const uploadResponse = await client.POST('/api/v1/upload/image/0', {
-                        withCredentials: true,
+                        params: {
+                            path: { diaryId: 0 },
+                            query: { target: 'PROFILE' },
+                        },
                         body: formData,
                     })
 

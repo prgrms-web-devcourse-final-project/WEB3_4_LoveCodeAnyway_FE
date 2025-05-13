@@ -1,5 +1,6 @@
 'use client'
 
+import type { components } from '@/lib/backend/apiV1/schema'
 import client from '@/lib/backend/client'
 import { useGlobalLoginMember } from '@/stores/auth/loginMember'
 import Image from 'next/image'
@@ -8,8 +9,8 @@ import { ChangeEvent, FormEvent, useEffect, useState } from 'react'
 
 // 태그 타입 정의
 interface Tag {
-    id: number
-    name: string
+    id: number // 필수 필드로 변경
+    name: string // 필수 필드로 변경
 }
 
 export default function SignupPage() {
@@ -18,25 +19,11 @@ export default function SignupPage() {
 
     // 로그인 상태 확인 및 리다이렉트
     useEffect(() => {
-        const checkLoginStatus = async () => {
-            try {
-                // API를 통해 로그인 상태 확인
-                const response = await client.GET('/api/v1/members/me')
-
-                // 응답이 성공이면 로그인된 상태
-                if (response.data) {
-                    console.log('이미 로그인된 상태입니다. 마이페이지로 이동합니다.')
-                    router.replace('/my/profile')
-                    return
-                }
-            } catch (error) {
-                // 에러 발생 시 로그인되지 않은 것으로 간주 (회원가입 페이지 유지)
-                console.error('로그인 상태 확인 중 오류 발생:', error)
-            }
+        if (isLogin) {
+            console.log('이미 로그인된 상태입니다. 마이페이지로 이동합니다.')
+            router.replace('/my/profile')
         }
-
-        checkLoginStatus()
-    }, [router])
+    }, [isLogin, router])
 
     // 프로필 상태 관리
     const [profileImg, setProfileImg] = useState<string>('/default-profile.svg')
@@ -60,37 +47,24 @@ export default function SignupPage() {
         const fetchTags = async () => {
             try {
                 setIsLoading(true)
-                const response = await fetch(`${API_BASE_URL}/api/v1/themes/tags`)
+                const { data, error } = await client.GET('/api/v1/themes/tags')
 
-                if (!response.ok) {
-                    console.error('태그 API 응답 에러:', response.status, response.statusText)
+                if (error) {
+                    console.error('태그 API 응답 에러:', error)
                     setError('태그 데이터를 불러오는데 실패했습니다')
                     setIsLoading(false)
                     return
                 }
 
-                const data = await response.json()
                 console.log('태그 데이터 응답:', data)
 
-                // API 응답 구조에 맞게 처리 (모든 태그를 단일 배열로 변환)
-                if (data && data.data) {
-                    // API 응답 구조에 따라 적절히 수정
-                    // 모든 카테고리의 태그를 하나의 배열로 합치거나,
-                    // 이미 단일 배열로 제공되는 경우 그대로 사용
-                    if (Array.isArray(data.data)) {
-                        setTags(data.data)
-                    } else if (typeof data.data === 'object') {
-                        // 객체 형태로 카테고리별로 제공되는 경우 하나의 배열로 합치기
-                        const allTags: Tag[] = []
-                        Object.values(data.data).forEach((categoryTags: any) => {
-                            if (Array.isArray(categoryTags)) {
-                                allTags.push(...categoryTags)
-                            }
-                        })
-                        setTags(allTags)
-                    } else {
-                        setTags([])
-                    }
+                // API 응답 구조에 맞게 처리
+                if (data?.data) {
+                    // id와 name이 모두 있는 태그만 필터링
+                    const validTags = data.data.filter(
+                        (tag): tag is Required<Tag> => tag.id !== undefined && tag.name !== undefined,
+                    )
+                    setTags(validTags)
                 } else {
                     setTags([])
                 }
@@ -103,7 +77,7 @@ export default function SignupPage() {
         }
 
         fetchTags()
-    }, [API_BASE_URL])
+    }, [])
 
     // 프로필 이미지 변경 핸들러
     const handleProfileImgChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -126,26 +100,33 @@ export default function SignupPage() {
         }
 
         try {
-            const response = await fetch(
-                `${API_BASE_URL}/api/v1/members/check-nickname?nickname=${encodeURIComponent(nickname)}`,
-                {
-                    credentials: 'include',
+            const { data, error } = await client.GET('/api/v1/members/check-nickname', {
+                params: {
+                    query: {
+                        nickname,
+                    },
                 },
-            )
+            })
+
+            if (error) {
+                setNicknameMessage('닉네임 확인 중 오류가 발생했습니다')
+                setIsNicknameValid(false)
+                console.error('닉네임 중복 확인 중 오류:', error)
+                return
+            }
 
             // API 호출 성공 시
-            if (response.status === 200) {
-                // 상태 코드가 200이면 사용 가능한 닉네임
+            if (data?.data === true) {
+                // 사용 가능한 닉네임
                 setNicknameMessage('사용 가능한 닉네임입니다')
                 setIsNicknameValid(true)
-            } else if (response.status === 409) {
-                // 상태 코드가 409(Conflict)이면 중복된 닉네임
+            } else if (data?.data === false) {
+                // 중복된 닉네임
                 setNicknameMessage('이미 사용 중인 닉네임입니다')
                 setIsNicknameValid(false)
             } else {
-                // 그 외 상태 코드는 오류로 처리
-                const data = await response.json()
-                setNicknameMessage(data.message || '닉네임 확인 중 오류가 발생했습니다')
+                // 그 외 오류 처리
+                setNicknameMessage(data?.message || '닉네임 확인 중 오류가 발생했습니다')
                 setIsNicknameValid(false)
             }
         } catch (err) {
@@ -156,7 +137,9 @@ export default function SignupPage() {
     }
 
     // 태그 선택 핸들러
-    const handleTagToggle = (tagId: number) => {
+    const handleTagToggle = (tagId: number | undefined) => {
+        if (tagId === undefined) return
+
         setSelectedTags((prev) => {
             if (prev.includes(tagId)) {
                 return prev.filter((id) => id !== tagId)
@@ -215,33 +198,52 @@ export default function SignupPage() {
                 // 임의의 diaryId 생성 (현재 시간 기준)
                 const randomDiaryId = Date.now().toString()
 
-                // 이미지 업로드 API 호출
-                const uploadResponse = await client.POST(`/api/v1/upload/image/${randomDiaryId}`, {
-                    body: formData,
-                })
+                // 이미지 업로드 API 호출 (OpenAPI 스키마에 정의되지 않은 엔드포인트)
+                const uploadResponse = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/upload/image/${randomDiaryId}`,
+                    {
+                        method: 'POST',
+                        body: formData,
+                        credentials: 'include',
+                    },
+                )
 
-                if (!uploadResponse.data) {
+                if (!uploadResponse.ok) {
                     throw new Error('이미지 업로드에 실패했습니다')
                 }
 
-                profileImageUrl = uploadResponse.data.data.imageUrl
+                const uploadData = await uploadResponse.json()
+                if (!uploadData?.data?.imageUrl) {
+                    throw new Error('이미지 URL을 받지 못했습니다')
+                }
+
+                profileImageUrl = uploadData.data.imageUrl
             }
 
             // API 요청 데이터
-            const signupData = {
+            const signupData: components['schemas']['SignupRequest'] = {
                 nickname,
                 gender,
                 introduction,
                 tags: selectedTags,
-                profilePictureUrl: profileImageUrl,
+                profilePictureUrl: profileImageUrl || undefined,
             }
 
-            const response = await client.POST('/api/v1/auth/signup', {
+            const { data, error } = await client.POST('/api/v1/auth/signup', {
+                params: {
+                    cookie: {
+                        signupToken: '', // TODO: 카카오 로그인 후 받은 토큰이 필요합니다
+                    },
+                },
                 body: signupData,
             })
 
-            if (!response.data) {
-                throw new Error(response.error?.message || '회원가입에 실패했습니다')
+            if (error !== undefined) {
+                throw new Error(typeof error === 'string' ? error : '회원가입에 실패했습니다')
+            }
+
+            if (!data) {
+                throw new Error('회원가입에 실패했습니다')
             }
 
             // 회원가입 성공 시 브라우저 기록 삭제 및 홈페이지로 리다이렉트

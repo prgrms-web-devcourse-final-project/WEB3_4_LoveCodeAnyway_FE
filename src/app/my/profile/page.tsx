@@ -74,7 +74,7 @@ export default function MyPage() {
     const fetchUserProfile = async () => {
         try {
             if (!isLogin) {
-                throw new Error('로그인이 필요합니다.')
+                return
             }
 
             // 회원 통계 정보 가져오기
@@ -82,32 +82,44 @@ export default function MyPage() {
                 withCredentials: true,
             })
 
-            if (!statsResponse?.data?.data) {
-                throw new Error('Failed to fetch member stats')
+            const stats = statsResponse?.data?.data || {
+                totalCount: 0,
+                successRate: 0,
+                noHintSuccessRate: 0,
             }
-
-            const stats = statsResponse.data.data
-            console.log(stats)
 
             // 프로필 정보 구성
             const userProfile: UserProfile = {
                 nickname: loginMember.nickname || '',
                 profilePictureUrl: loginMember.profilePictureUrl || '/default-profile.svg',
                 gender: loginMember.gender as 'MALE' | 'FEMALE' | 'BLIND',
-                introduction: loginMember.introduction,
+                introduction: loginMember.introduction || '',
                 mannerScore: loginMember.mannerScore || 0,
                 tags: loginMember.tags || [],
                 stats: {
-                    totalCount: stats?.totalCount || 0,
-                    successRate: stats?.successRate || 0,
-                    noHintSuccessRate: stats?.noHintSuccessRate || 0,
+                    totalCount: stats.totalCount || 0,
+                    successRate: stats.successRate || 0,
+                    noHintSuccessRate: stats.noHintSuccessRate || 0,
                 },
             }
 
             setUserProfile(userProfile)
         } catch (error) {
             console.error('프로필 로딩 에러:', error)
-            setError('프로필을 불러오는데 실패했습니다.')
+            // 에러 상태 대신 기본값 설정
+            setUserProfile({
+                nickname: loginMember.nickname || '',
+                profilePictureUrl: loginMember.profilePictureUrl || '/default-profile.svg',
+                gender: loginMember.gender as 'MALE' | 'FEMALE' | 'BLIND',
+                introduction: loginMember.introduction || '',
+                mannerScore: loginMember.mannerScore || 0,
+                tags: loginMember.tags || [],
+                stats: {
+                    totalCount: 0,
+                    successRate: 0,
+                    noHintSuccessRate: 0,
+                },
+            })
         }
     }
 
@@ -118,15 +130,20 @@ export default function MyPage() {
                 withCredentials: true,
             })
 
-            if (!response?.data?.data) {
-                throw new Error('Failed to fetch wish themes')
-            }
-
-            const wishThemes = response.data.data as WishTheme[]
+            const wishThemesData = response?.data?.data || []
+            const wishThemes: WishTheme[] = wishThemesData.map((theme: any) => ({
+                id: theme.id || 0,
+                name: theme.name || '',
+                storeName: theme.storeName || '',
+                runtime: theme.runtime || 0,
+                recommendedParticipants: theme.recommendedParticipants || '',
+                tags: theme.tags || [],
+                thumbnailUrl: theme.thumbnailUrl || '',
+            }))
             setWishThemes(wishThemes)
         } catch (error) {
             console.error('희망 테마 로딩 에러:', error)
-            setError('희망 테마를 불러오는데 실패했습니다.')
+            setWishThemes([])
         }
     }
 
@@ -134,26 +151,20 @@ export default function MyPage() {
     const fetchCalendarDiaries = async (targetMonth?: Date) => {
         try {
             if (!isLogin) {
-                throw new Error('로그인이 필요합니다.')
+                return
             }
 
             // 현재 선택된 날짜가 없으면 현재 월을 기준으로 조회
             const targetDate = targetMonth || selectedDate || new Date()
             const year = targetDate.getFullYear()
-            const month = targetDate.getMonth() + 1 // JavaScript month는 0-based
+            const month = targetDate.getMonth() + 1
 
             const response = await client.GET('/api/v1/diaries', {
                 withCredentials: true,
                 params: { query: { year, month } },
             })
 
-            console.log(response)
-
-            if (!response?.data?.data) {
-                throw new Error('Failed to fetch diary entries')
-            }
-
-            const diaries = response.data.data
+            const diaries = response?.data?.data || []
             const calendarDiaries: CalendarDiary[] = diaries.map((diary: any) => ({
                 id: diary.id,
                 date: diary.escapeDate,
@@ -170,7 +181,7 @@ export default function MyPage() {
             setCalendarDiaries(calendarDiaries)
         } catch (error) {
             console.error('달력 데이터 로딩 에러:', error)
-            setError('달력 데이터를 불러오는데 실패했습니다.')
+            setCalendarDiaries([])
         }
     }
 
@@ -178,24 +189,14 @@ export default function MyPage() {
     const fetchPartyHistories = async () => {
         try {
             if (!isLogin) {
-                throw new Error('로그인이 필요합니다.')
+                return
             }
 
             const response = await client.GET('/api/v1/parties/joins/me', {
-                params: {
-                    path: {
-                        id: loginMember.id,
-                    },
-                },
                 withCredentials: true,
             })
 
-            if (!response?.data?.data) {
-                throw new Error('Failed to fetch party join data')
-            }
-
-            const histories = response.data.data?.items || []
-
+            const histories = response?.data?.data?.items || []
             const partyHistories: PartyHistory[] = histories.map((history: any) => ({
                 id: history.partyId,
                 title: history.title || '모임 제목 없음',
@@ -213,7 +214,6 @@ export default function MyPage() {
             setPartyHistories(partyHistories)
         } catch (error) {
             console.error('모임 히스토리 로딩 에러:', error)
-            setError('모임 히스토리를 불러오는데 실패했습니다.')
             setPartyHistories([])
         }
     }
@@ -276,10 +276,10 @@ export default function MyPage() {
         )
     }
 
-    if (error) {
+    if (!isLogin) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="text-red-500">{error}</div>
+                <div className="text-gray-500">로그인이 필요합니다.</div>
             </div>
         )
     }
