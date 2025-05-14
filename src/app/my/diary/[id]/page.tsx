@@ -9,7 +9,7 @@ import 'slick-carousel/slick/slick-theme.css'
 import 'slick-carousel/slick/slick.css'
 
 // API 응답 타입 정의
-type DiaryResponse = paths['/api/v1/diaries/{id}']['get']['responses']['200']['content']['application/json']['data']
+type DiaryResponse = paths['/api/v1/diaries/{id}']['get']['responses']['200']['content']['application/json']
 
 // 원형 그래프 컴포넌트
 const CircularRating = ({ value, label }: { value: number; label: string }) => {
@@ -65,7 +65,7 @@ const ImageModal = ({ imageUrl, onClose }: { imageUrl: string; onClose: () => vo
 
 export default function Page({ params }: { params: Promise<{ id: string }> }) {
     const unwrappedParams = use(params)
-    const [diary, setDiary] = useState<DiaryResponse | null>(null)
+    const [diary, setDiary] = useState<DiaryResponse['data'] | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [showImageModal, setShowImageModal] = useState(false)

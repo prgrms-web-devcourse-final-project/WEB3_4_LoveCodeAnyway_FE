@@ -1,10 +1,11 @@
 'use client'
 
+import { components } from '@/lib/backend/apiV1/schema'
 import client from '@/lib/backend/client'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 
-interface ThemeSearchModalProps {
+type ThemeSearchModalProps = {
     isOpen: boolean
     onClose: () => void
     onSelect: (theme: string, themeId: number) => void
@@ -14,16 +15,7 @@ interface ThemeSearchModalProps {
     onLoadingChange: (loading: boolean) => void
 }
 
-interface SimpleThemeResponse {
-    themeId: number
-    themeName: string
-    storeName: string
-}
-
-interface SuccessResponseListSimpleThemeResponse {
-    message?: string
-    data?: SimpleThemeResponse[]
-}
+type SimpleThemeResponse = components['schemas']['SimpleThemeResponse']
 
 export function ThemeSearchModal({
     isOpen,
@@ -46,14 +38,16 @@ export function ThemeSearchModal({
             setError(null)
 
             try {
-                const response = await client.get('/api/v1/themes/search-for-diary', {
+                const response = await client.GET('/api/v1/themes/search-for-diary', {
                     params: {
-                        keyword: searchTerm,
+                        query: {
+                            keyword: searchTerm,
+                        },
                     },
                 })
-                console.log('테마 검색 결과:', response.data)
+                console.log('테마 검색 결과:', response?.data)
 
-                if (response.data.data && response.data.data.length > 0) {
+                if (response?.data?.data && response.data.data.length > 0) {
                     setThemes(response.data.data)
                 } else {
                     setThemes([])
@@ -71,7 +65,7 @@ export function ThemeSearchModal({
     }, [isOpen, searchTerm, onLoadingChange])
 
     const handleThemeSelect = (theme: SimpleThemeResponse) => {
-        onSelect(theme.themeName, theme.themeId)
+        onSelect(theme.themeName || '', theme.themeId || 0)
         onClose()
     }
 

@@ -2,25 +2,15 @@
 
 import { PageLoading } from '@/components/common/PageLoading'
 import { DiarySearch } from '@/components/diary/DiarySearch'
+import { components } from '@/lib/backend/apiV1/schema'
 import client from '@/lib/backend/client'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
-// 일지 타입 정의
-interface Diary {
-    id: number
-    themeId: number
-    themeName: string
-    thumbnailUrl: string
-    tags: string[]
-    storeName: string
-    escapeDate: string
-    elapsedTime: number
-    hintCount: number
-    escapeResult: boolean
-}
+// DiaryListDto 타입 사용
+type Diary = components['schemas']['DiaryListDto']
 
 // 필터 타입 정의
 interface DiaryFilter {
@@ -133,7 +123,8 @@ export default function DiaryPage() {
             if (response.data?.data) {
                 const { items, totalPages, currentPageNumber, totalItems } = response.data.data
 
-                setDiaries(items || [])
+                // DiaryListDto[] 타입으로 명시적 캐스팅
+                setDiaries((items || []) as Diary[])
                 setPagination({
                     totalPages: totalPages || 1,
                     currentPage: currentPageNumber || 1,
@@ -210,7 +201,8 @@ export default function DiaryPage() {
     }
 
     // 날짜 포맷 헬퍼 함수 (YYYY.MM.DD 형식)
-    const formatDate = (dateString: string): string => {
+    const formatDate = (dateString?: string): string => {
+        if (!dateString) return ''
         const date = new Date(dateString)
         return date
             .toLocaleDateString('ko-KR', {
@@ -497,7 +489,7 @@ export default function DiaryPage() {
                                                 {diary.thumbnailUrl ? (
                                                     <Image
                                                         src={diary.thumbnailUrl}
-                                                        alt={diary.themeName}
+                                                        alt={diary.themeName || '테마 이미지'}
                                                         fill
                                                         className="object-cover"
                                                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -535,9 +527,11 @@ export default function DiaryPage() {
                                             {/* 컨텐츠 영역 */}
                                             <div className="p-5">
                                                 <h3 className="font-bold text-lg mb-3 line-clamp-1 text-white">
-                                                    {diary.themeName}
+                                                    {diary.themeName || '제목 없음'}
                                                 </h3>
-                                                <p className="text-gray-300 text-sm mb-3">{diary.storeName}</p>
+                                                <p className="text-gray-300 text-sm mb-3">
+                                                    {diary.storeName || '매장명 없음'}
+                                                </p>
                                                 <div className="flex items-center mb-4 gap-4">
                                                     <div className="flex items-center text-gray-300 text-sm">
                                                         <svg
@@ -577,7 +571,7 @@ export default function DiaryPage() {
                                                 <div className="flex justify-between items-center">
                                                     <div className="flex items-center gap-1">
                                                         <span className="text-sm text-gray-400">
-                                                            힌트 {diary.hintCount}개
+                                                            힌트 {diary.hintCount || 0}개
                                                         </span>
                                                     </div>
                                                     {diary.tags && diary.tags.length > 0 && (

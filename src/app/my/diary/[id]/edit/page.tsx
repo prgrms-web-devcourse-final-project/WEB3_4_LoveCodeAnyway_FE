@@ -2,6 +2,7 @@
 
 import { NewThemesModal } from '@/components/theme/NewThemesModal'
 import { ThemeSearchModal } from '@/components/theme/ThemeSearchModalForDiary'
+import type { components } from '@/lib/backend/apiV1/schema'
 import client from '@/lib/backend/client'
 import { useRouter } from 'next/navigation'
 import { use, useEffect, useRef, useState } from 'react'
@@ -24,27 +25,6 @@ type RatingCategory =
     | 'horror'
     | 'activity'
 
-// DiaryRequestDto 인터페이스 정의
-interface DiaryRequestDto {
-    themeId: number
-    escapeDate: string
-    participants: string
-    difficulty: number
-    fear: number
-    activity: number
-    satisfaction: number
-    production: number
-    story: number
-    question: number
-    interior: number
-    deviceRatio: number
-    hintCount: number | null
-    escapeResult: boolean | null
-    timeType: 'ELAPSED' | 'REMAINING'
-    elapsedTime: string
-    review: string
-}
-
 // 메인 컴포넌트
 export default function EditDiaryPage({ params }: { params: Promise<{ id: string }> }) {
     const unwrappedParams = use(params)
@@ -58,22 +38,13 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
     const [isNewThemeModalOpen, setIsNewThemeModalOpen] = useState(false)
     const [selectedTheme, setSelectedTheme] = useState<Theme | null>(null)
     const [searchKeyword, setSearchKeyword] = useState('')
-    const [themes, setThemes] = useState<Theme[]>([])
     const [isLoadingThemes, setIsLoadingThemes] = useState(false)
-
-    // 새 테마 등록 관련 상태
-    const [newThemeName, setNewThemeName] = useState('')
-    const [newThemeStoreName, setNewThemeStoreName] = useState('')
-    const [newThemeThumbnailUrl, setNewThemeThumbnailUrl] = useState('')
-    const [newThemeTagIds, setNewThemeTagIds] = useState<number[]>([])
-    const [isCreatingTheme, setIsCreatingTheme] = useState(false)
 
     // 기본 정보 관련 상태
     const [date, setDate] = useState('')
     const [participants, setParticipants] = useState('')
 
     // 이미지 관련 상태
-    const [isUploadingImage, setIsUploadingImage] = useState(false)
     const [uploadedFile, setUploadedFile] = useState<File | null>(null)
     const [existingImageUrl, setExistingImageUrl] = useState<string | undefined>(undefined)
 
@@ -97,7 +68,7 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
     const [hintCount, setHintCount] = useState<number | null>(null)
     const [isSuccess, setIsSuccess] = useState<boolean | null>(null)
     const [timeType, setTimeType] = useState<'진행 시간' | '잔여 시간'>('진행 시간')
-    const [time, setTime] = useState('')
+    const [time, setTime] = useState('00:00')
 
     // 소감 관련 상태
     const [comment, setComment] = useState('')
@@ -108,51 +79,53 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
     useEffect(() => {
         const fetchDiary = async () => {
             try {
-                const response = await client.get(`/api/v1/diaries/${unwrappedParams.id}`, {
-                    withCredentials: true,
+                const { data, error } = await client.GET('/api/v1/diaries/{id}', {
+                    params: {
+                        path: { id: parseInt(unwrappedParams.id) },
+                    },
                 })
 
-                if (!response.data?.data) {
+                if (error || !data?.data) {
                     throw new Error('일지 데이터를 불러오는데 실패했습니다.')
                 }
 
-                const diaryData = response.data.data
+                const diaryData = data.data
 
                 // 테마 정보 설정
                 setSelectedTheme({
-                    id: diaryData.themeId.toString(),
-                    name: diaryData.themeName,
-                    storeName: diaryData.storeName,
+                    id: diaryData.themeId?.toString() ?? '',
+                    name: diaryData.themeName ?? '',
+                    storeName: diaryData.storeName ?? '',
                 })
 
                 // 기본 정보 설정
-                setDate(diaryData.escapeDate)
-                setParticipants(diaryData.participants)
+                setDate(diaryData.escapeDate ?? '')
+                setParticipants(diaryData.participants ?? '')
 
                 // 평가 정보 설정
                 setRatings({
-                    interior: diaryData.interior,
-                    composition: diaryData.question,
-                    story: diaryData.story,
-                    production: diaryData.production,
-                    satisfaction: diaryData.satisfaction,
-                    difficulty: diaryData.difficulty,
-                    horror: diaryData.fear,
-                    activity: diaryData.activity,
+                    interior: diaryData.interior ?? 0,
+                    composition: diaryData.question ?? 0,
+                    story: diaryData.story ?? 0,
+                    production: diaryData.production ?? 0,
+                    satisfaction: diaryData.satisfaction ?? 0,
+                    difficulty: diaryData.difficulty ?? 0,
+                    horror: diaryData.fear ?? 0,
+                    activity: diaryData.activity ?? 0,
                 })
 
                 // 장치 정보 설정
-                setDeviceRatio(diaryData.deviceRatio)
+                setDeviceRatio(diaryData.deviceRatio ?? 50)
                 setNoDevice(diaryData.deviceRatio === 0)
 
                 // 탈출 정보 설정
-                setHintCount(diaryData.hintCount)
-                setIsSuccess(diaryData.escapeResult)
+                setHintCount(diaryData.hintCount ?? null)
+                setIsSuccess(diaryData.escapeResult ?? null)
                 setTimeType('진행 시간') // 기본값으로 설정
-                setTime(formatTime(diaryData.elapsedTime))
+                setTime(formatTime(diaryData.elapsedTime ?? 0))
 
                 // 소감 설정
-                setComment(diaryData.review || '')
+                setComment(diaryData.review ?? '')
 
                 // 기존 이미지 설정
                 if (diaryData.imageUrl) {
@@ -174,102 +147,17 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
         return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
     }
 
-    // 테마 검색 API 호출
-    const searchThemes = async (keyword: string) => {
-        if (!keyword.trim()) return
-
-        try {
-            setIsLoadingThemes(true)
-            const response = await client.get(`/api/v1/themes/search?keyword=${encodeURIComponent(keyword)}`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json',
-                },
-                withCredentials: true,
-            })
-
-            setThemes(
-                response.data.data.map((theme: any) => ({
-                    id: theme.id.toString(),
-                    name: theme.name,
-                    storeName: theme.storeName,
-                })),
-            )
-        } catch (error) {
-            console.error('Error searching themes:', error)
-            alert('테마 검색에 실패했습니다.')
-        } finally {
-            setIsLoadingThemes(false)
-        }
-    }
-
-    // 새 테마 등록 API 호출
-    const createNewTheme = async () => {
-        if (!newThemeName.trim()) {
-            alert('테마 이름을 입력해주세요.')
-            return
-        }
-
-        if (!newThemeStoreName.trim()) {
-            alert('매장 이름을 입력해주세요.')
-            return
-        }
-
-        try {
-            setIsCreatingTheme(true)
-            const response = await client.post(
-                `/api/v1/diaries/theme`,
-                {
-                    themeName: newThemeName,
-                    storeName: newThemeStoreName,
-                    thumbnailUrl: newThemeThumbnailUrl,
-                    tagIds: newThemeTagIds,
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Accept: 'application/json',
-                    },
-                    withCredentials: true,
-                },
-            )
-
-            if (response.status === 200) {
-                const newTheme = response.data.data
-                setSelectedTheme({
-                    id: newTheme.id.toString(),
-                    name: newTheme.name,
-                    storeName: newTheme.storeName,
-                })
-                setIsNewThemeModalOpen(false)
-
-                // 입력 필드 초기화
-                setNewThemeName('')
-                setNewThemeStoreName('')
-                setNewThemeThumbnailUrl('')
-                setNewThemeTagIds([])
-
-                alert('테마가 성공적으로 등록되었습니다.')
-            }
-        } catch (error) {
-            console.error('Error creating theme:', error)
-            alert('테마 등록에 실패했습니다.')
-        } finally {
-            setIsCreatingTheme(false)
-        }
-    }
-
     // 이미지 관련 핸들러
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             const file = e.target.files[0]
 
             // 파일 확장자 검사
-            const validExtensions = ['jpg', 'jpeg']
+            const validExtensions = ['jpg', 'jpeg', 'png']
             const fileExtension = file.name.split('.').pop()?.toLowerCase()
 
             if (!fileExtension || !validExtensions.includes(fileExtension)) {
-                alert('JPG 또는 JPEG 파일만 업로드 가능합니다.')
+                alert('이미지 파일만 업로드 가능합니다.')
                 return
             }
 
@@ -282,10 +170,6 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
 
             setUploadedFile(file)
         }
-    }
-
-    const removeUploadedFile = () => {
-        setUploadedFile(null)
     }
 
     // 탈출일지 수정 API 호출
@@ -309,7 +193,7 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
 
         try {
             // 1. 일지 수정
-            const diaryRequest: DiaryRequestDto = {
+            const diaryRequest: components['schemas']['DiaryRequestDto'] = {
                 themeId: parseInt(selectedTheme.id),
                 escapeDate: date,
                 participants: participants,
@@ -323,37 +207,40 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
                 interior: ratings.interior || 0,
                 deviceRatio: noDevice ? 0 : deviceRatio,
                 hintCount: hintCount || 0,
-                escapeResult: isSuccess,
+                escapeResult: isSuccess ?? undefined,
                 timeType: timeType === '진행 시간' ? 'ELAPSED' : 'REMAINING',
                 elapsedTime: submitTime,
                 review: comment,
             }
 
-            const diaryResponse = await client.put(`/api/v1/diaries/${unwrappedParams.id}`, diaryRequest, {
-                withCredentials: true,
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json',
+            const { data: diaryData, error: diaryError } = await client.PUT('/api/v1/diaries/{id}', {
+                params: {
+                    path: { id: parseInt(unwrappedParams.id) },
                 },
+                body: diaryRequest,
             })
 
-            if (!diaryResponse.data?.data?.id) {
+            if (diaryError || !diaryData?.data?.id) {
                 throw new Error('일지 수정에 실패했습니다.')
             }
 
             // 2. 이미지가 있는 경우 업로드
             if (uploadedFile) {
                 const formData = new FormData()
-                formData.append('file', uploadedFile)
+                formData.append('file', uploadedFile as Blob)
                 formData.append('target', 'DIARY')
 
-                await client.post(`/api/v1/upload/image/${unwrappedParams.id}`, formData, {
-                    withCredentials: true,
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                        Accept: 'application/json',
+                const { error: uploadError } = await client.POST('/api/v1/upload/image/{diaryId}', {
+                    params: {
+                        path: { diaryId: parseInt(unwrappedParams.id) },
+                        query: { target: 'DIARY' },
                     },
+                    body: formData as unknown as Record<string, unknown>,
                 })
+
+                if (uploadError) {
+                    throw new Error('이미지 업로드에 실패했습니다.')
+                }
             }
 
             alert('탈출일지가 성공적으로 수정되었습니다.')
@@ -379,14 +266,6 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
     }
 
     // ==================== 이벤트 핸들러 ====================
-
-    // 테마 모달 관련 핸들러
-    const openThemeModal = () => {
-        setIsThemeModalOpen(true)
-        setSearchKeyword('')
-        setThemes([])
-    }
-
     const openNewThemeModal = () => {
         setIsNewThemeModalOpen(true)
         setIsThemeModalOpen(false)
@@ -694,7 +573,7 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
                                     <div className="flex-1 flex items-center gap-1">
                                         <input
                                             type="text"
-                                            value={time.split(':')[0]}
+                                            value={time.split(':')[0] || '00'}
                                             onChange={(e) => {
                                                 const min = e.target.value
                                                 if (/^\d{0,2}$/.test(min)) {
@@ -708,7 +587,7 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
                                         <span className="text-white">분</span>
                                         <input
                                             type="text"
-                                            value={time.split(':')[1]}
+                                            value={time.split(':')[1] || '00'}
                                             onChange={(e) => {
                                                 const sec = e.target.value
                                                 if (/^\d{0,2}$/.test(sec)) {

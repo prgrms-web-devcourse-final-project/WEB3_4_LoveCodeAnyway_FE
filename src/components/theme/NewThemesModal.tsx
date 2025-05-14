@@ -44,25 +44,21 @@ export function NewThemesModal({ isOpen, onClose, onThemeCreated }: NewThemesMod
 
         try {
             setIsCreatingTheme(true)
-            const response = await client.post(
-                `/api/v1/diaries/theme`,
-                {
+            const { data, error } = await client.POST('/api/v1/diaries/theme', {
+                body: {
                     themeName: newThemeName,
                     storeName: newThemeStoreName,
                     thumbnailUrl: newThemeThumbnailUrl,
                     tagIds: selectedTagIds,
                 },
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Accept: 'application/json',
-                    },
-                    withCredentials: true,
-                },
-            )
+            })
 
-            if (response.status === 201) {
-                const newTheme = response.data.data
+            if (error) {
+                throw error
+            }
+
+            if (data?.data) {
+                const newTheme = data.data
                 console.log('테마 등록 성공:', newTheme)
                 onThemeCreated({
                     id: newTheme.themeId.toString(),

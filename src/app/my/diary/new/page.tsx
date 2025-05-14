@@ -2,6 +2,7 @@
 
 import { NewThemesModal } from '@/components/theme/NewThemesModal'
 import { ThemeSearchModal } from '@/components/theme/ThemeSearchModalForDiary'
+import { components } from '@/lib/backend/apiV1/schema'
 import client from '@/lib/backend/client'
 import { useRouter } from 'next/navigation'
 import { useRef, useState } from 'react'
@@ -24,26 +25,8 @@ type RatingCategory =
     | 'horror'
     | 'activity'
 
-// DiaryRequestDto 인터페이스 정의
-interface DiaryRequestDto {
-    themeId: number
-    escapeDate: string
-    participants: string
-    difficulty: number
-    fear: number
-    activity: number
-    satisfaction: number
-    production: number
-    story: number
-    question: number
-    interior: number
-    deviceRatio: number
-    hintCount: number | null
-    escapeResult: boolean | null
-    timeType: 'ELAPSED' | 'REMAINING'
-    elapsedTime: string
-    review: string
-}
+// DiaryRequestDto 인터페이스 정의 제거 (스키마에서 가져옴)
+type DiaryRequestDto = components['schemas']['DiaryRequestDto']
 
 // 메인 컴포넌트
 export default function NewDiaryPage() {
@@ -110,21 +93,23 @@ export default function NewDiaryPage() {
 
         try {
             setIsLoadingThemes(true)
-            const response = await client.get(`/api/v1/themes/search?keyword=${encodeURIComponent(keyword)}`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json',
+            const response = await client.GET('/api/v1/themes/search-for-diary', {
+                params: {
+                    query: {
+                        keyword,
+                    },
                 },
-                withCredentials: true,
             })
 
-            setThemes(
-                response.data.data.map((theme: any) => ({
-                    id: theme.id.toString(),
-                    name: theme.name,
-                    storeName: theme.storeName,
-                })),
-            )
+            if (response.data?.data) {
+                setThemes(
+                    response.data.data.map((theme: components['schemas']['SimpleThemeResponse']) => ({
+                        id: theme.themeId?.toString() || '',
+                        name: theme.themeName || '',
+                        storeName: theme.storeName || '',
+                    })),
+                )
+            }
         } catch (error) {
             console.error('Error searching themes:', error)
             alert('테마 검색에 실패했습니다.')
@@ -147,29 +132,21 @@ export default function NewDiaryPage() {
 
         try {
             setIsCreatingTheme(true)
-            const response = await client.post(
-                `/api/v1/diaries/theme`,
-                {
+            const response = await client.POST('/api/v1/diaries/theme', {
+                body: {
                     themeName: newThemeName,
                     storeName: newThemeStoreName,
                     thumbnailUrl: newThemeThumbnailUrl,
                     tagIds: newThemeTagIds,
                 },
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Accept: 'application/json',
-                    },
-                    withCredentials: true,
-                },
-            )
+            })
 
-            if (response.status === 200) {
-                const newTheme = response.data.data
+            const newTheme = response.data?.data
+            if (newTheme) {
                 setSelectedTheme({
-                    id: newTheme.id.toString(),
-                    name: newTheme.name,
-                    storeName: newTheme.storeName,
+                    id: newTheme.themeId?.toString() || '',
+                    name: newTheme.themeName || '',
+                    storeName: newTheme.storeName || '',
                 })
                 setIsNewThemeModalOpen(false)
 
@@ -195,11 +172,11 @@ export default function NewDiaryPage() {
             const file = e.target.files[0]
 
             // 파일 확장자 검사
-            const validExtensions = ['jpg', 'jpeg']
+            const validExtensions = ['jpg', 'jpeg', 'png']
             const fileExtension = file.name.split('.').pop()?.toLowerCase()
 
             if (!fileExtension || !validExtensions.includes(fileExtension)) {
-                alert('JPG 또는 JPEG 파일만 업로드 가능합니다.')
+                alert('이미지 파일만 업로드 가능합니다.')
                 return
             }
 
@@ -239,7 +216,7 @@ export default function NewDiaryPage() {
 
         try {
             // 1. 먼저 일지 등록
-            const diaryRequest: DiaryRequestDto = {
+            const diaryRequest: components['schemas']['DiaryRequestDto'] = {
                 themeId: parseInt(selectedTheme.id),
                 escapeDate: date,
                 participants: participants,
@@ -259,47 +236,26 @@ export default function NewDiaryPage() {
                 review: comment,
             }
 
-            const diaryResponse = await client.post('/api/v1/diaries', diaryRequest, {
-                withCredentials: true,
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json',
-                },
+            const diaryResponse = await client.POST('/api/v1/diaries', {
+                body: diaryRequest,
             })
 
-            if (diaryResponse.data?.errorCode) {
-                // 특정 에러 코드에 따른 처리
-                switch (diaryResponse.data.errorCode) {
-                    case 'DIARY_008':
-                        alert('이미 등록된 테마입니다.')
-                        return
-                    case 'DIARY_003':
-                        alert('남은 시간은 테마 시간보다 작아야합니다.')
-                        return
-                    default:
-                        alert(diaryResponse.data.message || '일지 등록에 실패했습니다.')
-                        return
-                }
+            const responseData = diaryResponse.data
+            if (!responseData?.data?.id) {
+                throw new Error(responseData?.message || '일지 등록에 실패했습니다.')
             }
 
-            if (!diaryResponse.data?.data?.id) {
-                throw new Error('일지 등록에 실패했습니다.')
-            }
-
-            const diaryId = diaryResponse.data.data.id
+            const diaryId = responseData.data.id
 
             // 2. 이미지가 있는 경우 업로드
             if (uploadedFile) {
                 const formData = new FormData()
                 formData.append('file', uploadedFile)
-                formData.append('target', 'DIARY')
 
-                await client.post(`/api/v1/upload/image/${diaryId}`, formData, {
-                    withCredentials: true,
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                        Accept: 'application/json',
-                    },
+                await fetch(`/api/v1/upload/image/${diaryId}?target=DIARY`, {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include',
                 })
             }
 
@@ -307,18 +263,8 @@ export default function NewDiaryPage() {
             router.push('/my/diary')
         } catch (error: any) {
             console.error('Form submission error:', error)
-            // 에러 응답 구조 확인
-            if (error.response?.data?.errorCode) {
-                switch (error.response.data.errorCode) {
-                    case 'DIARY_008':
-                        alert('이미 등록된 테마입니다.')
-                        break
-                    case 'DIARY_003':
-                        alert('남은 시간은 테마 시간보다 작아야합니다.')
-                        break
-                    default:
-                        alert(error.response.data.message || '탈출일지 등록에 실패했습니다.')
-                }
+            if (error.response?.data?.message) {
+                alert(error.response.data.message)
             } else {
                 alert('탈출일지 등록에 실패했습니다. 다시 시도해주세요.')
             }
@@ -354,14 +300,6 @@ export default function NewDiaryPage() {
             ...prev,
             [category]: value,
         }))
-    }
-
-    // 이미지 관련 핸들러
-    const addEscapeImage = () => {
-        if (newEscapeImage.trim()) {
-            setEscapeImages((prev) => [...prev, newEscapeImage])
-            setNewEscapeImage('')
-        }
     }
 
     const removeEscapeImage = (index: number) => {

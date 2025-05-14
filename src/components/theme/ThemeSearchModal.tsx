@@ -5,7 +5,7 @@ import client from '@/lib/backend/client'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 
-interface ThemeSearchModalProps {
+type ThemeSearchModalProps = {
     isOpen: boolean
     onClose: () => void
     onSelect: (theme: string, themeId: number) => void
