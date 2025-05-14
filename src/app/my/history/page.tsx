@@ -2,6 +2,7 @@
 
 import { KakaoMap } from '@/components/common/KakaoMap'
 import PartyReviewModal from '@/components/party/PartyReviewModal'
+import { components } from '@/lib/backend/apiV1/schema'
 import client from '@/lib/backend/client'
 import { useGlobalLoginMember } from '@/stores/auth/loginMember'
 import Image from 'next/image'
@@ -9,62 +10,19 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
-// 모임 타입 정의
-type PartyType = {
-    id: number
-    title: string
-    themeThumbnailUrl: string
-    themeTitle: string
-    role: 'HOST' | 'MEMBER'
-    participantsNeeded: number
-    totalParticipants: number
-    dateTime: string
-    location: string
-    reviewStatus: 'WRITABLE' | 'COMPLETED' | 'NOT_WRITABLE'
-    status: 'RECRUITING' | 'FULL' | 'PENDING' | 'COMPLETED' | 'CANCELLED'
-    reviewed: boolean
-    themeId: number
-}
-
-// API 응답 타입 정의
-type PartyResponse = {
-    partyId: number
-    title: string
-    scheduledAt: string
-    acceptedParticipantsCount: number
-    totalParticipants: number
-    rookieAvailable: boolean
-    storeName: string
-    themeId: number
-    themeName: string
-    themeThumbnailUrl: string
-    hostId: number
-    hostNickname: string
-    hostProfilePictureUrl: string
-    status: string
-    reviewed: boolean
-}
-
-type ApiResponse = {
-    message: string | null
-    data: {
-        currentPageNumber: number
-        pageSize: number
-        totalPages: number
-        totalItems: number
-        items: PartyResponse[]
-    }
-}
+type MyJoinedPartySummaryResponse = components['schemas']['MyJoinedPartySummaryResponse']
+type SuccessResponsePageDtoMyJoinedPartySummaryResponse =
+    components['schemas']['SuccessResponsePageDtoMyJoinedPartySummaryResponse']
 
 export default function HistoryPage() {
     const router = useRouter()
-    const { loginMember, isLogin } = useGlobalLoginMember()
+    const { isLogin } = useGlobalLoginMember()
     // 상태 관리
     const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming')
     const [statusFilter, setStatusFilter] = useState<'ALL' | 'WRITABLE' | 'COMPLETED' | 'NOT_WRITABLE'>('ALL')
-    const [roleFilter, setRoleFilter] = useState<'ALL' | 'HOST' | 'MEMBER'>('ALL')
-    const [allParties, setAllParties] = useState<PartyType[]>([])
-    const [filteredParties, setFilteredParties] = useState<PartyType[]>([])
+    const [roleFilter, setRoleFilter] = useState<'ALL' | 'HOST' | 'PARTICIPANT'>('ALL')
+    const [allParties, setAllParties] = useState<MyJoinedPartySummaryResponse[]>([])
+    const [filteredParties, setFilteredParties] = useState<MyJoinedPartySummaryResponse[]>([])
     const [currentPage, setCurrentPage] = useState(1)
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -88,53 +46,23 @@ export default function HistoryPage() {
         client
             .GET('/api/v1/parties/joins/me', {
                 params: {
-                    path: {
-                        id: loginMember.id,
-                    },
                     query: {
-                        page: 0,
-                        size: 100, // 충분히 큰 수를 지정하여 모든 데이터를 가져옴
+                        page: currentPage - 1,
+                        size: 100,
                     },
                 },
             })
             .then((response) => {
                 console.log('API 응답 데이터:', response)
 
-                if (!response.data?.data?.items) {
+                const responseData = response.data as SuccessResponsePageDtoMyJoinedPartySummaryResponse
+                if (!responseData?.data?.items) {
                     setError('데이터를 불러오는데 실패했습니다.')
                     setIsLoading(false)
                     return
                 }
 
-                // API 응답 데이터를 PartyType으로 변환
-                const partiesData: PartyType[] = response.data.data.items.map((item) => {
-                    const id = item.partyId || 0
-                    const title = item.title || ''
-                    const dateTime = item.scheduledAt || new Date().toISOString()
-                    const location = item.storeName || ''
-                    const totalParticipants = item.totalParticipants || 0
-                    const acceptedParticipants = item.acceptedParticipantsCount || 0
-                    const themeThumbnailUrl = item.themeThumbnailUrl || ''
-                    const themeTitle = item.themeName || ''
-
-                    return {
-                        id,
-                        title,
-                        dateTime,
-                        location,
-                        participantsNeeded: Math.max(0, totalParticipants - acceptedParticipants),
-                        totalParticipants,
-                        themeThumbnailUrl,
-                        themeTitle,
-                        role: item.hostId === loginMember.id ? 'HOST' : 'MEMBER',
-                        reviewStatus: item.reviewed ? 'COMPLETED' : 'WRITABLE',
-                        status: item.status,
-                        reviewed: item.reviewed,
-                        themeId: item.themeId,
-                    }
-                })
-
-                setAllParties(partiesData)
+                setAllParties(responseData.data.items)
                 setIsLoading(false)
             })
             .catch((error: Error) => {
@@ -142,7 +70,7 @@ export default function HistoryPage() {
                 setError('데이터를 불러오는 중 오류가 발생했습니다.')
                 setIsLoading(false)
             })
-    }, [isLogin, loginMember?.id])
+    }, [isLogin])
 
     // 필터링 로직
     useEffect(() => {
@@ -156,19 +84,23 @@ export default function HistoryPage() {
 
         if (activeTab === 'upcoming') {
             filteredData = filteredData.filter((party) => {
-                const partyDate = new Date(party.dateTime)
+                const partyDate = new Date(party.scheduledAt || '')
                 return partyDate >= now
             })
         } else {
             filteredData = filteredData.filter((party) => {
-                const partyDate = new Date(party.dateTime)
+                const partyDate = new Date(party.scheduledAt || '')
                 return partyDate < now
             })
         }
 
         // 리뷰 상태 필터
         if (statusFilter !== 'ALL') {
-            filteredData = filteredData.filter((party) => party.reviewStatus === statusFilter)
+            filteredData = filteredData.filter((party) => {
+                if (statusFilter === 'COMPLETED') return party.reviewed
+                if (statusFilter === 'WRITABLE') return !party.reviewed
+                return true
+            })
         }
 
         // 역할 필터
@@ -188,7 +120,7 @@ export default function HistoryPage() {
 
         return allParties
             .filter((party) => {
-                const partyDate = new Date(party.dateTime)
+                const partyDate = new Date(party.scheduledAt || '')
                 return partyDate >= now && partyDate <= threeDaysLater
             })
             .slice(0, 3) // 최대 3개만 표시
@@ -225,21 +157,6 @@ export default function HistoryPage() {
         return `${year}.${month}.${day} (${dayOfWeek}) ${hours}:${minutes}`
     }
 
-    // 이미지 URL 처리 함수
-    const getImageUrl = (url: string, partyId: number) => {
-        // 5개의 이미지를 번갈아가며 표시
-        const imageUrls = [
-            'https://i.postimg.cc/rs2bByH8/interior-2505229-640.jpg',
-            'https://i.postimg.cc/7hL7Y0dX/interior-2505229-640.jpg',
-            'https://i.postimg.cc/fT3s132T/image.jpg',
-            'https://i.postimg.cc/bJHXqpxr/image.jpg',
-            'https://naverbooking-phinf.pstatic.net/20230612_144/1686513263098ppWzR_JPEG/%C7%EF%B8%AE%C4%DF%C5%CD_%B4%BA_%C6%F7%BD%BA%C5%CD.jpg',
-        ]
-
-        // 모임 ID를 기준으로 이미지 선택
-        return imageUrls[partyId % 5]
-    }
-
     // 모달 열기 함수
     const openModal = (partyId: number) => {
         setSelectedPartyId(partyId)
@@ -255,9 +172,9 @@ export default function HistoryPage() {
     }
 
     // 리뷰 버튼 표시 여부 및 스타일 결정 함수
-    const getReviewButton = (party: PartyType) => {
+    const getReviewButton = (party: MyJoinedPartySummaryResponse) => {
         const now = new Date()
-        const partyDate = new Date(party.dateTime)
+        const partyDate = new Date(party.scheduledAt || '')
 
         if (partyDate > now) {
             // 예정된 모임인 경우 버튼 없음
@@ -266,7 +183,7 @@ export default function HistoryPage() {
             // 리뷰 작성 가능한 경우
             return (
                 <button
-                    onClick={() => openModal(party.id)}
+                    onClick={() => openModal(party.partyId || 0)}
                     className="px-6 py-2 bg-[#FFB130] text-white text-sm rounded hover:bg-[#FFA000] transition-colors"
                 >
                     리뷰 작성
@@ -281,7 +198,7 @@ export default function HistoryPage() {
     }
 
     // 상태에 따른 뱃지 스타일 반환 함수
-    const getStatusBadgeStyle = (status: PartyType['status']) => {
+    const getStatusBadgeStyle = (status: MyJoinedPartySummaryResponse['status']) => {
         switch (status) {
             case 'RECRUITING':
                 return 'bg-green-600 text-white'
@@ -299,7 +216,7 @@ export default function HistoryPage() {
     }
 
     // 상태 텍스트 반환 함수
-    const getStatusText = (status: PartyType['status']) => {
+    const getStatusText = (status: MyJoinedPartySummaryResponse['status']) => {
         switch (status) {
             case 'RECRUITING':
                 return '모집중'
@@ -319,7 +236,7 @@ export default function HistoryPage() {
     // 테마 상세 정보 가져오기
     const fetchThemeDetail = async (themeId: number) => {
         try {
-            const response = await client.GET(`/api/v1/themes/${themeId}`, {
+            const response = await client.GET('/api/v1/themes/{id}', {
                 params: {
                     path: {
                         id: themeId,
@@ -327,8 +244,9 @@ export default function HistoryPage() {
                 },
             })
 
-            if (response?.data?.data) {
-                setSelectedThemeDetail(response.data.data)
+            const responseData = response.data as { data: any }
+            if (responseData?.data) {
+                setSelectedThemeDetail(responseData.data)
             }
         } catch (err) {
             console.error('테마 상세 정보 가져오기 오류:', err)
@@ -337,7 +255,7 @@ export default function HistoryPage() {
 
     // 지도 토글 시 테마 정보도 함께 가져오기
     const toggleMap = async (partyId: number) => {
-        const party = allParties.find((p) => p.id === partyId)
+        const party = allParties.find((p) => p.partyId === partyId)
         if (selectedMapParty === partyId) {
             setSelectedMapParty(null)
             setSelectedThemeDetail(null)
@@ -359,13 +277,13 @@ export default function HistoryPage() {
                         {/* 마감 임박 모임 카드 */}
                         {getDeadlineParties().map((party) => (
                             <div
-                                key={`deadline-${party.id}`}
+                                key={`deadline-${party.partyId}`}
                                 className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
                             >
                                 <div className="relative h-48">
                                     <Image
-                                        src={getImageUrl(party.themeThumbnailUrl, party.id)}
-                                        alt={party.title}
+                                        src={party.themeThumbnailUrl || '/default-thumbnail.svg'}
+                                        alt={party.title || ''}
                                         fill
                                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                         className="object-cover opacity-80"
@@ -375,11 +293,12 @@ export default function HistoryPage() {
                                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
                                         <h3 className="text-white font-bold text-lg">{party.title}</h3>
                                         <div className="flex justify-between items-center mt-1">
-                                            <span className="text-gray-200 text-sm">{party.themeTitle}</span>
+                                            <span className="text-gray-200 text-sm">{party.themeName}</span>
                                             <span className="bg-[#FFB130] text-white text-xs px-2 py-1 rounded-full">
                                                 D-
                                                 {Math.floor(
-                                                    (new Date(party.dateTime).getTime() - new Date().getTime()) /
+                                                    (new Date(party.scheduledAt || '').getTime() -
+                                                        new Date().getTime()) /
                                                         (1000 * 60 * 60 * 24),
                                                 )}
                                             </span>
@@ -401,7 +320,7 @@ export default function HistoryPage() {
                                                     clipRule="evenodd"
                                                 />
                                             </svg>
-                                            <span>{party.location}</span>
+                                            <span>{party.storeName}</span>
                                         </div>
                                         <div className="flex items-center">
                                             <svg
@@ -417,7 +336,7 @@ export default function HistoryPage() {
                                                 />
                                             </svg>
                                             <span>
-                                                {new Date(party.dateTime).toLocaleTimeString('ko-KR', {
+                                                {new Date(party.scheduledAt || '').toLocaleTimeString('ko-KR', {
                                                     hour: '2-digit',
                                                     minute: '2-digit',
                                                 })}
@@ -426,10 +345,15 @@ export default function HistoryPage() {
                                     </div>
                                     <div className="flex justify-between items-center">
                                         <div className="text-sm text-gray-300">
-                                            인원: {party.participantsNeeded} / {party.totalParticipants}명
+                                            인원:{' '}
+                                            {Math.max(
+                                                0,
+                                                (party.totalParticipants || 0) - (party.acceptedParticipantsCount || 0),
+                                            )}{' '}
+                                            / {party.totalParticipants}명
                                         </div>
                                         <Link
-                                            href={`/parties/${party.id}`}
+                                            href={`/parties/${party.partyId}`}
                                             className="px-3 py-1 bg-[#FFB130] text-white text-xs rounded hover:bg-[#FFA000] transition-colors"
                                         >
                                             모임 정보
@@ -501,7 +425,7 @@ export default function HistoryPage() {
                                 >
                                     <option value="ALL">전체</option>
                                     <option value="HOST">모임장</option>
-                                    <option value="MEMBER">모임원</option>
+                                    <option value="PARTICIPANT">모임원</option>
                                 </select>
                             </div>
                         </div>
@@ -526,7 +450,7 @@ export default function HistoryPage() {
                     <>
                         <div className="grid grid-cols-1 gap-4">
                             {getCurrentPageParties().map((party) => (
-                                <div key={party.id} className="bg-gray-800 rounded-lg border border-gray-700 p-4">
+                                <div key={party.partyId} className="bg-gray-800 rounded-lg border border-gray-700 p-4">
                                     <div className="flex justify-between items-start">
                                         <div className="flex items-center gap-2">
                                             <span
@@ -540,10 +464,10 @@ export default function HistoryPage() {
                                             </span>
                                             <span
                                                 className={`px-2 py-0.5 text-xs rounded-full ${getStatusBadgeStyle(
-                                                    party.status,
+                                                    party.status || 'RECRUITING',
                                                 )}`}
                                             >
-                                                {getStatusText(party.status)}
+                                                {getStatusText(party.status || 'RECRUITING')}
                                             </span>
                                         </div>
                                         <div>{getReviewButton(party)}</div>
@@ -552,43 +476,31 @@ export default function HistoryPage() {
                                         {party.themeThumbnailUrl ? (
                                             <div className="w-24 h-24 bg-gray-700 rounded overflow-hidden relative flex-shrink-0">
                                                 <Image
-                                                    src={getImageUrl(party.themeThumbnailUrl, party.id)}
-                                                    alt={party.title}
+                                                    src={party.themeThumbnailUrl || '/default-thumbnail.svg'}
+                                                    alt={party.title || ''}
                                                     fill
                                                     sizes="(max-width: 96px) 100vw, 96px"
                                                     className="object-cover opacity-90"
                                                     unoptimized
-                                                    onError={(e) => {
-                                                        const fallbackImage =
-                                                            'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgZmlsbD0iIzMzMzMzMyIvPjxwYXRoIGQ9Ik00NSA0NUgzMFY3NUg5MFY0NUg3NVYzMEg0NVY0NVpNNzUgOTBIMzBWNzVIOTBWNDVINzVWOTBaIiBmaWxsPSIjNjY2NjY2Ii8+PC9zdmc+'
-                                                        ;(e.target as HTMLImageElement).src = fallbackImage
-                                                        ;(e.target as HTMLImageElement).onerror = null
-                                                    }}
                                                 />
                                             </div>
                                         ) : (
                                             <div className="w-24 h-24 bg-gray-700 rounded flex-shrink-0 flex items-center justify-center">
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    className="h-10 w-10 text-gray-500"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    stroke="currentColor"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                                    />
-                                                </svg>
+                                                <Image
+                                                    src="/default-thumbnail.svg"
+                                                    alt="기본 썸네일"
+                                                    fill
+                                                    sizes="96px"
+                                                    className="object-cover"
+                                                    unoptimized
+                                                />
                                             </div>
                                         )}
                                         <div className="flex-1">
                                             <h3 className="font-bold mb-1 text-gray-100">{party.title}</h3>
                                             <div className="space-y-1 text-sm text-gray-300">
-                                                <p>{formatDate(party.dateTime)}</p>
-                                                <p>테마: {party.themeTitle}</p>
+                                                <p>{formatDate(party.scheduledAt || '')}</p>
+                                                <p>테마: {party.themeName}</p>
                                                 <div className="flex items-center">
                                                     <p className="flex items-center">
                                                         <svg
@@ -611,21 +523,27 @@ export default function HistoryPage() {
                                                                 d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                                                             />
                                                         </svg>
-                                                        장소: {party.location}
+                                                        장소: {party.storeName}
                                                     </p>
                                                     <button
                                                         className="ml-2 text-sm text-[#FFB130] hover:text-[#FFA000] flex items-center"
-                                                        onClick={() => toggleMap(party.id)}
+                                                        onClick={() => toggleMap(party.partyId || 0)}
                                                     >
-                                                        {selectedMapParty === party.id ? '지도 닫기' : '지도 보기'}
+                                                        {selectedMapParty === party.partyId ? '지도 닫기' : '지도 보기'}
                                                     </button>
                                                 </div>
                                                 <div className="flex items-center justify-between">
                                                     <p className="text-sm text-gray-300">
-                                                        인원: {party.participantsNeeded} / {party.totalParticipants}명
+                                                        인원:{' '}
+                                                        {Math.max(
+                                                            0,
+                                                            (party.totalParticipants || 0) -
+                                                                (party.acceptedParticipantsCount || 0),
+                                                        )}{' '}
+                                                        / {party.totalParticipants}명
                                                     </p>
                                                     <Link
-                                                        href={`/parties/${party.id}`}
+                                                        href={`/parties/${party.partyId}`}
                                                         className="px-4 py-2 bg-gray-700 text-gray-200 text-xs rounded hover:bg-gray-600 transition-colors flex items-center gap-1"
                                                     >
                                                         <svg
@@ -650,11 +568,11 @@ export default function HistoryPage() {
                                     </div>
 
                                     {/* 지도 이미지 영역 */}
-                                    {selectedMapParty === party.id && (
+                                    {selectedMapParty === party.partyId && (
                                         <div className="mt-4 w-full h-64 bg-gray-700 rounded-lg overflow-hidden relative">
                                             <KakaoMap
-                                                address={selectedThemeDetail?.storeInfo?.address || party.location}
-                                                storeName={selectedThemeDetail?.storeInfo?.name || party.location}
+                                                address={selectedThemeDetail?.storeInfo?.address || party.storeName}
+                                                storeName={selectedThemeDetail?.storeInfo?.name || party.storeName}
                                                 height="256px"
                                                 width="100%"
                                             />
