@@ -2,12 +2,13 @@
 
 import { TimePickerModal } from '@/components/party/TimePickerModal'
 import { ThemeSearchModal } from '@/components/theme/ThemeSearchModal'
+import type { components } from '@/lib/backend/apiV1/schema'
 import client from '@/lib/backend/client'
-import { LoginMemberContext } from '@/stores/auth/loginMember'
+import { useGlobalLoginMember } from '@/stores/auth/loginMember'
 import axios from 'axios'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
-import { useContext, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 interface PartyFormData {
     title: string
@@ -21,60 +22,12 @@ interface PartyFormData {
     content: string
 }
 
-interface PartyRequest {
-    themeId: number
-    title: string
-    content: string
-    scheduledAt: string // ISO 8601 형식 (yyyy-MM-ddTHH:mm:ss)
-    participantsNeeded: number
-    totalParticipants: number
-    rookieAvailable: boolean
-}
-
-interface PartyDetailResponse {
-    id?: number
-    title?: string
-    scheduledAt?: string
-    content?: string
-    hostId?: number
-    hostNickname?: string
-    hostProfilePictureUrl?: string
-    recruitableCount?: number
-    totalParticipants?: number
-    acceptedPartyMembers?: any[]
-    AppliedPartyMembers?: any[]
-    rookieAvailable?: boolean
-    themeId?: number
-    themeName?: string
-    themeThumbnailUrl?: string
-    themeTagMappings?: any[]
-    noHintEscapeRate?: number
-    escapeResult?: number
-    escapeTimeAvg?: number
-    storeName?: string
-    storeAddress?: string
-    themeGenre?: string
-    runtime?: number
-}
-
-interface SuccessResponsePartyDto {
-    message?: string
-    data?: {
-        id?: number
-        title?: string
-        // 나머지 필드들...
-    }
-}
-
-interface ThemeInfo {
-    themeName: string
-    themeId: number
-}
+type PartyRequest = components['schemas']['PartyRequest']
 
 export default function EditPartyPage() {
     const router = useRouter()
     const params = useParams()
-    const { isLogin, loginMember } = useContext(LoginMemberContext)
+    const { isLogin, loginMember } = useGlobalLoginMember()
 
     const [formData, setFormData] = useState<PartyFormData>({
         title: '',

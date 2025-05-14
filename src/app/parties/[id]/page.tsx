@@ -2,170 +2,125 @@
 
 import { KakaoMap } from '@/components/common/KakaoMap'
 import UserProfileModal from '@/components/my/UserProfileModal'
+import { components } from '@/lib/backend/apiV1/schema'
 import client from '@/lib/backend/client'
-import { LoginMemberContext } from '@/stores/auth/loginMember'
+import { useGlobalLoginMember } from '@/stores/auth/loginMember'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
-import { useContext, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
-// 기본 이미지 경로
-const DEFAULT_PROFILE_IMAGE = '/profile_default.jpg'
-const DEFAULT_THEME_IMAGE = '/theme_default.jpg'
-
-// URL이 유효한지 확인하는 함수
-const isValidImageUrl = (url: string | undefined | null): boolean => {
-    if (!url) return false
-
-    try {
-        new URL(url) // URL 객체 생성을 시도하여 유효성 검사
-        return true
-    } catch (error) {
-        // 유효한 URL 형식이 아니면 상대 경로인지 확인
-        return url.startsWith('/') || url.startsWith('./') || url.startsWith('../')
-    }
-}
-
-// 안전한 이미지 URL을 반환하는 함수
-const getSafeImageUrl = (url: string | undefined | null, defaultImage: string): string => {
-    return isValidImageUrl(url) ? url! : defaultImage
-}
-
-// API 응답 데이터 타입 정의
-interface PartyMemberSummaries {
-    id?: number
-    profilePictureUrl?: string
-    nickname?: string
-}
-
-interface ThemeTagMapping {
-    themeId?: number
-    themeTagId?: number
-    tagName?: string // 태그 이름 추가
-}
-
-interface PartyDetailResponse {
-    id?: number
-    title?: string
-    scheduledAt?: string
-    content?: string
-    hostId?: number
-    hostNickname?: string
-    hostProfilePictureUrl?: string
-    recruitableCount?: number
-    totalParticipants?: number
-    acceptedParticipantsCount?: PartyMemberSummaries[]
-    AppliedPartyMembers?: PartyMemberSummaries[]
-    rookieAvailable?: boolean
-    themeId?: number
-    themeName?: string
-    themeThumbnailUrl?: string
-    themeTagMappings?: ThemeTagMapping[]
-    noHintEscapeRate?: number
-    escapeResult?: number
-    escapeTimeAvg?: number
-    storeName?: string
-    storeAddress?: string
-    themeGenre?: string // 테마 장르 추가
-    runtime?: number // 플레이 시간
-}
-
-interface SuccessResponsePartyDetailResponse {
-    message?: string
-    data?: PartyDetailResponse
-}
+type PartyDetailResponse = components['schemas']['PartyDetailResponse']
 
 export default function PartyDetailPage() {
     const params = useParams()
     const router = useRouter()
-    const { isLogin, loginMember } = useContext(LoginMemberContext)
-
-    // 디버깅: loginMember 객체 확인
-    useEffect(() => {
-        console.log('LoginMemberContext:', { isLogin, loginMember })
-    }, [isLogin, loginMember])
+    const { isLogin, loginMember } = useGlobalLoginMember()
 
     const [partyData, setPartyData] = useState<PartyDetailResponse | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [isRequestsOpen, setIsRequestsOpen] = useState(false)
-    const [userRole, setUserRole] = useState<'none' | 'member' | 'host'>('none')
+    const [userRole, setUserRole] = useState<'host' | 'member' | 'none'>('none')
     const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null)
-
-    // 로그인 확인 및 리다이렉트
-    useEffect(() => {
-        if (!isLogin) {
-            console.log('로그인이 필요합니다. 로그인 페이지로 이동합니다.')
-            router.push('/login')
-        }
-    }, [isLogin, router])
+    const [themeTags, setThemeTags] = useState<string[]>([])
 
     // 모임 ID 가져오기
     const partyId = params?.id
 
     // 모임 상세 정보 가져오기
     useEffect(() => {
-        // 로그인되지 않은 경우 API 호출하지 않음
-        if (!isLogin) return
+        if (!isLogin) {
+            console.log('로그인이 필요합니다.')
+            return
+        }
 
         const fetchPartyDetail = async () => {
-            if (!partyId) return
+            if (!partyId) {
+                console.log('partyId가 없습니다.')
+                return
+            }
 
             setLoading(true)
             try {
-                console.log('로그인된 사용자 ID:', loginMember.id)
+                console.log('모임 상세 정보 요청 시작:', { partyId, isLogin })
 
-                const response = await client.GET('/api/v1/parties/{partyId}', {
-                    params: {
-                        path: { partyId }, // 경로 파라미터는 'path' 객체 안에 넣어야 할 수 있음
-                    },
-                })
+                const response = await client
+                    .GET('/api/v1/parties/{id}', {
+                        params: {
+                            path: { id: Number(partyId) },
+                        },
+                    })
+                    .catch((error) => {
+                        console.error('API 호출 실패:', error)
+                        throw error
+                    })
 
-                if (response.data.data) {
-                    console.log('모임 데이터:', response.data.data)
-                    console.log('모임장 ID:', response.data.data.hostId)
-                    console.log('로그인된 사용자 ID:', loginMember.id)
-                    setPartyData(response.data.data)
-                    // 사용자 역할 설정
-                    if (response.data.data.hostId === loginMember.id) {
-                        console.log('사용자 역할: 모임장')
-                        setUserRole('host')
-                    } else if (
-                        response.data.data.acceptedPartyMembers?.some((member) => member.id === loginMember.id)
-                    ) {
-                        console.log('사용자 역할: 모임원')
-                        setUserRole('member')
-                    } else {
-                        console.log('사용자 역할: 일반 사용자')
-                        setUserRole('none')
-                    }
-                } else {
-                    setError('모임 정보를 찾을 수 없습니다.')
-                    alert('모임 정보를 찾을 수 없습니다.')
-                    router.push('/parties')
+                console.log('API 응답 전체:', response)
+
+                // response가 undefined인 경우
+                if (!response) {
+                    console.error('API 응답이 없습니다.')
+                    throw new Error('API 응답이 없습니다.')
                 }
-            } catch (err) {
-                console.error('모임 상세 정보 로드 중 오류:', err)
-                setError('모임 정보를 가져오는 중 오류가 발생했습니다.')
-                alert('모임 정보를 가져오는 중 오류가 발생했습니다.')
-                router.push('/parties')
+
+                // response.data가 undefined인 경우
+                if (!response.data) {
+                    console.error('API 응답 데이터가 없습니다. 응답:', response)
+                    throw new Error('API 응답 데이터가 없습니다.')
+                }
+
+                const responseData = response.data
+                console.log('파싱된 응답 데이터:', responseData)
+
+                // responseData.data가 없는 경우
+                if (!responseData.data) {
+                    console.error('모임 데이터가 없습니다. 응답 데이터:', responseData)
+                    throw new Error('모임 데이터를 찾을 수 없습니다.')
+                }
+
+                console.log('모임 데이터:', responseData.data)
+                console.log('로그인된 사용자 닉네임:', loginMember?.nickname)
+
+                setPartyData(responseData.data)
+                setUserRole(
+                    responseData.data.hostNickname === loginMember?.nickname
+                        ? 'host'
+                        : responseData.data.acceptedPartyMembers?.some(
+                              (member) => member.nickname === loginMember?.nickname,
+                          )
+                        ? 'member'
+                        : 'none',
+                )
+            } catch (error) {
+                console.error('모임 정보 조회 실패:', error)
+                if (error instanceof Error) {
+                    alert(`모임 정보를 불러오는데 실패했습니다: ${error.message}`)
+                } else {
+                    alert('모임 정보를 불러오는데 실패했습니다.')
+                }
             } finally {
                 setLoading(false)
             }
         }
 
         fetchPartyDetail()
-    }, [partyId, isLogin, router, loginMember])
+    }, [partyId, isLogin, router, loginMember?.nickname])
+
+    // themeTags 관련 코드 수정
+    useEffect(() => {
+        if (partyData?.tagNames) {
+            setThemeTags(partyData.tagNames.filter(Boolean))
+        }
+    }, [partyData])
 
     const handleJoinRequest = async () => {
         if (!partyId) return
 
         try {
-            await client.POST(`/api/v1/parties/{partyId}/apply`, {
+            await client.POST('/api/v1/parties/{id}/apply', {
                 params: {
-                    path: {
-                        partyId: partyId,
-                    },
+                    path: { id: Number(partyId) },
                 },
             })
 
@@ -182,11 +137,9 @@ export default function PartyDetailPage() {
         if (!partyId) return
 
         try {
-            await client.DELETE(`/api/v1/parties/{partyId}/cancel`, {
+            await client.DELETE('/api/v1/parties/{id}/cancel', {
                 params: {
-                    path: {
-                        partyId: partyId,
-                    },
+                    path: { id: Number(partyId) },
                 },
             })
 
@@ -204,11 +157,11 @@ export default function PartyDetailPage() {
         if (!partyId || !memberId) return
 
         try {
-            await client.POST(`/api/v1/parties/{partyId}/accept/{memberId}`, {
+            await client.POST('/api/v1/parties/{id}/accept/{memberId}', {
                 params: {
                     path: {
-                        partyId: partyId,
-                        memberId: memberId,
+                        id: Number(partyId),
+                        memberId: Number(memberId),
                     },
                 },
             })
@@ -229,11 +182,11 @@ export default function PartyDetailPage() {
         if (!confirm('정말로 참가 요청을 거절하시겠습니까?')) return
 
         try {
-            await client.POST(`/api/v1/parties/{partyId}/reject/{memberId}`, {
+            await client.POST('/api/v1/parties/{id}/reject/{memberId}', {
                 params: {
                     path: {
-                        partyId: partyId,
-                        memberId: memberId,
+                        id: Number(partyId),
+                        memberId: Number(memberId),
                     },
                 },
             })
@@ -254,11 +207,9 @@ export default function PartyDetailPage() {
         if (!confirm('정말로 모임을 취소하시겠습니까?')) return
 
         try {
-            await client.DELETE(`/api/v1/parties/{partyId}`, {
+            await client.DELETE('/api/v1/parties/{id}', {
                 params: {
-                    path: {
-                        partyId: partyId,
-                    },
+                    path: { id: Number(partyId) },
                 },
             })
             alert('모임이 취소되었습니다.')
@@ -274,13 +225,10 @@ export default function PartyDetailPage() {
         if (!partyId) return
 
         try {
-            await client.PATCH(`/api/v1/parties/{partyId}/executed`, {
+            await client.PATCH('/api/v1/parties/{id}/executed', {
                 params: {
-                    path: {
-                        partyId: partyId,
-                    },
+                    path: { id: Number(partyId) },
                 },
-                withCredentials: true,
             })
             alert('모임이 실행 완료 상태로 변경되었습니다.')
             window.location.reload()
@@ -295,19 +243,23 @@ export default function PartyDetailPage() {
         if (!partyId) return
 
         try {
-            await client.PATCH(`/api/v1/parties/{partyId}/unexecuted`, {
+            await client.PATCH('/api/v1/parties/{id}/unexecuted', {
                 params: {
-                    path: {
-                        partyId: partyId,
-                    },
+                    path: { id: Number(partyId) },
                 },
-                withCredentials: true,
             })
             alert('모임이 미실행 상태로 변경되었습니다.')
             window.location.reload()
         } catch (error) {
             console.error('모임 미실행 처리 중 오류:', error)
             alert('모임 미실행 처리 중 오류가 발생했습니다.')
+        }
+    }
+
+    // selectedMemberId 설정 시 null 체크 추가
+    const handleMemberClick = (memberId: number | undefined) => {
+        if (memberId !== undefined) {
+            setSelectedMemberId(memberId)
         }
     }
 
@@ -322,18 +274,29 @@ export default function PartyDetailPage() {
         )
     }
 
-    if (error || !partyData) {
+    // 에러가 발생하면 콘솔에만 출력
+    if (error) {
+        console.error('모임 상세 정보 조회 실패:', error)
+    }
+
+    // partyData가 없는 경우 기본 화면 표시
+    if (!partyData) {
         return (
-            <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-                <div className="text-center">
-                    <p className="text-red-500 mb-4">{error || '모임 정보를 불러올 수 없습니다.'}</p>
-                    <button
-                        onClick={() => router.push('/parties')}
-                        className="px-4 py-2 bg-[#FFB130] text-white rounded-lg hover:bg-[#FFA000]"
-                    >
-                        모임 목록으로 돌아가기
-                    </button>
-                </div>
+            <div className="min-h-screen bg-gray-900">
+                <main className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-8">
+                    <div className="bg-gray-800 rounded-xl border border-gray-700 shadow-sm p-8 mb-6">
+                        <div className="text-center">
+                            <h1 className="text-2xl font-bold mb-4 text-white">모임 정보를 불러올 수 없습니다</h1>
+                            <p className="text-gray-400 mb-6">잠시 후 다시 시도해주세요.</p>
+                            <button
+                                onClick={() => router.push('/parties')}
+                                className="px-4 py-2 bg-[#FFB130] text-white rounded-lg hover:bg-[#F0A420]"
+                            >
+                                모임 목록으로 돌아가기
+                            </button>
+                        </div>
+                    </div>
+                </main>
             </div>
         )
     }
@@ -360,10 +323,7 @@ export default function PartyDetailPage() {
 
     // 참가자 목록에 모임장 포함 여부 확인
     const acceptedMembersCount = partyData.acceptedParticipantsCount || 0
-    // const acceptedMembersCount = partyData.acceptedParticipantsCount || 0;
-    console.log('acceptedMembersCount', acceptedMembersCount)
     const totalRemainingCount = (partyData.totalParticipants || 0) - acceptedMembersCount
-    console.log('remainingCount', totalRemainingCount)
 
     return (
         <div className="min-h-screen bg-gray-900">
@@ -379,17 +339,15 @@ export default function PartyDetailPage() {
                         </div>
                         <div className="flex items-center mt-4 md:mt-0">
                             <div className="w-10 h-10 rounded-full overflow-hidden relative mr-3 bg-gray-700">
-                                {partyData.hostProfilePictureUrl && isValidImageUrl(partyData.hostProfilePictureUrl) ? (
+                                {partyData.hostProfilePictureUrl ? (
                                     <Image
-                                        src={getSafeImageUrl(partyData.hostProfilePictureUrl, DEFAULT_PROFILE_IMAGE)}
+                                        src={partyData.hostProfilePictureUrl}
                                         alt={partyData.hostNickname || '모임장'}
                                         fill
                                         className="object-cover"
                                     />
                                 ) : (
-                                    <div className="flex items-center justify-center h-full">
-                                        <span className="text-gray-400">🧑</span>
-                                    </div>
+                                    <Image src="/profile-default.svg" alt="기본 프로필" fill className="object-cover" />
                                 )}
                             </div>
                             <div className="flex flex-col">
@@ -423,41 +381,39 @@ export default function PartyDetailPage() {
                                     {/* 모임장 정보 추가 */}
                                     <div key={partyData.hostId} className="relative group">
                                         <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-[#FFB130] bg-gray-700">
-                                            {partyData.hostProfilePictureUrl &&
-                                            isValidImageUrl(partyData.hostProfilePictureUrl) ? (
+                                            {partyData.hostProfilePictureUrl ? (
                                                 <Image
-                                                    src={getSafeImageUrl(
-                                                        partyData.hostProfilePictureUrl,
-                                                        DEFAULT_PROFILE_IMAGE,
-                                                    )}
+                                                    src={partyData.hostProfilePictureUrl}
                                                     alt={partyData.hostNickname || '모임장'}
                                                     fill
                                                     className="object-cover rounded-full"
                                                 />
                                             ) : (
-                                                <div className="flex items-center justify-center h-full rounded-full">
-                                                    <span className="text-gray-400 text-xs">🧑</span>
-                                                </div>
+                                                <Image
+                                                    src="/profile-default.svg"
+                                                    alt="기본 프로필"
+                                                    fill
+                                                    className="object-cover rounded-full"
+                                                />
                                             )}
                                         </div>
                                         <div className="absolute top-full left-0 mt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 bg-gray-800 shadow-md rounded-md p-2 z-20 w-40 border border-gray-700">
                                             <div className="flex items-center mb-2">
                                                 <div className="w-10 h-10 rounded-full overflow-hidden mr-2 bg-gray-700 relative">
-                                                    {partyData.hostProfilePictureUrl &&
-                                                    isValidImageUrl(partyData.hostProfilePictureUrl) ? (
+                                                    {partyData.hostProfilePictureUrl ? (
                                                         <Image
-                                                            src={getSafeImageUrl(
-                                                                partyData.hostProfilePictureUrl,
-                                                                DEFAULT_PROFILE_IMAGE,
-                                                            )}
+                                                            src={partyData.hostProfilePictureUrl}
                                                             alt={partyData.hostNickname || ''}
                                                             fill
                                                             className="object-cover rounded-full"
                                                         />
                                                     ) : (
-                                                        <div className="flex items-center justify-center h-full rounded-full">
-                                                            <span className="text-gray-400 text-xs">🧑</span>
-                                                        </div>
+                                                        <Image
+                                                            src="/profile-default.svg"
+                                                            alt="기본 프로필"
+                                                            fill
+                                                            className="object-cover rounded-full"
+                                                        />
                                                     )}
                                                 </div>
                                                 <div className="flex flex-col">
@@ -470,7 +426,7 @@ export default function PartyDetailPage() {
                                                 </div>
                                             </div>
                                             <button
-                                                onClick={() => setSelectedMemberId(partyData.hostId)}
+                                                onClick={() => handleMemberClick(partyData.hostId)}
                                                 className="text-xs text-blue-400 hover:underline mt-1"
                                             >
                                                 프로필 보기
@@ -484,41 +440,39 @@ export default function PartyDetailPage() {
                                         .map((member) => (
                                             <div key={member.id} className="relative group">
                                                 <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-gray-700 bg-gray-700">
-                                                    {member.profilePictureUrl &&
-                                                    isValidImageUrl(member.profilePictureUrl) ? (
+                                                    {member.profilePictureUrl ? (
                                                         <Image
-                                                            src={getSafeImageUrl(
-                                                                member.profilePictureUrl,
-                                                                DEFAULT_PROFILE_IMAGE,
-                                                            )}
+                                                            src={member.profilePictureUrl}
                                                             alt={member.nickname || '참가자'}
                                                             fill
                                                             className="object-cover rounded-full"
                                                         />
                                                     ) : (
-                                                        <div className="flex items-center justify-center h-full rounded-full">
-                                                            <span className="text-gray-400 text-xs">🧑</span>
-                                                        </div>
+                                                        <Image
+                                                            src="/profile-default.svg"
+                                                            alt="기본 프로필"
+                                                            fill
+                                                            className="object-cover rounded-full"
+                                                        />
                                                     )}
                                                 </div>
                                                 <div className="absolute top-full left-0 mt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 bg-gray-800 shadow-md rounded-md p-2 z-20 w-40 border border-gray-700">
                                                     <div className="flex items-center mb-2">
                                                         <div className="w-10 h-10 rounded-full overflow-hidden mr-2 bg-gray-700 relative">
-                                                            {member.profilePictureUrl &&
-                                                            isValidImageUrl(member.profilePictureUrl) ? (
+                                                            {member.profilePictureUrl ? (
                                                                 <Image
-                                                                    src={getSafeImageUrl(
-                                                                        member.profilePictureUrl,
-                                                                        DEFAULT_PROFILE_IMAGE,
-                                                                    )}
+                                                                    src={member.profilePictureUrl}
                                                                     alt={member.nickname || ''}
                                                                     fill
                                                                     className="object-cover rounded-full"
                                                                 />
                                                             ) : (
-                                                                <div className="flex items-center justify-center h-full rounded-full">
-                                                                    <span className="text-gray-400 text-xs">🧑</span>
-                                                                </div>
+                                                                <Image
+                                                                    src="/profile-default.svg"
+                                                                    alt="기본 프로필"
+                                                                    fill
+                                                                    className="object-cover rounded-full"
+                                                                />
                                                             )}
                                                         </div>
                                                         <div className="flex flex-col">
@@ -533,7 +487,7 @@ export default function PartyDetailPage() {
                                                         </div>
                                                     </div>
                                                     <button
-                                                        onClick={() => setSelectedMemberId(member.id)}
+                                                        onClick={() => handleMemberClick(member.id)}
                                                         className="text-xs text-blue-400 hover:underline mt-1"
                                                     >
                                                         프로필 보기
@@ -603,21 +557,20 @@ export default function PartyDetailPage() {
                                     >
                                         <div className="flex items-center">
                                             <div className="w-10 h-10 rounded-full overflow-hidden relative mr-3 bg-gray-700">
-                                                {member.profilePictureUrl &&
-                                                isValidImageUrl(member.profilePictureUrl) ? (
+                                                {member.profilePictureUrl ? (
                                                     <Image
-                                                        src={getSafeImageUrl(
-                                                            member.profilePictureUrl,
-                                                            DEFAULT_PROFILE_IMAGE,
-                                                        )}
+                                                        src={member.profilePictureUrl}
                                                         alt={member.nickname || '신청자'}
                                                         fill
                                                         className="object-cover"
                                                     />
                                                 ) : (
-                                                    <div className="flex items-center justify-center h-full">
-                                                        <span className="text-gray-400">🧑</span>
-                                                    </div>
+                                                    <Image
+                                                        src="/profile-default.svg"
+                                                        alt="기본 프로필"
+                                                        fill
+                                                        className="object-cover"
+                                                    />
                                                 )}
                                             </div>
                                             <div className="flex flex-col">
@@ -630,7 +583,7 @@ export default function PartyDetailPage() {
                                                     )}
                                                 </div>
                                                 <button
-                                                    onClick={() => setSelectedMemberId(member.id)}
+                                                    onClick={() => handleMemberClick(member.id)}
                                                     className="text-sm text-blue-400 hover:underline mt-1"
                                                 >
                                                     프로필 보기
@@ -663,17 +616,15 @@ export default function PartyDetailPage() {
                     <h2 className="text-xl font-bold mb-6 text-white">테마 정보</h2>
                     <div className="flex flex-col md:flex-row gap-8">
                         <div className="w-full md:w-48 h-64 relative rounded-lg overflow-hidden bg-gray-700">
-                            {partyData.themeThumbnailUrl && isValidImageUrl(partyData.themeThumbnailUrl) ? (
+                            {partyData.themeThumbnailUrl ? (
                                 <Image
-                                    src={getSafeImageUrl(partyData.themeThumbnailUrl, DEFAULT_THEME_IMAGE)}
+                                    src={partyData.themeThumbnailUrl}
                                     alt={partyData.themeName || '테마 이미지'}
                                     fill
                                     className="object-cover"
                                 />
                             ) : (
-                                <div className="flex items-center justify-center h-full">
-                                    <span className="text-gray-400">🖼️ 이미지 없음</span>
-                                </div>
+                                <Image src="/theme-default.jpg" alt="기본 테마 이미지" fill className="object-cover" />
                             )}
                         </div>
                         <div className="flex-1">
@@ -681,12 +632,12 @@ export default function PartyDetailPage() {
 
                             {/* 장르 및 태그 */}
                             <div className="flex flex-wrap gap-2 mb-4">
-                                {partyData.themeTagMappings?.map((tag, index) => (
+                                {partyData.tagNames?.map((tagName: string, index: number) => (
                                     <span
                                         key={index}
                                         className="px-3 py-1 bg-gray-700 text-gray-300 rounded-full text-sm"
                                     >
-                                        #{tag.tagName || '태그'}
+                                        #{tagName}
                                     </span>
                                 ))}
                             </div>
@@ -710,7 +661,7 @@ export default function PartyDetailPage() {
                                 </div>
                                 <div className="flex items-center">
                                     <span className="text-gray-400 mr-2">플레이 시간:</span>
-                                    <span className="font-medium text-white">{partyData.runtime || 60}분</span>
+                                    <span className="font-medium text-white">60분</span>
                                 </div>
                             </div>
                         </div>

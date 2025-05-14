@@ -10,7 +10,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useContext, useEffect, useState } from 'react'
 
-interface PartyFormData {
+type PartyFormData = {
     title: string
     themeName: string
     themeId: number
@@ -22,25 +22,8 @@ interface PartyFormData {
     content: string
 }
 
-interface PartyRequest {
-    themeId: number
-    title: string
-    content: string
-    scheduledAt: string // ISO 8601 형식 (yyyy-MM-ddTHH:mm:ss)
-    participantsNeeded: number
-    totalParticipants: number
-    rookieAvailable: boolean
-}
-
-interface SuccessResponsePartyDto {
-    message?: string
-    data?: components['schemas']['PartyDto']
-}
-
-interface ThemeInfo {
-    themeName: string
-    themeId: number
-}
+type PartyRequest = components['schemas']['PartyRequest']
+type SuccessResponsePartyDto = components['schemas']['SuccessResponsePartyDto']
 
 export default function CreatePartyPage() {
     const router = useRouter()
@@ -85,13 +68,6 @@ export default function CreatePartyPage() {
     const [isTimePickerModalOpen, setIsTimePickerModalOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [error, setError] = useState<string | null>(null)
-
-    // 기본 베이스 URL 설정
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL
-        ? process.env.NEXT_PUBLIC_API_URL
-        : process.env.NODE_ENV === 'development'
-        ? 'http://localhost:8080'
-        : 'https://api.ddobang.site'
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -142,11 +118,10 @@ export default function CreatePartyPage() {
             // API 호출
             const response = await client.POST('/api/v1/parties', {
                 body: requestData,
-                credentials: 'include',
             })
 
             // 성공시 모임 상세 페이지로 이동
-            if (response.data.data?.id) {
+            if (response.data?.data?.id) {
                 router.push(`/parties/${response.data.data.id}`)
             } else {
                 router.push('/parties')

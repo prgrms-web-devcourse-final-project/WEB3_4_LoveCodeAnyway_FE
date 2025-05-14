@@ -1,7 +1,7 @@
 'use client'
 
 import { HistoryCalendar } from '@/components/history/HistoryCalendar'
-import WishesThemesModal from '@/components/theme/WishesThemesModal'
+import WishesThemesModal from '@/components/my/WishesThemesModal'
 import client from '@/lib/backend/client'
 import { useGlobalLoginMember } from '@/stores/auth/loginMember'
 import Image from 'next/image'

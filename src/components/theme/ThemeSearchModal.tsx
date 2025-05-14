@@ -1,5 +1,6 @@
 'use client'
 
+import { components } from '@/lib/backend/apiV1/schema'
 import client from '@/lib/backend/client'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
@@ -10,17 +11,8 @@ interface ThemeSearchModalProps {
     onSelect: (theme: string, themeId: number) => void
 }
 
-interface ThemeForPartyResponse {
-    themeId: number
-    name: string
-    storeName: string
-    tags: string[]
-}
-
-interface SuccessResponseListThemeForPartyResponse {
-    message?: string
-    data?: ThemeForPartyResponse[]
-}
+type ThemeForPartyResponse = components['schemas']['ThemeForPartyResponse']
+type SuccessResponseListThemeForPartyResponse = components['schemas']['SuccessResponseListThemeForPartyResponse']
 
 export function ThemeSearchModal({ isOpen, onClose, onSelect }: ThemeSearchModalProps) {
     const [searchTerm, setSearchTerm] = useState('')
@@ -37,14 +29,16 @@ export function ThemeSearchModal({ isOpen, onClose, onSelect }: ThemeSearchModal
             setError(null)
 
             try {
-                const response = await client.get('/api/v1/themes/search-for-party', {
+                const response = await client.GET('/api/v1/themes/search-for-party', {
                     params: {
-                        keyword: searchTerm,
+                        query: {
+                            keyword: searchTerm,
+                        },
                     },
                 })
                 console.log('테마 검색 결과:', response.data)
 
-                if (response.data.data && response.data.data.length > 0) {
+                if (response.data?.data && response.data.data.length > 0) {
                     setThemes(response.data.data)
                 } else {
                     setThemes([])
@@ -62,7 +56,7 @@ export function ThemeSearchModal({ isOpen, onClose, onSelect }: ThemeSearchModal
     }, [isOpen, searchTerm])
 
     const handleThemeSelect = (theme: ThemeForPartyResponse) => {
-        onSelect(theme.name, theme.themeId)
+        onSelect(theme.name || '', theme.themeId || 0)
         onClose()
     }
 
