@@ -1,6 +1,7 @@
 'use client'
 
 import { PageLoading } from '@/components/common/PageLoading'
+import { components } from '@/lib/backend/apiV1/schema'
 import client from '@/lib/backend/client'
 import { LoginMemberContext } from '@/stores/auth/loginMember'
 import Image from 'next/image'
@@ -30,37 +31,8 @@ import {
 } from 'recharts'
 
 // 통계 데이터 인터페이스
-interface StatData {
-    totalCount: number
-    successRate: number
-    noHintSuccessCount: number
-    noHintSuccessRate: number
-    averageHintCount: number
-    genreCountMap: Record<string, number>
-    genreSuccessMap: Record<string, number>
-    tendencyMap: Record<string, number>
-    monthlyCountMap: Record<string, number>
-    firstEscapeDate: string
-    mostActiveMonth: string
-    mostActiveMonthCount: number
-    daysSinceFirstEscape: number
-    lastMonthInfo: {
-        lastMonthCount: number
-        lastMonthAvgSatisfaction: number
-        lastMonthAvgHintCount: number
-        lastMonthSuccessRate: number
-        lastMonthAvgTime: number
-        lastMonthTopTheme: string
-        lastMonthTopSatisfaction: number
-    }
-    difficultyHintAvgMap: Record<string, number>
-    difficultySatisAvgMap: Record<string, number>
-}
-
-interface ApiResponse {
-    message: string
-    data: StatData
-}
+type StatData = components['schemas']['MemberStatResponse']
+type ApiResponse = components['schemas']['SuccessResponseMemberStatResponse']
 
 // 색상 정의
 const COLORS = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#9896f1', '#f9ca66', '#e5e5e5']
@@ -101,7 +73,7 @@ export default function StatPage() {
                 // API 호출
                 const response = await client.GET('/api/v1/members/stat')
                 if (response.data) {
-                    setStatData(response.data.data)
+                    setStatData(response.data.data as StatData)
                 }
             } catch (error) {
                 console.error('통계 데이터 로딩 중 오류:', error)
@@ -221,7 +193,7 @@ export default function StatPage() {
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie
-                                        data={Object.entries(statData.genreCountMap).map(([name, value]) => ({
+                                        data={Object.entries(statData.genreCountMap ?? {}).map(([name, value]) => ({
                                             name,
                                             value,
                                         }))}
@@ -234,7 +206,7 @@ export default function StatPage() {
                                         labelLine={false}
                                         label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                                     >
-                                        {Object.entries(statData.genreCountMap).map(([name, value], index) => (
+                                        {Object.entries(statData.genreCountMap ?? {}).map(([name, value], index) => (
                                             <Cell
                                                 key={`cell-${index}`}
                                                 fill={
@@ -256,7 +228,7 @@ export default function StatPage() {
                         <div className="h-64">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart
-                                    data={Object.entries(statData.genreSuccessMap).map(([genre, success]) => ({
+                                    data={Object.entries(statData.genreSuccessMap ?? {}).map(([genre, success]) => ({
                                         genre,
                                         success,
                                     }))}
@@ -288,7 +260,7 @@ export default function StatPage() {
                                     cx="50%"
                                     cy="50%"
                                     outerRadius="70%"
-                                    data={Object.entries(statData.tendencyMap).map(([key, value]) => ({
+                                    data={Object.entries(statData.tendencyMap ?? {}).map(([key, value]) => ({
                                         subject: TENDENCY_MAP[key as keyof typeof TENDENCY_MAP] || key,
                                         value: value * 10,
                                         fullMark: 50,
@@ -315,7 +287,7 @@ export default function StatPage() {
                         <div className="h-64">
                             <ResponsiveContainer width="100%" height="100%">
                                 <LineChart
-                                    data={Object.entries(statData.monthlyCountMap).map(([month, count]) => ({
+                                    data={Object.entries(statData.monthlyCountMap ?? {}).map(([month, count]) => ({
                                         month,
                                         count,
                                     }))}
@@ -341,7 +313,7 @@ export default function StatPage() {
                     <div className="bg-gray-800 p-6 rounded-xl shadow-sm text-center">
                         <p className="text-gray-300 text-sm mb-1">최근 방탈출</p>
                         <p className="text-xl font-semibold text-[#FFB130]">
-                            {statData.lastMonthInfo.lastMonthTopTheme}
+                            {statData.lastMonthInfo?.lastMonthTopTheme}
                         </p>
                         <p className="text-xs text-gray-400">활동 중</p>
                     </div>
@@ -383,7 +355,7 @@ export default function StatPage() {
                             </div>
                             <p className="text-gray-300 text-xs">평균 만족도</p>
                             <p className="text-lg font-semibold text-white">
-                                {statData.lastMonthInfo.lastMonthAvgSatisfaction}/5.0
+                                {statData.lastMonthInfo?.lastMonthAvgSatisfaction}/5.0
                             </p>
                         </div>
 
@@ -399,7 +371,7 @@ export default function StatPage() {
                             </div>
                             <p className="text-gray-300 text-xs">평균 힌트 사용</p>
                             <p className="text-lg font-semibold text-white">
-                                {statData.lastMonthInfo.lastMonthAvgHintCount}개
+                                {statData.lastMonthInfo?.lastMonthAvgHintCount}개
                             </p>
                         </div>
 
@@ -415,7 +387,7 @@ export default function StatPage() {
                             </div>
                             <p className="text-gray-300 text-xs">탈출 성공률</p>
                             <p className="text-lg font-semibold text-white">
-                                {statData.lastMonthInfo.lastMonthSuccessRate}%
+                                {statData.lastMonthInfo?.lastMonthSuccessRate}%
                             </p>
                         </div>
 
@@ -431,7 +403,7 @@ export default function StatPage() {
                             </div>
                             <p className="text-gray-300 text-xs">평균 소요 시간</p>
                             <p className="text-lg font-semibold text-white">
-                                {statData.lastMonthInfo.lastMonthAvgTime}분
+                                {statData.lastMonthInfo?.lastMonthAvgTime}분
                             </p>
                         </div>
 
@@ -447,7 +419,7 @@ export default function StatPage() {
                             </div>
                             <p className="text-gray-300 text-xs">최고 전적 대비</p>
                             <p className="text-lg font-semibold text-[#4ecdc4]">
-                                {statData.lastMonthInfo.lastMonthTopTheme}
+                                {statData.lastMonthInfo?.lastMonthTopTheme}
                             </p>
                             <p className="text-[10px] text-gray-400">4/5</p>
                         </div>
@@ -461,7 +433,7 @@ export default function StatPage() {
                         <div className="h-64">
                             <ResponsiveContainer width="100%" height="100%">
                                 <LineChart
-                                    data={Object.entries(statData.difficultyHintAvgMap).map(([name, value]) => ({
+                                    data={Object.entries(statData.difficultyHintAvgMap ?? {}).map(([name, value]) => ({
                                         name,
                                         value,
                                     }))}
@@ -485,7 +457,7 @@ export default function StatPage() {
                         <div className="h-64">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart
-                                    data={Object.entries(statData.difficultySatisAvgMap).map(([name, value]) => ({
+                                    data={Object.entries(statData.difficultySatisAvgMap ?? {}).map(([name, value]) => ({
                                         name,
                                         value,
                                     }))}
