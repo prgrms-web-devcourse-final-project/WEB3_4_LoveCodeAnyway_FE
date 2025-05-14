@@ -3,11 +3,13 @@
 import { PageLoading } from '@/components/common/PageLoading'
 import { Navigation } from '@/components/layout/Navigation'
 import { Notification } from '@/components/layout/SseConnector'
+import { components } from '@/lib/backend/apiV1/schema'
 import client from '@/lib/backend/client'
 import { LoginMemberContext, useLoginMember } from '@/stores/auth/loginMember'
-import { AlarmResponse } from '@/types/alarm'
 import { ThemeProvider as NextThemesProvider } from 'next-themes'
 import React, { useEffect, useState } from 'react'
+
+type AlarmResponse = components['schemas']['AlarmResponse']
 
 // 알림 컨텍스트 생성
 export const NotificationContext = React.createContext<{
@@ -15,7 +17,7 @@ export const NotificationContext = React.createContext<{
     addNotification: (notification: AlarmResponse) => void
     clearNotifications: () => void
     unreadCount: number
-    setUnreadCount: (count: number) => void
+    setUnreadCount: (count: number | ((prev: number) => number)) => void
 }>({
     notifications: [],
     addNotification: () => {},
@@ -44,8 +46,9 @@ export function ClientLayout({ children }: React.ComponentProps<typeof NextTheme
     const notificationContextValue = {
         notifications,
         addNotification: (notification: AlarmResponse) => {
+            if (!notification) return
             setNotifications((prev) => [notification, ...prev])
-            if (!notification.readStatus) {
+            if (notification.readStatus === false) {
                 setUnreadCount((prev) => prev + 1)
             }
         },

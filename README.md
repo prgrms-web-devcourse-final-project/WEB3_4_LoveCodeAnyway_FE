@@ -59,7 +59,6 @@ yarn dev
 │ │ └── auth/ # 인증 관련 상태 관리
 │ │ └── loginMember.tsx # 로그인한 사용자 정보 관리
 │ │
-│ ├── types/ # TypeScript 타입 정의
 │ └── lib/ # 유틸리티 함수 및 설정
 │ └── backend/ # 백엔드 API 관련 설정
 │ ├── apiV1/ # API v1 엔드포인트 정의
