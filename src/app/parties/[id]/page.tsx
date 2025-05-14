@@ -253,9 +253,11 @@ export default function PartyDetailPage() {
         }
     }
 
-    // selectedMemberId 설정 시 null 체크 추가
+    // handleMemberClick 함수 수정
     const handleMemberClick = (memberId: number | undefined) => {
+        console.log('handleMemberClick called with memberId:', memberId) // 디버깅용
         if (memberId !== undefined) {
+            console.log('Setting selectedMemberId to:', memberId) // 디버깅용
             setSelectedMemberId(memberId)
         }
     }
@@ -336,16 +338,12 @@ export default function PartyDetailPage() {
                         </div>
                         <div className="flex items-center mt-4 md:mt-0">
                             <div className="w-10 h-10 rounded-full overflow-hidden relative mr-3 bg-gray-700">
-                                {partyData.hostProfilePictureUrl ? (
-                                    <Image
-                                        src={partyData.hostProfilePictureUrl}
-                                        alt={partyData.hostNickname || '모임장'}
-                                        fill
-                                        className="object-cover"
-                                    />
-                                ) : (
-                                    <Image src="/profile-default.svg" alt="기본 프로필" fill className="object-cover" />
-                                )}
+                                <Image
+                                    src={partyData.hostProfilePictureUrl || '/default-profile.svg'}
+                                    alt={partyData.hostNickname || '모임장'}
+                                    fill
+                                    className="object-cover"
+                                />
                             </div>
                             <div className="flex flex-col">
                                 <div className="flex items-center">
@@ -378,40 +376,22 @@ export default function PartyDetailPage() {
                                     {/* 모임장 정보 추가 */}
                                     <div key={partyData.hostId} className="relative group">
                                         <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-[#FFB130] bg-gray-700">
-                                            {partyData.hostProfilePictureUrl ? (
-                                                <Image
-                                                    src={partyData.hostProfilePictureUrl}
-                                                    alt={partyData.hostNickname || '모임장'}
-                                                    fill
-                                                    className="object-cover rounded-full"
-                                                />
-                                            ) : (
-                                                <Image
-                                                    src="/profile-default.svg"
-                                                    alt="기본 프로필"
-                                                    fill
-                                                    className="object-cover rounded-full"
-                                                />
-                                            )}
+                                            <Image
+                                                src={partyData.hostProfilePictureUrl || '/default-profile.svg'}
+                                                alt={partyData.hostNickname || '모임장'}
+                                                fill
+                                                className="object-cover rounded-full"
+                                            />
                                         </div>
                                         <div className="absolute top-full left-0 mt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 bg-gray-800 shadow-md rounded-md p-2 z-20 w-40 border border-gray-700">
                                             <div className="flex items-center mb-2">
                                                 <div className="w-10 h-10 rounded-full overflow-hidden mr-2 bg-gray-700 relative">
-                                                    {partyData.hostProfilePictureUrl ? (
-                                                        <Image
-                                                            src={partyData.hostProfilePictureUrl}
-                                                            alt={partyData.hostNickname || ''}
-                                                            fill
-                                                            className="object-cover rounded-full"
-                                                        />
-                                                    ) : (
-                                                        <Image
-                                                            src="/profile-default.svg"
-                                                            alt="기본 프로필"
-                                                            fill
-                                                            className="object-cover rounded-full"
-                                                        />
-                                                    )}
+                                                    <Image
+                                                        src={partyData.hostProfilePictureUrl || '/default-profile.svg'}
+                                                        alt={partyData.hostNickname || ''}
+                                                        fill
+                                                        className="object-cover rounded-full"
+                                                    />
                                                 </div>
                                                 <div className="flex flex-col">
                                                     <span className="text-sm font-medium text-white">
@@ -437,40 +417,22 @@ export default function PartyDetailPage() {
                                         .map((member) => (
                                             <div key={member.id} className="relative group">
                                                 <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-gray-700 bg-gray-700">
-                                                    {member.profilePictureUrl ? (
-                                                        <Image
-                                                            src={member.profilePictureUrl}
-                                                            alt={member.nickname || '참가자'}
-                                                            fill
-                                                            className="object-cover rounded-full"
-                                                        />
-                                                    ) : (
-                                                        <Image
-                                                            src="/profile-default.svg"
-                                                            alt="기본 프로필"
-                                                            fill
-                                                            className="object-cover rounded-full"
-                                                        />
-                                                    )}
+                                                    <Image
+                                                        src={member.profilePictureUrl || '/default-profile.svg'}
+                                                        alt={member.nickname || '참가자'}
+                                                        fill
+                                                        className="object-cover rounded-full"
+                                                    />
                                                 </div>
                                                 <div className="absolute top-full left-0 mt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 bg-gray-800 shadow-md rounded-md p-2 z-20 w-40 border border-gray-700">
                                                     <div className="flex items-center mb-2">
                                                         <div className="w-10 h-10 rounded-full overflow-hidden mr-2 bg-gray-700 relative">
-                                                            {member.profilePictureUrl ? (
-                                                                <Image
-                                                                    src={member.profilePictureUrl}
-                                                                    alt={member.nickname || ''}
-                                                                    fill
-                                                                    className="object-cover rounded-full"
-                                                                />
-                                                            ) : (
-                                                                <Image
-                                                                    src="/profile-default.svg"
-                                                                    alt="기본 프로필"
-                                                                    fill
-                                                                    className="object-cover rounded-full"
-                                                                />
-                                                            )}
+                                                            <Image
+                                                                src={member.profilePictureUrl || '/default-profile.svg'}
+                                                                alt={member.nickname || ''}
+                                                                fill
+                                                                className="object-cover rounded-full"
+                                                            />
                                                         </div>
                                                         <div className="flex flex-col">
                                                             <span className="text-sm font-medium text-white">
@@ -554,21 +516,12 @@ export default function PartyDetailPage() {
                                     >
                                         <div className="flex items-center">
                                             <div className="w-10 h-10 rounded-full overflow-hidden relative mr-3 bg-gray-700">
-                                                {member.profilePictureUrl ? (
-                                                    <Image
-                                                        src={member.profilePictureUrl}
-                                                        alt={member.nickname || '신청자'}
-                                                        fill
-                                                        className="object-cover"
-                                                    />
-                                                ) : (
-                                                    <Image
-                                                        src="/profile-default.svg"
-                                                        alt="기본 프로필"
-                                                        fill
-                                                        className="object-cover"
-                                                    />
-                                                )}
+                                                <Image
+                                                    src={member.profilePictureUrl || '/default-profile.svg'}
+                                                    alt={member.nickname || '신청자'}
+                                                    fill
+                                                    className="object-cover"
+                                                />
                                             </div>
                                             <div className="flex flex-col">
                                                 <div className="flex items-center">
@@ -741,11 +694,14 @@ export default function PartyDetailPage() {
                     )}
                 </div>
             </main>
-            {selectedMemberId && (
+            {selectedMemberId !== null && (
                 <UserProfileModal
                     memberId={selectedMemberId}
-                    isOpen={!!selectedMemberId}
-                    onClose={() => setSelectedMemberId(null)}
+                    isOpen={true} // 항상 true로 설정
+                    onClose={() => {
+                        console.log('Closing modal') // 디버깅용
+                        setSelectedMemberId(null)
+                    }}
                 />
             )}
         </div>

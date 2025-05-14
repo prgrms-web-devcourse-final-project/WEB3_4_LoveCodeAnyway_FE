@@ -73,7 +73,7 @@ export function PartyCard({ party, onClick }: PartyCardProps) {
                 <div className="flex items-center">
                     <div className="w-6 h-6 mr-2 rounded-full overflow-hidden relative">
                         <Image
-                            src={party.hostProfilePictureUrl || '/images/default-profile.svg'}
+                            src={party.hostProfilePictureUrl || '/default-profile.svg'}
                             alt={party.hostNickname || '모임장'}
                             fill
                             className="object-cover"

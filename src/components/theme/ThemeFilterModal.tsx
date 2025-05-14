@@ -1,15 +1,9 @@
+import type { components } from '@/lib/backend/apiV1/schema'
 import client from '@/lib/backend/client'
 import { useEffect, useState } from 'react'
 
-interface Tag {
-    id: number
-    name: string
-}
-
-interface Region {
-    id: number
-    subRegion: string
-}
+type ThemeTagResponse = components['schemas']['ThemeTagResponse']
+type SubRegionsResponse = components['schemas']['SubRegionsResponse']
 
 interface Participant {
     id: string
@@ -36,8 +30,8 @@ export function ThemeFilterModal({ isOpen, onClose, onApply, currentFilters }: T
     const [selectedGenres, setSelectedGenres] = useState<number[]>(currentFilters?.genres || [])
     const [selectedParticipant, setSelectedParticipant] = useState<string>(currentFilters?.participant || '')
     const [activeRegion, setActiveRegion] = useState('서울')
-    const [tags, setTags] = useState<Tag[]>([])
-    const [regions, setRegions] = useState<Region[]>([])
+    const [tags, setTags] = useState<ThemeTagResponse[]>([])
+    const [regions, setRegions] = useState<SubRegionsResponse[]>([])
     const [loading, setLoading] = useState(false)
     const [loadingRegions, setLoadingRegions] = useState(false)
 
@@ -85,11 +79,12 @@ export function ThemeFilterModal({ isOpen, onClose, onApply, currentFilters }: T
             })
 
             if (response?.data?.data) {
-                const regionsData: Region[] = response.data.data.map((item: any) => ({
-                    id: Number(item.id),
-                    subRegion: String(item.subRegion),
-                }))
-                setRegions(regionsData)
+                // 유효한 데이터만 필터링
+                const validRegions = response.data.data.filter(
+                    (region): region is SubRegionsResponse =>
+                        typeof region.id === 'number' && typeof region.subRegion === 'string',
+                )
+                setRegions(validRegions)
             }
         } catch (error) {
             console.error('지역 목록을 불러오는 중 오류가 발생했습니다:', error)
@@ -103,11 +98,11 @@ export function ThemeFilterModal({ isOpen, onClose, onApply, currentFilters }: T
         try {
             const response = await client.GET('/api/v1/themes/tags')
             if (response?.data?.data) {
-                const tagsData: Tag[] = response.data.data.map((item: any) => ({
-                    id: Number(item.id),
-                    name: String(item.name),
-                }))
-                setTags(tagsData)
+                // 유효한 데이터만 필터링
+                const validTags = response.data.data.filter(
+                    (tag): tag is ThemeTagResponse => typeof tag.id === 'number' && typeof tag.name === 'string',
+                )
+                setTags(validTags)
             }
         } catch (error) {
             console.error('태그 목록을 불러오는 중 오류가 발생했습니다:', error)
@@ -118,7 +113,7 @@ export function ThemeFilterModal({ isOpen, onClose, onApply, currentFilters }: T
 
     const handleRegionToggle = (regionId: number) => {
         setSelectedRegions((prev) => {
-            const regionIdStr = regionId.toString()
+            const regionIdStr = String(regionId)
             if (prev.includes(regionIdStr)) {
                 return prev.filter((r) => r !== regionIdStr)
             } else {
@@ -150,17 +145,17 @@ export function ThemeFilterModal({ isOpen, onClose, onApply, currentFilters }: T
     const handleApply = () => {
         const selectedSubRegions = selectedRegions
             .map((regionId) => {
-                const region = regions.find((r) => r.id === parseInt(regionId))
-                return region ? region.subRegion : ''
+                const region = regions.find((r) => r.id === Number(regionId || 0)) as SubRegionsResponse | undefined
+                return region?.subRegion || ''
             })
-            .filter(Boolean)
+            .filter(Boolean) as string[]
 
         const selectedGenreNames = selectedGenres
             .map((genreId) => {
-                const tag = tags.find((t) => t.id === genreId)
-                return tag ? tag.name : ''
+                const tag = tags.find((t) => t.id === (genreId || 0)) as ThemeTagResponse | undefined
+                return tag?.name || ''
             })
-            .filter(Boolean)
+            .filter(Boolean) as string[]
 
         const filters: FilterValues = {
             regions: selectedRegions,
@@ -178,8 +173,10 @@ export function ThemeFilterModal({ isOpen, onClose, onApply, currentFilters }: T
             selectedRegions.length > 0
                 ? `지역: ${selectedRegions
                       .map((regionId) => {
-                          const region = regions.find((r) => r.id === parseInt(regionId))
-                          return region ? region.subRegion : ''
+                          const region = regions.find((r) => r.id === Number(regionId || 0)) as
+                              | SubRegionsResponse
+                              | undefined
+                          return region?.subRegion || ''
                       })
                       .filter(Boolean)
                       .join(', ')}`
@@ -189,8 +186,8 @@ export function ThemeFilterModal({ isOpen, onClose, onApply, currentFilters }: T
             selectedGenres.length > 0
                 ? `장르: ${selectedGenres
                       .map((tagId) => {
-                          const tag = tags.find((t) => t.id === tagId)
-                          return tag ? tag.name : ''
+                          const tag = tags.find((t) => t.id === (tagId || 0)) as ThemeTagResponse | undefined
+                          return tag?.name || ''
                       })
                       .filter(Boolean)
                       .join(', ')}`
@@ -276,7 +273,7 @@ export function ThemeFilterModal({ isOpen, onClose, onApply, currentFilters }: T
                                                         <input
                                                             type="checkbox"
                                                             id={region.subRegion}
-                                                            checked={selectedRegions.includes(region.id.toString())}
+                                                            checked={selectedRegions.includes(String(region.id))}
                                                             onChange={() => handleRegionToggle(region.id)}
                                                             className="peer w-4 h-4 rounded border border-gray-600 text-[#FFB230] focus:ring-[#FFB230] focus:ring-2 focus:ring-offset-2 cursor-pointer appearance-none checked:bg-[#FFB230] checked:border-[#FFB230] transition-colors"
                                                         />
@@ -294,7 +291,7 @@ export function ThemeFilterModal({ isOpen, onClose, onApply, currentFilters }: T
                                                         <label
                                                             htmlFor={region.subRegion}
                                                             className={`ml-2 text-sm cursor-pointer select-none ${
-                                                                selectedRegions.includes(region.id.toString())
+                                                                selectedRegions.includes(String(region.id))
                                                                     ? 'text-[#FFB230] font-medium'
                                                                     : 'text-gray-300 group-hover:text-gray-200'
                                                             }`}

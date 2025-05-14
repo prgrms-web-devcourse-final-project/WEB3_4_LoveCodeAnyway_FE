@@ -243,7 +243,7 @@ export default function MyPage() {
                             <div className="relative">
                                 <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-[#FFB130] shadow-md">
                                     <Image
-                                        src={userProfile.profilePictureUrl || '/default-thumbnail.svg'}
+                                        src={userProfile.profilePictureUrl || '/default-profile.svg'}
                                         alt="프로필 이미지"
                                         width={128}
                                         height={128}

@@ -59,6 +59,9 @@ export function NewThemesModal({ isOpen, onClose, onThemeCreated }: NewThemesMod
 
             if (data?.data) {
                 const newTheme = data.data
+                if (!newTheme.themeId || !newTheme.themeName || !newTheme.storeName) {
+                    throw new Error('테마 데이터가 올바르지 않습니다.')
+                }
                 console.log('테마 등록 성공:', newTheme)
                 onThemeCreated({
                     id: newTheme.themeId.toString(),

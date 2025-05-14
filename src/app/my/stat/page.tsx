@@ -130,7 +130,7 @@ export default function StatPage() {
                             </div>
                             <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
                                 <Image
-                                    src="/images/count-icon.svg"
+                                    src="/icon/count-icon.svg"
                                     alt="방 아이콘"
                                     width={24}
                                     height={24}
@@ -151,7 +151,7 @@ export default function StatPage() {
                             </div>
                             <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
                                 <Image
-                                    src="/images/star-icon.svg"
+                                    src="/icon/star-icon.svg"
                                     alt="별 아이콘"
                                     width={24}
                                     height={24}
@@ -173,7 +173,7 @@ export default function StatPage() {
                             </div>
                             <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
                                 <Image
-                                    src="/images/hint-icon.svg"
+                                    src="/icon/hint-icon.svg"
                                     alt="전구 아이콘"
                                     width={24}
                                     height={24}
@@ -332,7 +332,7 @@ export default function StatPage() {
                         <div className="text-center">
                             <div className="mb-2">
                                 <Image
-                                    src="/images/count-icon.svg"
+                                    src="/icon/count-icon.svg"
                                     alt="참여 테마 수"
                                     width={36}
                                     height={36}
@@ -346,7 +346,7 @@ export default function StatPage() {
                         <div className="text-center">
                             <div className="mb-2">
                                 <Image
-                                    src="/images/star-icon.svg"
+                                    src="/icon/star-icon.svg"
                                     alt="평균 만족도"
                                     width={36}
                                     height={36}
@@ -362,7 +362,7 @@ export default function StatPage() {
                         <div className="text-center">
                             <div className="mb-2">
                                 <Image
-                                    src="/images/bulb-icon.svg"
+                                    src="/icon/bulb-icon.svg"
                                     alt="평균 힌트 사용"
                                     width={36}
                                     height={36}
@@ -378,7 +378,7 @@ export default function StatPage() {
                         <div className="text-center">
                             <div className="mb-2">
                                 <Image
-                                    src="/images/check-icon.svg"
+                                    src="/icon/check-icon.svg"
                                     alt="탈출 성공률"
                                     width={36}
                                     height={36}
@@ -394,7 +394,7 @@ export default function StatPage() {
                         <div className="text-center">
                             <div className="mb-2">
                                 <Image
-                                    src="/images/clock-icon.svg"
+                                    src="/icon/clock-icon.svg"
                                     alt="평균 소요 시간"
                                     width={36}
                                     height={36}
@@ -410,7 +410,7 @@ export default function StatPage() {
                         <div className="text-center">
                             <div className="mb-2">
                                 <Image
-                                    src="/images/trophy-icon.svg"
+                                    src="/icon/trophy-icon.svg"
                                     alt="최고 전적 대비"
                                     width={36}
                                     height={36}
