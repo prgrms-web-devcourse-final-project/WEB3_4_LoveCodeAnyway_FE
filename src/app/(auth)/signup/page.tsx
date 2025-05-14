@@ -189,29 +189,27 @@ export default function SignupPage() {
                 const formData = new FormData()
                 formData.append('file', file)
 
-                // 임의의 diaryId 생성 (현재 시간 기준)
-                const randomDiaryId = Date.now().toString()
+                try {
+                    await client.POST('/api/v1/upload/image/{diaryId}', {
+                        params: {
+                            path: { diaryId: 0 },
+                            query: { target: 'PROFILE' },
+                        },
+                        body: {
+                            file: formData.get('file') as string,
+                        },
+                    })
 
-                // 이미지 업로드 API 호출 (multipart/form-data는 fetch 사용)
-                const uploadResponse = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/upload/image/${randomDiaryId}?target=PROFILE`,
-                    {
-                        method: 'POST',
-                        body: formData,
-                        credentials: 'include',
-                    },
-                )
+                    // 이미지 업로드 성공 후 프로필 정보를 다시 가져옴
+                    const updatedProfileResponse = await client.GET('/api/v1/members/me')
 
-                if (!uploadResponse.ok) {
+                    if (updatedProfileResponse.data?.data?.profilePictureUrl) {
+                        profileImageUrl = updatedProfileResponse.data.data.profilePictureUrl
+                    }
+                } catch (uploadErr) {
+                    console.error('이미지 업로드 중 오류:', uploadErr)
                     throw new Error('이미지 업로드에 실패했습니다')
                 }
-
-                const uploadData = await uploadResponse.json()
-                if (!uploadData?.data?.imageUrl) {
-                    throw new Error('이미지 URL을 받지 못했습니다')
-                }
-
-                profileImageUrl = uploadData.data.imageUrl
             }
 
             // API 요청 데이터

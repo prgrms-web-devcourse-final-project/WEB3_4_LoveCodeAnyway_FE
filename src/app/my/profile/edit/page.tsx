@@ -1,27 +1,28 @@
 'use client'
 
+import type { components } from '@/lib/backend/apiV1/schema'
 import client from '@/lib/backend/client'
 import { useGlobalLoginMember } from '@/stores/auth/loginMember'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
-interface TagType {
-    id: number
-    name: string
-}
+type TagType = components['schemas']['MemberTagResponse']
+type BasicProfileResponse = components['schemas']['BasicProfileResponse']
+type UpdateProfileRequest = components['schemas']['UpdateProfileRequest']
+type UpdateTagsRequest = components['schemas']['UpdateTagsRequest']
 
 export default function ProfileEditPage() {
     const router = useRouter()
     const { isLogin, loginMember, setLoginMember } = useGlobalLoginMember()
 
     // 프로필 데이터 상태
-    const [profile, setProfile] = useState({
+    const [profile, setProfile] = useState<BasicProfileResponse>({
         nickname: '',
         introduction: '',
-        gender: 'NOT_SPECIFIED',
-        tags: [] as string[],
         profilePictureUrl: '',
+        gender: 'BLIND',
+        mannerScore: 0,
     })
 
     // 프로필 태그 ID 상태
@@ -44,18 +45,10 @@ export default function ProfileEditPage() {
     useEffect(() => {
         const fetchTags = async () => {
             try {
-                const response = await client.GET('/api/v1/members/me/tags', {
-                    credentials: 'include',
-                })
+                const response = await client.GET('/api/v1/members/me/tags')
 
                 if (response.data?.data) {
-                    const tagsData = response.data.data
-                    // 타입 안전하게 변환
-                    const processedTags: TagType[] = tagsData.map((tag: any) => ({
-                        id: tag.id || 0, // undefined인 경우 기본값 제공
-                        name: tag.name || '',
-                    }))
-                    setAllTags(processedTags)
+                    setAllTags(response.data.data)
                 }
             } catch (err) {
                 console.error('태그 로딩 중 오류:', err)
@@ -76,21 +69,21 @@ export default function ProfileEditPage() {
         setProfile({
             nickname: loginMember.nickname || '',
             introduction: loginMember.introduction || '',
-            gender: loginMember.gender || 'NOT_SPECIFIED',
-            tags: loginMember.tags || [],
             profilePictureUrl: loginMember.profilePictureUrl || '',
+            gender: loginMember.gender || 'BLIND',
+            mannerScore: loginMember.mannerScore || 0,
         })
 
         // 태그 정보 가져오기
         const fetchUserTags = async () => {
             try {
-                const response = await client.GET('/api/v1/members/me/tags', {
-                    credentials: 'include',
-                })
+                const response = await client.GET('/api/v1/members/me/tags')
 
                 if (response.data?.data) {
-                    const userTags = response.data.data
-                    setTagIds(userTags.map((tag: any) => tag.id))
+                    const ids = response.data.data
+                        .map((tag: TagType) => tag.id)
+                        .filter((id): id is number => id !== undefined)
+                    setTagIds(ids)
                 }
             } catch (err) {
                 console.error('사용자 태그 로딩 중 오류:', err)
@@ -149,11 +142,7 @@ export default function ProfileEditPage() {
             const response = await client.GET('/api/v1/members/check-nickname', {
                 params: {
                     query: { nickname: profile.nickname },
-                    header: undefined,
-                    path: undefined,
-                    cookie: undefined,
                 },
-                credentials: 'include',
             })
 
             const isAvailable = response.data?.data
@@ -195,30 +184,25 @@ export default function ProfileEditPage() {
 
             // 이미지가 변경된 경우 업로드
             if (imageFile) {
-                // FormData 생성 및 파일 추가
                 const formData = new FormData()
                 formData.append('file', imageFile)
-                formData.append('target', 'PROFILE')
 
-                // 이미지 업로드 API 호출
                 try {
-                    const uploadResponse = await client.POST('/api/v1/upload/image/0', {
+                    await client.POST('/api/v1/upload/image/{diaryId}', {
                         params: {
                             path: { diaryId: 0 },
                             query: { target: 'PROFILE' },
                         },
-                        body: formData,
+                        body: {
+                            file: formData.get('file') as string,
+                        },
                     })
 
-                    if (uploadResponse.data) {
-                        // 이미지 업로드 성공 후 프로필 정보를 다시 가져옴
-                        const updatedProfileResponse = await client.GET('/api/v1/members/me', {
-                            withCredentials: true,
-                        })
+                    // 이미지 업로드 성공 후 프로필 정보를 다시 가져옴
+                    const updatedProfileResponse = await client.GET('/api/v1/members/me')
 
-                        if (updatedProfileResponse.data?.data?.profilePictureUrl) {
-                            profileImageUrl = updatedProfileResponse.data.data.profilePictureUrl
-                        }
+                    if (updatedProfileResponse.data?.data?.profilePictureUrl) {
+                        profileImageUrl = updatedProfileResponse.data.data.profilePictureUrl
                     }
                 } catch (uploadErr) {
                     console.error('이미지 업로드 중 오류:', uploadErr)
@@ -230,30 +214,25 @@ export default function ProfileEditPage() {
 
             // 프로필 업데이트
             const response = await client.PATCH('/api/v1/members/me', {
-                withCredentials: true,
                 body: {
                     nickname: profile.nickname,
                     introduction: profile.introduction,
                     profileImageUrl: profileImageUrl,
-                },
+                } as UpdateProfileRequest,
             })
 
-            // 태그 업데이트 - 백엔드 API에 맞게 수정
+            // 태그 업데이트
             await client.PATCH('/api/v1/members/me/tags', {
-                withCredentials: true,
-                body: { tagIds },
+                body: { tagIds } as UpdateTagsRequest,
             })
 
             // 업데이트된 프로필 정보 가져오기
-            const updatedProfileResponse = await client.GET('/api/v1/members/me', {
-                withCredentials: true,
-            })
+            const updatedProfileResponse = await client.GET('/api/v1/members/me')
 
             if (updatedProfileResponse.data?.data) {
-                // 전역 상태 업데이트
+                const updatedProfile = updatedProfileResponse.data.data as BasicProfileResponse
                 setLoginMember({
-                    ...updatedProfileResponse.data.data,
-                    id: loginMember.id,
+                    ...updatedProfile,
                 })
             }
 
@@ -268,6 +247,7 @@ export default function ProfileEditPage() {
 
     // 태그 토글 핸들러
     const toggleTag = (tag: TagType) => {
+        if (tag.id === undefined) return
         if (tagIds.includes(tag.id)) {
             setTagIds(tagIds.filter((id) => id !== tag.id))
         } else if (tagIds.length < 5) {
@@ -502,31 +482,29 @@ export default function ProfileEditPage() {
                                 <label className="flex items-center cursor-pointer group">
                                     <div
                                         className={`w-5 h-5 rounded-full border flex items-center justify-center mr-3 ${
-                                            profile.gender === 'BLIND' || profile.gender === 'NOT_SPECIFIED'
+                                            profile.gender === 'BLIND'
                                                 ? 'border-[#FFB130] bg-gray-800'
                                                 : 'border-gray-500'
                                         }`}
                                     >
-                                        {(profile.gender === 'BLIND' || profile.gender === 'NOT_SPECIFIED') && (
+                                        {profile.gender === 'BLIND' && (
                                             <div className="w-3 h-3 rounded-full bg-[#FFB130]"></div>
                                         )}
                                     </div>
                                     <input
                                         type="radio"
                                         name="gender"
-                                        value="NOT_SPECIFIED"
-                                        checked={profile.gender === 'BLIND' || profile.gender === 'NOT_SPECIFIED'}
-                                        onChange={() => setProfile({ ...profile, gender: 'NOT_SPECIFIED' })}
+                                        value="BLIND"
+                                        checked={profile.gender === 'BLIND'}
+                                        onChange={() => setProfile({ ...profile, gender: 'BLIND' })}
                                         className="hidden"
                                     />
                                     <span
                                         className={`group-hover:text-[#FFB130] transition-colors ${
-                                            profile.gender === 'BLIND' || profile.gender === 'NOT_SPECIFIED'
-                                                ? 'text-[#FFB130] font-medium'
-                                                : 'text-gray-300'
+                                            profile.gender === 'BLIND' ? 'text-[#FFB130] font-medium' : 'text-gray-300'
                                         }`}
                                     >
-                                        공개안함
+                                        비공개
                                     </span>
                                 </label>
                             </div>
@@ -537,7 +515,7 @@ export default function ProfileEditPage() {
                             <div className="flex justify-between items-center mb-3">
                                 <label className="block text-white font-semibold text-lg">자기소개</label>
                                 <span className="text-sm text-gray-400 font-medium">
-                                    {profile.introduction.length}/200
+                                    {(profile.introduction || '').length}/200
                                 </span>
                             </div>
                             <textarea
@@ -566,61 +544,21 @@ export default function ProfileEditPage() {
                                 </span>
                             </div>
 
-                            {/* 커스텀 태그 입력 */}
-                            {/* <div className="mb-4">
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={customTagInput}
-                    onChange={(e) => setCustomTagInput(e.target.value)}
-                    placeholder="새로운 태그 입력 (예: #도전)"
-                    className="flex-1 px-4 py-2 border rounded-lg bg-gray-800 text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#FFB130] focus:border-[#FFB130] transition-all border-gray-600"
-                    maxLength={10}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (customTagInput.trim() && tagIds.length < 5) {
-                        const newTag = customTagInput.trim().replace(/^#/, '');
-                        if (!allTags.some(tag => tag.name === newTag)) {
-                          const newTagObj = {
-                            id: Date.now(), // 임시 ID
-                            name: newTag
-                          };
-                          setAllTags([...allTags, newTagObj]);
-                          setTagIds([...tagIds, newTagObj.id]);
-                        }
-                        setCustomTagInput("");
-                      }
-                    }}
-                    disabled={!customTagInput.trim() || tagIds.length >= 5}
-                    className={`px-4 py-2 rounded-lg font-medium ${
-                      !customTagInput.trim() || tagIds.length >= 5
-                        ? "bg-gray-600 text-gray-400 cursor-not-allowed"
-                        : "bg-[#FFB130] text-white hover:bg-[#E09D20] transition-colors"
-                    }`}
-                  >
-                    추가
-                  </button>
-                </div>
-                <p className="text-xs text-gray-400 mt-2">
-                  #을 제외하고 태그를 입력해주세요 (최대 10자)
-                </p>
-              </div> */}
-
                             {/* 태그 목록 */}
                             <div className="flex flex-wrap gap-2 mb-3">
                                 {allTags.map((tag) => (
                                     <button
                                         key={tag.id}
                                         type="button"
-                                        onClick={() => toggleTag(tag)}
+                                        onClick={() => tag.id !== undefined && toggleTag(tag)}
                                         className={`py-1.5 px-4 rounded-full text-sm font-medium transition-all duration-200 ${
-                                            tagIds.includes(tag.id)
+                                            tag.id !== undefined && tagIds.includes(tag.id)
                                                 ? 'bg-[#FFB130] text-white shadow-md'
                                                 : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
                                         }`}
-                                        disabled={tagIds.length >= 5 && !tagIds.includes(tag.id)}
+                                        disabled={
+                                            tag.id === undefined || (tagIds.length >= 5 && !tagIds.includes(tag.id))
+                                        }
                                     >
                                         #{tag.name}
                                     </button>

@@ -2,6 +2,7 @@
 
 import { HistoryCalendar } from '@/components/history/HistoryCalendar'
 import WishesThemesModal from '@/components/my/WishesThemesModal'
+import { components } from '@/lib/backend/apiV1/schema'
 import client from '@/lib/backend/client'
 import { useGlobalLoginMember } from '@/stores/auth/loginMember'
 import Image from 'next/image'
@@ -9,12 +10,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
 // 타입 정의
-type UserProfile = {
-    nickname: string
-    profilePictureUrl: string // Changed from profileImage
-    gender: 'MALE' | 'FEMALE' | 'BLIND'
-    introduction?: string
-    mannerScore: number
+type UserProfile = components['schemas']['BasicProfileResponse'] & {
     tags: string[]
     stats: {
         totalCount: number
@@ -23,41 +19,9 @@ type UserProfile = {
     }
 }
 
-type WishTheme = {
-    id: number
-    name: string
-    storeName: string
-    runtime: number
-    recommendedParticipants: string
-    tags: string[]
-    thumbnailUrl: string
-}
-
-type CalendarDiary = {
-    id: number
-    date: string
-    title: string
-    themeName: string
-    isSuccess: boolean
-    storeName?: string
-    escapeResult?: boolean
-    elapsedTime?: number
-    hintCount?: number
-    tags?: string[]
-    thumbnailUrl?: string
-}
-
-type PartyHistory = {
-    id: number
-    title: string
-    themeName: string
-    storeName: string
-    date: string
-    participantCount: number
-    thumbnailUrl: string
-    totalParticipants: number
-    acceptedParticipantsCount: number
-}
+type WishTheme = components['schemas']['ThemesResponse']
+type CalendarDiary = components['schemas']['DiaryListDto']
+type PartyHistory = components['schemas']['MyJoinedPartySummaryResponse']
 
 export default function MyPage() {
     const { isLogin, loginMember } = useGlobalLoginMember()
@@ -78,9 +42,7 @@ export default function MyPage() {
             }
 
             // 회원 통계 정보 가져오기
-            const statsResponse = await client.GET('/api/v1/members/stat', {
-                withCredentials: true,
-            })
+            const statsResponse = await client.GET('/api/v1/members/stat')
 
             const stats = statsResponse?.data?.data || {
                 totalCount: 0,
@@ -90,12 +52,12 @@ export default function MyPage() {
 
             // 프로필 정보 구성
             const userProfile: UserProfile = {
-                nickname: loginMember.nickname || '',
-                profilePictureUrl: loginMember.profilePictureUrl || '/default-profile.svg',
-                gender: loginMember.gender as 'MALE' | 'FEMALE' | 'BLIND',
-                introduction: loginMember.introduction || '',
-                mannerScore: loginMember.mannerScore || 0,
-                tags: loginMember.tags || [],
+                nickname: loginMember?.nickname || '',
+                profilePictureUrl: loginMember?.profilePictureUrl || '/default-profile.svg',
+                gender: loginMember?.gender || 'BLIND',
+                introduction: loginMember?.introduction || '',
+                mannerScore: loginMember?.mannerScore || 0,
+                tags: [], // 태그는 별도 API로 가져와야 함
                 stats: {
                     totalCount: stats.totalCount || 0,
                     successRate: stats.successRate || 0,
@@ -103,17 +65,22 @@ export default function MyPage() {
                 },
             }
 
+            // 태그 정보 가져오기
+            const tagsResponse = await client.GET('/api/v1/members/me/tags')
+            const tags = tagsResponse?.data?.data || []
+            userProfile.tags = tags.map((tag: components['schemas']['MemberTagResponse']) => tag.name || '')
+
             setUserProfile(userProfile)
         } catch (error) {
             console.error('프로필 로딩 에러:', error)
             // 에러 상태 대신 기본값 설정
             setUserProfile({
-                nickname: loginMember.nickname || '',
-                profilePictureUrl: loginMember.profilePictureUrl || '/default-profile.svg',
-                gender: loginMember.gender as 'MALE' | 'FEMALE' | 'BLIND',
-                introduction: loginMember.introduction || '',
-                mannerScore: loginMember.mannerScore || 0,
-                tags: loginMember.tags || [],
+                nickname: loginMember?.nickname || '',
+                profilePictureUrl: loginMember?.profilePictureUrl || '/default-thumbnail.svg',
+                gender: loginMember?.gender || 'BLIND',
+                introduction: loginMember?.introduction || '',
+                mannerScore: loginMember?.mannerScore || 0,
+                tags: [],
                 stats: {
                     totalCount: 0,
                     successRate: 0,
@@ -126,9 +93,7 @@ export default function MyPage() {
     // 희망 테마 가져오기
     const fetchWishThemes = async () => {
         try {
-            const response = await client.GET('/api/v1/themes/wishes', {
-                withCredentials: true,
-            })
+            const response = await client.GET('/api/v1/themes/wishes')
 
             const wishThemesData = response?.data?.data || []
             const wishThemes: WishTheme[] = wishThemesData.map((theme: any) => ({
@@ -160,25 +125,11 @@ export default function MyPage() {
             const month = targetDate.getMonth() + 1
 
             const response = await client.GET('/api/v1/diaries', {
-                withCredentials: true,
                 params: { query: { year, month } },
             })
 
             const diaries = response?.data?.data || []
-            const calendarDiaries: CalendarDiary[] = diaries.map((diary: any) => ({
-                id: diary.id,
-                date: diary.escapeDate,
-                title: diary.themeName,
-                themeName: diary.themeName,
-                isSuccess: diary.escapeResult,
-                storeName: diary.storeName,
-                elapsedTime: diary.elapsedTime,
-                hintCount: diary.hintCount,
-                tags: diary.tags,
-                thumbnailUrl: diary.thumbnailUrl,
-            }))
-
-            setCalendarDiaries(calendarDiaries)
+            setCalendarDiaries(diaries)
         } catch (error) {
             console.error('달력 데이터 로딩 에러:', error)
             setCalendarDiaries([])
@@ -192,26 +143,10 @@ export default function MyPage() {
                 return
             }
 
-            const response = await client.GET('/api/v1/parties/joins/me', {
-                withCredentials: true,
-            })
+            const response = await client.GET('/api/v1/parties/joins/me')
 
             const histories = response?.data?.data?.items || []
-            const partyHistories: PartyHistory[] = histories.map((history: any) => ({
-                id: history.partyId,
-                title: history.title || '모임 제목 없음',
-                themeName: history.themeName || '테마 이름 없음',
-                storeName: history.storeName || '매장 이름 없음',
-                date: history.scheduledAt
-                    ? new Date(history.scheduledAt).toLocaleDateString('ko-KR')
-                    : '날짜 정보 없음',
-                participantCount: history.acceptedParticipantsCount || 0,
-                totalParticipants: history.totalParticipants || 0,
-                acceptedParticipantsCount: history.acceptedParticipantsCount || 0,
-                thumbnailUrl: history.thumbnailUrl || 'https://i.postimg.cc/PJNVr12v/theme.jpg',
-            }))
-
-            setPartyHistories(partyHistories)
+            setPartyHistories(histories)
         } catch (error) {
             console.error('모임 히스토리 로딩 에러:', error)
             setPartyHistories([])
@@ -251,13 +186,19 @@ export default function MyPage() {
         }
 
         loadData()
-    }, [isLogin, loginMember?.id])
+    }, [isLogin])
 
     // 테마 삭제 함수
     const handleDeleteTheme = async (themeId: number) => {
+        if (themeId === undefined) return
+
         try {
-            await client.DELETE(`/api/v1/themes/${themeId}/wishes`, {
-                withCredentials: true,
+            await client.DELETE('/api/v1/themes/{id}/wishes', {
+                params: {
+                    path: {
+                        id: themeId,
+                    },
+                },
             })
 
             // 삭제 후 목록 갱신
@@ -302,7 +243,7 @@ export default function MyPage() {
                             <div className="relative">
                                 <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-[#FFB130] shadow-md">
                                     <Image
-                                        src={userProfile.profilePictureUrl || '/images/profile.jpg'}
+                                        src={userProfile.profilePictureUrl || '/default-thumbnail.svg'}
                                         alt="프로필 이미지"
                                         width={128}
                                         height={128}
@@ -478,7 +419,7 @@ export default function MyPage() {
                             >
                                 <div className="aspect-[3/4] relative">
                                     <Image
-                                        src={theme.thumbnailUrl || '/images/theme-placeholder.jpg'}
+                                        src={theme.thumbnailUrl || '/default-thumbnail.svg'}
                                         alt={theme.name || '테마'}
                                         fill
                                         className="object-cover"
@@ -504,7 +445,7 @@ export default function MyPage() {
                                         상세보기
                                     </Link>
                                     <button
-                                        onClick={() => handleDeleteTheme(theme.id)}
+                                        onClick={() => theme.id && handleDeleteTheme(theme.id)}
                                         className="px-6 py-2.5 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors font-medium"
                                     >
                                         삭제
@@ -555,7 +496,12 @@ export default function MyPage() {
                             <HistoryCalendar
                                 selectedDate={selectedDate}
                                 onChange={setSelectedDate}
-                                markedDates={calendarDiaries.map((diary) => new Date(diary.date))}
+                                markedDates={calendarDiaries
+                                    .filter(
+                                        (diary): diary is CalendarDiary & { escapeDate: string } =>
+                                            diary.escapeDate !== undefined,
+                                    )
+                                    .map((diary) => new Date(diary.escapeDate))}
                                 onMonthChange={(date) => {
                                     fetchCalendarDiaries(date)
                                 }}
@@ -574,8 +520,10 @@ export default function MyPage() {
                                     <div className="h-[calc(100%-40px)] overflow-y-auto pr-2">
                                         {calendarDiaries
                                             .filter(
-                                                (diary) =>
-                                                    new Date(diary.date).toDateString() === selectedDate.toDateString(),
+                                                (diary): diary is CalendarDiary & { escapeDate: string } =>
+                                                    diary.escapeDate !== undefined &&
+                                                    new Date(diary.escapeDate).toDateString() ===
+                                                        selectedDate.toDateString(),
                                             )
                                             .map((diary) => (
                                                 <div
@@ -637,12 +585,12 @@ export default function MyPage() {
                                                                 </div>
                                                                 <span
                                                                     className={`px-3 py-1 text-sm rounded-full backdrop-blur-sm ${
-                                                                        diary.isSuccess
+                                                                        diary.escapeResult
                                                                             ? 'bg-green-900/70 text-green-300'
                                                                             : 'bg-red-900/70 text-red-300'
                                                                     }`}
                                                                 >
-                                                                    {diary.isSuccess ? '성공' : '실패'}
+                                                                    {diary.escapeResult ? '성공' : '실패'}
                                                                 </span>
                                                             </div>
                                                         </div>
@@ -655,7 +603,7 @@ export default function MyPage() {
                                                                 상세보기
                                                             </Link>
                                                             <Link
-                                                                href={`/my/diary/write/${diary.id}`}
+                                                                href={`/my/diary/new`}
                                                                 className="px-6 py-2.5 bg-white text-black rounded-full hover:bg-gray-100 transition-colors font-medium"
                                                             >
                                                                 후기작성
@@ -687,25 +635,28 @@ export default function MyPage() {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {partyHistories
-                            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                            .filter(
+                                (party): party is PartyHistory & { scheduledAt: string } =>
+                                    party.scheduledAt !== undefined,
+                            )
+                            .sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime())
                             .slice(0, 2)
                             .map((party) => (
                                 <div
-                                    key={party.id}
+                                    key={party.partyId}
                                     className="bg-gray-800 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-gray-700"
                                 >
                                     <div className="p-6">
                                         <div className="flex gap-4 relative">
                                             <div className="w-24 h-24 bg-gray-700 rounded-lg flex-shrink-0 relative">
                                                 <Image
-                                                    src={party.thumbnailUrl}
-                                                    alt="Party thumbnail"
+                                                    src={(party as any)?.thumbnailUrl || '/default-thumbnail.svg'}
+                                                    alt={party?.title || '파티 썸네일'}
                                                     fill
                                                     className="object-cover rounded-lg"
                                                     unoptimized
                                                     onError={(e) => {
-                                                        const fallbackImage =
-                                                            'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgZmlsbD0iI2VlZWVlZSIvPjxwYXRoIGQ9Ik00NSA0NUgzMFY3NUg5MFY0NUg3NVYzMEg0NVY0NVpNNzUgOTBIMzBWNzVIOTBWNDVINzVWOTBaIiBmaWxsPSIjOTk5OTk5Ii8+PC9zdmc+'
+                                                        const fallbackImage = '/default-thumbnail.svg'
                                                         ;(e.target as HTMLImageElement).src = fallbackImage
                                                         ;(e.target as HTMLImageElement).onerror = null
                                                     }}
@@ -717,7 +668,9 @@ export default function MyPage() {
                                                 <div className="flex items-center gap-2 text-sm text-gray-400">
                                                     <span>{party.storeName}</span>
                                                     <span>•</span>
-                                                    <span>{party.date}</span>
+                                                    <span>
+                                                        {new Date(party.scheduledAt).toLocaleDateString('ko-KR')}
+                                                    </span>
                                                     <span>•</span>
                                                     <span>
                                                         {party.acceptedParticipantsCount}/{party.totalParticipants}인
@@ -725,9 +678,12 @@ export default function MyPage() {
                                                     </span>
                                                 </div>
                                             </div>
-                                            <button className="absolute top-0 right-0 px-3 py-1.5 bg-[#FFB130] text-black text-sm rounded-lg hover:bg-[#F0A120] transition-colors">
-                                                후기 작성
-                                            </button>
+                                            <Link
+                                                href={`/my/diary/new`}
+                                                className="absolute top-0 right-0 px-3 py-1.5 bg-[#FFB130] text-black text-sm rounded-lg hover:bg-[#F0A120] transition-colors"
+                                            >
+                                                후기작성
+                                            </Link>
                                         </div>
                                     </div>
                                 </div>

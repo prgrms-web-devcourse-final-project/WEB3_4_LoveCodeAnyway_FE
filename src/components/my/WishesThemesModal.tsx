@@ -1,25 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import Image from 'next/image'
+import { components } from '@/lib/backend/apiV1/schema'
 import client from '@/lib/backend/client'
+import Image from 'next/image'
+import { useEffect, useState } from 'react'
 
 interface WishesThemesModalProps {
     isOpen: boolean
     onClose: () => void
 }
 
-interface ThemeForPartyResponse {
-    themeId: number
-    name: string
-    storeName: string
-    tags: string[]
-}
-
-interface SuccessResponseListThemeForPartyResponse {
-    message?: string
-    data?: ThemeForPartyResponse[]
-}
+type ThemeForPartyResponse = components['schemas']['ThemeForPartyResponse']
+type SuccessResponseListThemeForPartyResponse = components['schemas']['SuccessResponseListThemeForPartyResponse']
 
 export default function WishesThemesModal({ isOpen, onClose }: WishesThemesModalProps) {
     const [searchQuery, setSearchQuery] = useState('')
@@ -41,14 +33,16 @@ export default function WishesThemesModal({ isOpen, onClose }: WishesThemesModal
             setError(null)
 
             try {
-                const response = await client.get('/api/v1/themes/search-for-party', {
+                const response = await client.GET('/api/v1/themes/search-for-party', {
                     params: {
-                        keyword: searchQuery,
+                        query: {
+                            keyword: searchQuery,
+                        },
                     },
                 })
 
-                if (response.data.data && response.data.data.length > 0) {
-                    setThemes(response.data.data)
+                if (response.data?.data) {
+                    setThemes(response.data.data as ThemeForPartyResponse[])
                 } else {
                     setThemes([])
                 }
@@ -72,8 +66,17 @@ export default function WishesThemesModal({ isOpen, onClose }: WishesThemesModal
         if (!selectedTheme) return
 
         try {
-            await client.post(`/api/v1/themes/${selectedTheme.themeId}/wishes`, null, {
-                withCredentials: true,
+            if (!selectedTheme?.themeId) {
+                throw new Error('테마 ID가 없습니다.')
+            }
+
+            await client.POST('/api/v1/themes/{id}/wishes', {
+                params: {
+                    path: {
+                        id: selectedTheme.themeId,
+                    },
+                },
+                body: undefined,
             })
             onClose()
         } catch (error) {
