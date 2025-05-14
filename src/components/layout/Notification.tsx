@@ -1,11 +1,15 @@
 'use client'
 
-import { useState, useEffect, useContext } from 'react'
-import { useGlobalLoginMember } from '@/stores/auth/loginMember'
-import client from '@/lib/backend/client'
-import { AlarmResponse, AlarmType } from '@/types/alarm'
 import { NotificationContext } from '@/app/ClientLayout'
+import { components } from '@/lib/backend/apiV1/schema'
+import client from '@/lib/backend/client'
+import { useGlobalLoginMember } from '@/stores/auth/loginMember'
 import { useRouter } from 'next/navigation'
+import { useContext, useEffect, useState } from 'react'
+
+type AlarmType = components['schemas']['AlarmCreateRequest']['alarmType']
+type AlarmResponse = components['schemas']['AlarmResponse']
+type AlarmCountResponse = components['schemas']['AlarmCountResponse']
 
 interface PageDto<T> {
     items: T[]
@@ -34,8 +38,8 @@ export function Notification({ onNewNotification }: NotificationProps) {
         try {
             const response = await client.GET('/alarms/count')
             if (response.data?.data) {
-                const countData = response.data.data as { unreadCount: number }
-                setUnreadCount(countData.unreadCount)
+                const countData = response.data.data as AlarmCountResponse
+                setUnreadCount(countData.unreadCount ?? 0)
             }
         } catch (error) {
             console.error('알림 개수 조회 실패:', error)
@@ -43,12 +47,14 @@ export function Notification({ onNewNotification }: NotificationProps) {
     }
 
     const handleNewNotification = (notification: AlarmResponse) => {
+        if (!notification) return
+
         setAlarms((prev) => [notification, ...prev])
         if (onNewNotification) {
             onNewNotification(notification)
         }
-        if (!notification.readStatus) {
-            setUnreadCount((prev) => prev + 1)
+        if (notification.readStatus === false) {
+            setUnreadCount((prev: number) => prev + 1)
         }
     }
 
@@ -61,10 +67,18 @@ export function Notification({ onNewNotification }: NotificationProps) {
     }, [isLogin])
 
     const markAsRead = async (id: number) => {
+        if (!id) return
+
         try {
-            await client.PATCH(`/alarms/${id}/read`, {})
+            await client.PATCH('/alarms/{id}/read', {
+                params: {
+                    path: {
+                        id,
+                    },
+                },
+            })
             setAlarms((prev) => prev.map((alarm) => (alarm.id === id ? { ...alarm, readStatus: true } : alarm)))
-            setUnreadCount((prev) => Math.max(0, prev - 1))
+            setUnreadCount((prev: number) => Math.max(0, prev - 1))
         } catch (error) {
             console.error('알림 읽음 처리 실패:', error)
         }
@@ -87,8 +101,12 @@ export function Notification({ onNewNotification }: NotificationProps) {
             setLoading(true)
             const response = await client.GET('/alarms', {
                 params: {
-                    page: pageNumber,
-                    size: 10,
+                    query: {
+                        pageable: {
+                            page: pageNumber,
+                            size: 10,
+                        },
+                    },
                 },
             })
 
@@ -96,8 +114,8 @@ export function Notification({ onNewNotification }: NotificationProps) {
 
             if (response.data?.data) {
                 const pageData = response.data.data as PageDto<AlarmResponse>
-                setAlarms(pageData.items || [])
-                setTotalPages(pageData.totalPages || 0)
+                setAlarms(pageData.items ?? [])
+                setTotalPages(pageData.totalPages ?? 0)
             }
         } catch (error) {
             console.error('알림 목록 조회 실패:', error)
@@ -108,9 +126,12 @@ export function Notification({ onNewNotification }: NotificationProps) {
 
     const handlePageChange = (newPage: number) => {
         setPage(newPage)
+        fetchAlarms(newPage)
     }
 
     const handleAlarmClick = async (alarm: AlarmResponse) => {
+        if (!alarm?.id) return
+
         try {
             // 알림 읽음 처리
             await client.PATCH('/alarms/{id}/read', {
@@ -123,7 +144,7 @@ export function Notification({ onNewNotification }: NotificationProps) {
 
             // 알림 상태 업데이트
             setAlarms((prev) => prev.map((a) => (a.id === alarm.id ? { ...a, readStatus: true } : a)))
-            setUnreadCount((prev) => Math.max(0, prev - 1))
+            setUnreadCount((prev: number) => Math.max(0, prev - 1))
 
             const response = await client.GET('/alarms/{id}/redirect', {
                 params: {
@@ -135,15 +156,18 @@ export function Notification({ onNewNotification }: NotificationProps) {
 
             if (response.data?.data) {
                 const redirectUrl = response.data.data as string
-                router.push(redirectUrl)
+                if (redirectUrl) {
+                    router.push(redirectUrl)
+                }
             }
         } catch (error) {
             console.error('알림 처리 실패:', error)
         }
     }
 
-    // 알림 삭제 함수
     const handleDeleteAlarm = async (alarmId: number) => {
+        if (!alarmId) return
+
         try {
             await client.DELETE('/alarms/{id}', {
                 params: {
@@ -158,6 +182,52 @@ export function Notification({ onNewNotification }: NotificationProps) {
         }
     }
 
+    const getAlarmTypeLabel = (alarmType: AlarmType | undefined) => {
+        if (!alarmType) return '기타'
+
+        switch (alarmType) {
+            case 'SYSTEM':
+                return '시스템'
+            case 'MESSAGE':
+                return '메시지'
+            case 'SUBSCRIBE':
+                return '구독'
+            case 'PARTY_APPLY':
+                return '모임신청'
+            case 'PARTY_STATUS':
+                return '모임상태'
+            case 'ANSWER_COMMENT':
+                return '답변'
+            case 'POST_REPLY':
+                return '문의답변'
+            default:
+                return '기타'
+        }
+    }
+
+    const getAlarmTypeStyle = (alarmType: AlarmType | undefined) => {
+        if (!alarmType) return 'bg-gray-100 text-gray-600'
+
+        switch (alarmType) {
+            case 'SYSTEM':
+                return 'bg-orange-100 text-orange-600'
+            case 'MESSAGE':
+                return 'bg-blue-100 text-blue-600'
+            case 'SUBSCRIBE':
+                return 'bg-green-100 text-green-600'
+            case 'PARTY_APPLY':
+                return 'bg-purple-100 text-purple-600'
+            case 'PARTY_STATUS':
+                return 'bg-indigo-100 text-indigo-600'
+            case 'ANSWER_COMMENT':
+                return 'bg-pink-100 text-pink-600'
+            case 'POST_REPLY':
+                return 'bg-teal-100 text-teal-600'
+            default:
+                return 'bg-gray-100 text-gray-600'
+        }
+    }
+
     if (!isLogin) {
         return null
     }
@@ -167,7 +237,7 @@ export function Notification({ onNewNotification }: NotificationProps) {
             <div className="max-h-96 overflow-y-auto pb-12">
                 {loading ? (
                     <div className="flex justify-center items-center h-32">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FFB230]"></div>
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
                     </div>
                 ) : (
                     <>
@@ -178,7 +248,7 @@ export function Notification({ onNewNotification }: NotificationProps) {
                                 <div
                                     key={alarm.id}
                                     className={`px-4 py-3 border-b border-gray-100 ${
-                                        !alarm.readStatus ? 'bg-[#FFE4C4]' : ''
+                                        alarm.readStatus === false ? 'bg-[#FFE4C4]' : ''
                                     } cursor-pointer hover:bg-gray-50`}
                                     onClick={() => handleAlarmClick(alarm)}
                                 >
@@ -186,42 +256,14 @@ export function Notification({ onNewNotification }: NotificationProps) {
                                         <div className="flex-1">
                                             <div className="flex items-center">
                                                 <span
-                                                    className={`text-xs px-2 py-1 rounded-full ${
-                                                        alarm.alarmType === AlarmType.SYSTEM
-                                                            ? 'bg-orange-100 text-orange-600'
-                                                            : alarm.alarmType === AlarmType.MESSAGE
-                                                            ? 'bg-blue-100 text-blue-600'
-                                                            : alarm.alarmType === AlarmType.SUBSCRIBE
-                                                            ? 'bg-green-100 text-green-600'
-                                                            : alarm.alarmType === AlarmType.PARTY_APPLY
-                                                            ? 'bg-purple-100 text-purple-600'
-                                                            : alarm.alarmType === AlarmType.PARTY_STATUS
-                                                            ? 'bg-indigo-100 text-indigo-600'
-                                                            : alarm.alarmType === AlarmType.ANSWER_COMMENT
-                                                            ? 'bg-pink-100 text-pink-600'
-                                                            : alarm.alarmType === AlarmType.POST_REPLY
-                                                            ? 'bg-teal-100 text-teal-600'
-                                                            : 'bg-gray-100 text-gray-600'
-                                                    }`}
+                                                    className={`text-xs px-2 py-1 rounded-full ${getAlarmTypeStyle(
+                                                        alarm.alarmType,
+                                                    )}`}
                                                 >
-                                                    {alarm.alarmType === AlarmType.SYSTEM
-                                                        ? '시스템'
-                                                        : alarm.alarmType === AlarmType.MESSAGE
-                                                        ? '메시지'
-                                                        : alarm.alarmType === AlarmType.SUBSCRIBE
-                                                        ? '구독'
-                                                        : alarm.alarmType === AlarmType.PARTY_APPLY
-                                                        ? '모임신청'
-                                                        : alarm.alarmType === AlarmType.PARTY_STATUS
-                                                        ? '모임상태'
-                                                        : alarm.alarmType === AlarmType.ANSWER_COMMENT
-                                                        ? '답변'
-                                                        : alarm.alarmType === AlarmType.POST_REPLY
-                                                        ? '문의답변'
-                                                        : '기타'}
+                                                    {getAlarmTypeLabel(alarm.alarmType)}
                                                 </span>
                                                 <span className="ml-auto flex items-center gap-1">
-                                                    {alarm.readStatus ? (
+                                                    {alarm.readStatus === true ? (
                                                         <span className="text-[#FFB230] text-xs flex items-center">
                                                             <svg
                                                                 className="w-4 h-4 mr-1"
@@ -242,7 +284,9 @@ export function Notification({ onNewNotification }: NotificationProps) {
                                                     <button
                                                         onClick={(e) => {
                                                             e.stopPropagation()
-                                                            handleDeleteAlarm(alarm.id)
+                                                            if (alarm.id) {
+                                                                handleDeleteAlarm(alarm.id)
+                                                            }
                                                         }}
                                                         className="ml-1 text-gray-400 hover:text-red-500 text-xs"
                                                         title="알림 삭제"
@@ -267,13 +311,15 @@ export function Notification({ onNewNotification }: NotificationProps) {
                                             <p className="text-sm text-gray-500 mt-1">{alarm.content}</p>
                                             <div className="flex justify-end mt-2">
                                                 <span className="text-xs text-gray-400">
-                                                    {new Date(alarm.createdAt).toLocaleDateString('ko-KR', {
-                                                        year: 'numeric',
-                                                        month: 'long',
-                                                        day: 'numeric',
-                                                        hour: '2-digit',
-                                                        minute: '2-digit',
-                                                    })}
+                                                    {alarm.createdAt
+                                                        ? new Date(alarm.createdAt).toLocaleDateString('ko-KR', {
+                                                              year: 'numeric',
+                                                              month: 'long',
+                                                              day: 'numeric',
+                                                              hour: '2-digit',
+                                                              minute: '2-digit',
+                                                          })
+                                                        : ''}
                                                 </span>
                                             </div>
                                         </div>
@@ -286,17 +332,30 @@ export function Notification({ onNewNotification }: NotificationProps) {
             </div>
 
             <div className="absolute bottom-0 left-0 right-0 px-4 py-2 border-t border-gray-100 bg-[#FFF8EC] rounded-b-lg">
-                <button onClick={markAllAsRead} className="flex items-center text-[#FFB230] text-sm font-medium">
-                    <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                        />
-                    </svg>
-                    전체 읽음
-                </button>
+                <div className="flex justify-between items-center">
+                    <button
+                        onClick={markAllAsRead}
+                        className="text-sm text-gray-600 hover:text-gray-900"
+                        disabled={alarms.every((alarm) => alarm.readStatus === true)}
+                    >
+                        전체 읽음 처리
+                    </button>
+                    <div className="flex space-x-2">
+                        {Array.from({ length: totalPages }, (_, i) => (
+                            <button
+                                key={i}
+                                onClick={() => handlePageChange(i)}
+                                className={`w-8 h-8 rounded-full text-sm ${
+                                    page === i
+                                        ? 'bg-[#FFB230] text-white'
+                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                }`}
+                            >
+                                {i + 1}
+                            </button>
+                        ))}
+                    </div>
+                </div>
             </div>
         </>
     )

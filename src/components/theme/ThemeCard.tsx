@@ -1,78 +1,37 @@
 'use client'
 
-import { EscapeRoom } from '@/types/EscapeRoom'
+import { components } from '@/lib/backend/apiV1/schema'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+
+type ThemeResponse = components['schemas']['ThemesResponse']
 
 // 인기/최신 테마 카드 컴포넌트
-export function ThemeCard({ room }: { room: EscapeRoom }) {
-    const [imageError, setImageError] = useState(false)
-
-    // 기본 이미지 URL
-    const fallbackImageUrl = '/images/mystery-room.jpg'
-
-    // 인증서 오류 도메인 확인
-    const CERTIFICATE_ERROR_DOMAINS = ['xn--vh3bn2thtas7l8te.com', 'www.xn--vh3bn2thtas7l8te.com']
-
-    // 이미지 URL 처리 - 인증서 오류 도메인일 경우 프록시 사용
-    const imageUrl = useMemo(() => {
-        if (!room.image) return fallbackImageUrl
-
-        // 인증서 오류 도메인인지 확인
-        const hasErrorDomain = CERTIFICATE_ERROR_DOMAINS.some((domain) => room.image?.includes(domain))
-
-        if (hasErrorDomain) {
-            try {
-                // 원본 URL에서 경로만 추출
-                const urlObj = new URL(room.image)
-                return `/img-proxy${urlObj.pathname}`
-            } catch (e) {
-                console.error('URL 파싱 오류:', e)
-                return room.image
-            }
-        }
-
-        return room.image
-    }, [room.image])
-
+export function ThemeCard({ room }: { room: ThemeResponse }) {
     return (
         <Link href={`/themes/${room.id}`}>
             <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden cursor-pointer hover:shadow-sm transition-shadow">
                 {/* 이미지 섹션 */}
                 <div className="relative aspect-[4/3] bg-gray-700 overflow-hidden">
-                    {!imageError ? (
-                        <img
-                            src={imageUrl}
-                            alt={room.title}
-                            className="absolute inset-0 w-full h-full object-cover"
-                            onError={() => setImageError(true)}
-                            referrerPolicy="no-referrer"
-                            loading="lazy"
-                        />
-                    ) : (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <img
-                                src={fallbackImageUrl}
-                                alt={room.title}
-                                className="w-full h-full object-cover"
-                                loading="lazy"
-                            />
-                        </div>
-                    )}
+                    <img
+                        src={room.thumbnailUrl || '/default-thumbnail.svg'}
+                        alt={room.name}
+                        className="absolute inset-0 w-full h-full object-cover"
+                        loading="lazy"
+                    />
                 </div>
 
                 <div className="p-5">
-                    <h3 className="font-bold text-lg mb-3 truncate text-white">{room.title}</h3>
-                    <p className="text-gray-400 text-sm mb-3 truncate">{room.category || '미스터리 룸 강남점'}</p>
+                    <h3 className="font-bold text-lg mb-3 truncate text-white">{room.name}</h3>
+                    <p className="text-gray-400 text-sm mb-3 truncate">{room.storeName || '미스터리 룸 강남점'}</p>
                     <div className="flex items-center mb-4">
                         <div className="flex items-center text-gray-300 text-sm mr-4">
                             <Image src="/time.svg" alt="시간" width={16} height={16} className="mr-1.5" />
-                            <span>{room.subInfo?.includes('분') ? room.subInfo : '60분'}</span>
+                            <span>{room.runtime ? `${room.runtime}분` : '60분'}</span>
                         </div>
                         <div className="flex items-center text-gray-300 text-sm">
                             <Image src="/members.svg" alt="인원" width={16} height={16} className="mr-1.5" />
-                            <span>{room.participants || '2-4인'}</span>
+                            <span>{room.recommendedParticipants || '2-4인'}</span>
                         </div>
                     </div>
                     <div className="flex flex-wrap gap-2 mb-3 h-[24px] overflow-hidden">

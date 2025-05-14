@@ -3,12 +3,14 @@
 import { PageLoading } from '@/components/common/PageLoading'
 import { ThemeCard } from '@/components/theme/ThemeCard'
 import { ThemeSearch } from '@/components/theme/ThemeSearch'
+import { components } from '@/lib/backend/apiV1/schema'
 import client from '@/lib/backend/client'
-import { EscapeRoom } from '@/types/EscapeRoom'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+type ThemeResponse = components['schemas']['ThemesResponse']
+
 export default function ThemesPage() {
-    const [themes, setThemes] = useState<EscapeRoom[]>([])
+    const [themes, setThemes] = useState<ThemeResponse[]>([])
     const [loading, setLoading] = useState(false)
     const [initialLoading, setInitialLoading] = useState(true)
     const [hasMore, setHasMore] = useState(true)
@@ -81,8 +83,8 @@ export default function ThemesPage() {
                     setHasMore(hasNext)
                 }
 
-                // API 응답에서 받은 테마 데이터를 EscapeRoom 타입으로 변환
-                const newThemes = apiThemes.map((theme: any) => ({
+                // API 응답에서 받은 테마 데이터를 ThemeResponse 타입으로 변환
+                const newThemes = apiThemes.map((theme: ThemeResponse) => ({
                     id: theme.id?.toString(),
                     title: theme.name || '',
                     category: theme.storeName || '',
@@ -91,7 +93,7 @@ export default function ThemesPage() {
                     participants: theme.recommendedParticipants || '2-4인',
                     subInfo: theme.runtime ? `${theme.runtime}분` : '',
                     tags: theme.tags || [],
-                    image: theme.thumbnailUrl || '/images/mystery-room.jpg',
+                    image: theme.thumbnailUrl || '/default-thumbnail.svg',
                     rating: '80',
                 }))
 
@@ -164,7 +166,7 @@ export default function ThemesPage() {
 
             setHasMore(hasNext)
             setThemes(
-                apiThemes.map((theme: any) => ({
+                apiThemes.map((theme: ThemeResponse) => ({
                     id: theme.id?.toString(),
                     title: theme.name || '',
                     category: theme.storeName || '',
@@ -173,7 +175,7 @@ export default function ThemesPage() {
                     participants: theme.recommendedParticipants || '2-4인',
                     subInfo: theme.runtime ? `${theme.runtime}분` : '',
                     tags: theme.tags || [],
-                    image: theme.thumbnailUrl || '/images/mystery-room.jpg',
+                    image: theme.thumbnailUrl || '/default-thumbnail.svg',
                     rating: '80',
                 })),
             )
@@ -227,7 +229,7 @@ export default function ThemesPage() {
 
                     setHasMore(hasNext)
                     setThemes(
-                        apiThemes.map((theme: any) => ({
+                        apiThemes.map((theme: ThemeResponse) => ({
                             id: theme.id?.toString(),
                             title: theme.name || '',
                             category: theme.storeName || '',
@@ -236,7 +238,7 @@ export default function ThemesPage() {
                             participants: theme.recommendedParticipants || '2-4인',
                             subInfo: theme.runtime ? `${theme.runtime}분` : '',
                             tags: theme.tags || [],
-                            image: theme.thumbnailUrl || '/images/mystery-room.jpg',
+                            image: theme.thumbnailUrl || '/default-thumbnail.svg',
                             rating: '80',
                         })),
                     )
@@ -279,7 +281,7 @@ export default function ThemesPage() {
 
             setHasMore(hasNext)
             setThemes(
-                apiThemes.map((theme: any) => ({
+                apiThemes.map((theme: ThemeResponse) => ({
                     id: theme.id?.toString(),
                     title: theme.name || '',
                     category: theme.storeName || '',
@@ -288,7 +290,7 @@ export default function ThemesPage() {
                     participants: theme.recommendedParticipants || '2-4인',
                     subInfo: theme.runtime ? `${theme.runtime}분` : '',
                     tags: theme.tags || [],
-                    image: theme.thumbnailUrl || '/images/mystery-room.jpg',
+                    image: theme.thumbnailUrl || '/default-thumbnail.svg',
                     rating: '80',
                 })),
             )

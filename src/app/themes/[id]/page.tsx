@@ -3,42 +3,14 @@
 import { KakaoMap } from '@/components/common/KakaoMap'
 import { PageLoading } from '@/components/common/PageLoading'
 import { StarRating } from '@/components/stat/StarRating'
+import { components } from '@/lib/backend/apiV1/schema'
 import client from '@/lib/backend/client'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
-// API 응답 타입과 일치하는 인터페이스
-interface ThemeDetailResponse {
-    name?: string
-    description?: string
-    runtime?: number
-    officialDifficulty?: number
-    price?: number
-    recommendedParticipants?: string
-    thumbnailUrl?: string
-    reservationUrl?: string
-    tags?: string[]
-    storeInfo?: {
-        name?: string
-        phoneNumber?: string
-        address?: string
-    }
-    diaryBasedThemeStat?: {
-        difficulty?: number
-        fear?: number
-        activity?: number
-        satisfaction?: number
-        production?: number
-        story?: number
-        question?: number
-        interior?: number
-        deviceRatio?: number
-        noHintEscapeRate?: number
-        escapeResult?: number
-        escapeTimeAvg?: number
-    }
-}
+type ThemeDetailResponse = components['schemas']['ThemeDetailResponse']
 
 export default function ThemeDetailPage() {
     const params = useParams()
@@ -48,67 +20,18 @@ export default function ThemeDetailPage() {
     const [themeDetail, setThemeDetail] = useState<ThemeDetailResponse | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
-    const [liked, setLiked] = useState(false)
-
-    // 인증서 오류 도메인 확인
-    const CERTIFICATE_ERROR_DOMAINS = ['xn--vh3bn2thtas7l8te.com', 'www.xn--vh3bn2thtas7l8te.com']
-
-    // 이미지 URL 처리 함수
-    const getProxyImageUrl = (url: string | undefined): string => {
-        if (!url) return '/images/mystery-room.jpg'
-
-        // 인증서 오류 도메인인지 확인
-        const hasErrorDomain = CERTIFICATE_ERROR_DOMAINS.some((domain) => url.includes(domain))
-
-        if (hasErrorDomain) {
-            try {
-                // 원본 URL에서 경로만 추출
-                const urlObj = new URL(url)
-                return `/img-proxy${urlObj.pathname}`
-            } catch (e) {
-                console.error('URL 파싱 오류:', e)
-                return url
-            }
-        }
-
-        return url
-    }
-
-    // OpenStreetMap 정적 지도 URL 생성 함수
-    const getMapImageUrl = (address?: string) => {
-        if (!address) return ''
-
-        // 서울 중심 좌표로 기본 설정 (실제로는 위치에 따라 달라져야 함)
-        let lat = 37.5665
-        let lon = 126.978
-
-        // 위치에 따라 좌표 조정 (샘플용)
-        if (address.includes('홍대')) {
-            lat = 37.557
-            lon = 126.923
-        } else if (address.includes('강남')) {
-            lat = 37.498
-            lon = 127.027
-        } else if (address.includes('건대')) {
-            lat = 37.54
-            lon = 127.069
-        } else if (address.includes('신촌')) {
-            lat = 37.555
-            lon = 126.936
-        } else if (address.includes('종로')) {
-            lat = 37.57
-            lon = 126.981
-        }
-
-        // OpenStreetMap 기반 정적 이미지 URL
-        return `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lon}&zoom=14&size=600x400&maptype=mapnik&markers=${lat},${lon},lightblue`
-    }
 
     useEffect(() => {
         const fetchThemeDetail = async () => {
             setLoading(true)
             try {
-                const response = await client.GET(`/api/v1/themes/${themeId}`)
+                const response = await client.GET('/api/v1/themes/{id}', {
+                    params: {
+                        path: {
+                            id: Number(themeId),
+                        },
+                    },
+                })
 
                 if (response?.data?.data) {
                     setThemeDetail(response.data.data)
@@ -170,32 +93,6 @@ export default function ThemeDetailPage() {
             </main>
         )
     }
-
-    // 레이더 차트 데이터
-    const radarData = themeDetail.diaryBasedThemeStat
-        ? [
-              {
-                  label: '난이도',
-                  value: themeDetail.diaryBasedThemeStat.difficulty || 0,
-              },
-              {
-                  label: '공포도',
-                  value: themeDetail.diaryBasedThemeStat.fear || 0,
-              },
-              {
-                  label: '활동성',
-                  value: themeDetail.diaryBasedThemeStat.activity || 0,
-              },
-              {
-                  label: '만족도',
-                  value: themeDetail.diaryBasedThemeStat.satisfaction || 0,
-              },
-              {
-                  label: '연출',
-                  value: themeDetail.diaryBasedThemeStat.production || 0,
-              },
-          ]
-        : []
 
     return (
         <main className="bg-gray-900 min-h-screen">
@@ -267,28 +164,13 @@ export default function ThemeDetailPage() {
                         })}
                     </div>
                     <div className="relative w-full h-[400px] bg-gray-800 rounded-2xl overflow-hidden mb-4">
-                        {themeDetail.thumbnailUrl ? (
-                            <img
-                                src={getProxyImageUrl(themeDetail.thumbnailUrl)}
-                                alt={themeDetail.name || '테마 이미지'}
-                                className="absolute inset-0 w-full h-full object-cover rounded-2xl"
-                                referrerPolicy="no-referrer"
-                                loading="lazy"
-                                onError={(e) => {
-                                    const target = e.target as HTMLImageElement
-                                    target.src = '/images/mystery-room.jpg'
-                                }}
-                            />
-                        ) : (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <img
-                                    src="/images/mystery-room.jpg"
-                                    alt="기본 이미지"
-                                    className="w-full h-full object-cover rounded-2xl"
-                                    loading="lazy"
-                                />
-                            </div>
-                        )}
+                        <Image
+                            src={themeDetail.thumbnailUrl ?? '/default-thumbnail.svg'}
+                            alt={themeDetail.name ?? '테마 이미지'}
+                            fill
+                            className="object-cover rounded-2xl"
+                            priority
+                        />
                     </div>
                     <div className="flex justify-between items-center">
                         <div className="flex gap-6">{/* Empty div to maintain layout balance */}</div>
