@@ -27,50 +27,51 @@ yarn dev
 
 ## 프로젝트 구조
 
-````
-├── src/                      # 소스 코드
-│   ├── app/
-│   │   ├── (auth)/          # 로그인, 회원가입
-│   │   ├── parties/         # 모임 관련 페이지
-│   │   ├── themes/          # 테마 관련 페이지
-│   │   ├── my/             # 마이페이지
-│   │   │   ├── profile/    # 프로필 관리
-│   │   │   ├── stat/      # 통계
-│   │   │   ├── history/   # 모임히스토리
-│   │   │   ├── diary/     # 활동일지
-│   │   │   ├── messages/  # 쪽지함
-│   │   │   └── inquiry/   # 문의하기
-│   │   ├── page.tsx        # 메인 페이지
-│   │   ├── layout.tsx      # 루트 레이아웃
-│   │   ├── ClientLayout.tsx # 클라이언트 레이아웃 (인증/인가 처리)
-│   │   └── globals.css     # 전역 스타일
-│   │
-│   ├── components/          # 재사용 가능한 컴포넌트
-│   │   ├── common/         # 공통 컴포넌트
-│   │   ├── layout/         # 레이아웃 관련 컴포넌트
-│   │   ├── party/          # 모임 관련 컴포넌트
-│   │   ├── theme/          # 테마 관련 컴포넌트
-│   │   ├── stat/           # 통계 관련 컴포넌트
-│   │   ├── history/        # 히스토리 관련 컴포넌트
-│   │   ├── diary/          # 일지 관련 컴포넌트
-│   │   └── my/             # 마이페이지 관련 컴포넌트
-│   │
-│   ├── stores/             # 상태 관리 스토어
-│   │   └── auth/          # 인증 관련 상태 관리
-│   │       └── loginMember.tsx  # 로그인한 사용자 정보 관리
-│   │
-│   ├── types/             # TypeScript 타입 정의
-│   └── lib/               # 유틸리티 함수 및 설정
-│       └── backend/       # 백엔드 API 관련 설정
-│           ├── apiV1/     # API v1 엔드포인트 정의
-│           │   └── schema.d.ts  # OpenAPI 스키마 기반 타입 정의
-│           └── client.ts  # API 클라이언트 설정(openapi-typescript)
+```
+├── src/ # 소스 코드
+│ ├── app/
+│ │ ├── (auth)/ # 로그인, 회원가입
+│ │ ├── parties/ # 모임 관련 페이지
+│ │ ├── themes/ # 테마 관련 페이지
+│ │ ├── my/ # 마이페이지
+│ │ │ ├── profile/ # 프로필 관리
+│ │ │ ├── stat/ # 통계
+│ │ │ ├── history/ # 모임히스토리
+│ │ │ ├── diary/ # 활동일지
+│ │ │ ├── messages/ # 쪽지함
+│ │ │ └── inquiry/ # 문의하기
+│ │ ├── page.tsx # 메인 페이지
+│ │ ├── layout.tsx # 루트 레이아웃
+│ │ ├── ClientLayout.tsx # 클라이언트 레이아웃 (인증/인가 처리)
+│ │ └── globals.css # 전역 스타일
+│ │
+│ ├── components/ # 재사용 가능한 컴포넌트
+│ │ ├── common/ # 공통 컴포넌트
+│ │ ├── layout/ # 레이아웃 관련 컴포넌트
+│ │ ├── party/ # 모임 관련 컴포넌트
+│ │ ├── theme/ # 테마 관련 컴포넌트
+│ │ ├── stat/ # 통계 관련 컴포넌트
+│ │ ├── history/ # 히스토리 관련 컴포넌트
+│ │ ├── diary/ # 일지 관련 컴포넌트
+│ │ └── my/ # 마이페이지 관련 컴포넌트
+│ │
+│ ├── stores/ # 상태 관리 스토어
+│ │ └── auth/ # 인증 관련 상태 관리
+│ │ └── loginMember.tsx # 로그인한 사용자 정보 관리
+│ │
+│ ├── types/ # TypeScript 타입 정의
+│ └── lib/ # 유틸리티 함수 및 설정
+│ └── backend/ # 백엔드 API 관련 설정
+│ ├── apiV1/ # API v1 엔드포인트 정의
+│ │ └── schema.d.ts # OpenAPI 스키마 기반 타입 정의
+│ └── client.ts # API 클라이언트 설정(openapi-typescript)
 │
-└── public/                  # 정적 파일 (이미지, SVG 등)
+└── public/ # 정적 파일 (이미지, SVG 등)
+```
 
-### 주요 디렉토리 설명
+## 주요 디렉토리 설명
 
--   **src/stores**: 전역 상태 관리 스토어
+-   src/stores: 전역 상태 관리 스토어
     -   `auth/`: 인증 관련 상태 관리
         -   `loginMember.tsx`: React Context를 사용한 로그인 사용자 정보 관리
             -   로그인 상태 관리
@@ -84,7 +85,7 @@ yarn dev
         ```tsx
         import { useGlobalLoginMember } from '@/stores/auth/loginMember'
         ```
--   **src/lib**: 유틸리티 함수, API 클라이언트, 상수 등
+-   src/lib: 유틸리티 함수, API 클라이언트, 상수 등
     -   `backend/`: 백엔드 API 관련 설정 및 클라이언트
         -   `apiV1/`: 백엔드 apiV1.json 파일을 기반으로 openapi-typescript로 생성된 API 타입 및 엔드포인트 정의
             -   API 요청/응답 타입
@@ -104,4 +105,3 @@ yarn dev
 
 -   개발: `NODE_ENV=development`
 -   프로덕션: `NODE_ENV=production`
-````

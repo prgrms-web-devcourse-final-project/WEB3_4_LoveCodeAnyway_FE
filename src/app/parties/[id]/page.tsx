@@ -95,7 +95,7 @@ export default function PartyDetailPage() {
             } catch (error) {
                 console.error('모임 정보 조회 실패:', error)
                 // TODO: 500 에러
-                alert(`서버 오류가 발생했습니다.`)      
+                alert(`서버 오류가 발생했습니다.`)
             } finally {
                 setLoading(false)
             }
