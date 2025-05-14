@@ -1,23 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { components } from '@/lib/backend/apiV1/schema'
+import client from '@/lib/backend/client'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import client from '@/lib/backend/client'
+import { useEffect, useState } from 'react'
 
 // 타입 정의
-type Inquiry = {
-    id: number
-    type: string
-    title: string
-    answered: boolean
-    hasAttachments: boolean
-    createdAt: string
-}
+type Inquiry = components['schemas']['PostSummaryResponse']
 
 export default function InquiryPage() {
     const [searchKeyword, setSearchKeyword] = useState('')
-    const [inquiryType, setInquiryType] = useState('ALL')
+    const [inquiryType, setInquiryType] = useState<'ALL' | 'QNA' | 'REPORT' | 'THEME'>('ALL')
     const [inquiries, setInquiries] = useState<Inquiry[]>([])
     const [currentPage, setCurrentPage] = useState(1)
     const [totalPages, setTotalPages] = useState(1)
@@ -96,7 +90,7 @@ export default function InquiryPage() {
                         <select
                             className="px-4 py-2 border border-gray-700 rounded-lg mr-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-600 bg-gray-800 text-gray-200"
                             value={inquiryType}
-                            onChange={(e) => setInquiryType(e.target.value)}
+                            onChange={(e) => setInquiryType(e.target.value as 'ALL' | 'QNA' | 'REPORT' | 'THEME')}
                         >
                             <option value="ALL">전체</option>
                             <option value="QNA">사이트 이용 문의</option>

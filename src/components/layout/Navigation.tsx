@@ -268,6 +268,12 @@ export function Navigation({ activePage }: { activePage?: string }) {
                                                 모임 히스토리
                                             </Link>
                                             <Link
+                                                href="/my/messages"
+                                                className="block px-4 py-3 text-base font-medium text-gray-500 hover:bg-[#FFFCF7]"
+                                            >
+                                                쪽지함
+                                            </Link>
+                                            <Link
                                                 href="/my/stat"
                                                 className="block px-4 py-3 text-base font-medium text-gray-500 hover:bg-[#FFFCF7]"
                                             >

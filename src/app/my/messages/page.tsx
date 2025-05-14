@@ -1,30 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useGlobalLoginMember } from '@/stores/auth/loginMember'
+import type { components } from '@/lib/backend/apiV1/schema'
 import client from '@/lib/backend/client'
+import { useGlobalLoginMember } from '@/stores/auth/loginMember'
 import { useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
-// Message 타입 정의
-type Message = {
-    id: number
-    senderId: number
-    senderNickname: string
-    receiverId: number
-    receiverNickname: string
-    content: string
-    createdAt: string
-    read: boolean
-}
-
-// API 응답 타입 정의
-type ApiResponse = {
-    message: string | null
-    data: {
-        content: Message[]
-        hasNext: boolean
-    }
-}
+type Message = components['schemas']['MessageDto']
+type ApiResponse = components['schemas']['SuccessResponseSliceDtoMessageDto']
 
 export default function MessagesPage() {
     const { loginMember } = useGlobalLoginMember()
@@ -63,22 +46,11 @@ export default function MessagesPage() {
             if (response.data?.data) {
                 const newMessages = response.data.data.content
                 if (Array.isArray(newMessages)) {
-                    const validMessages = newMessages.filter(
-                        (msg): msg is Message =>
-                            msg.id !== undefined &&
-                            msg.senderId !== undefined &&
-                            msg.senderNickname !== undefined &&
-                            msg.receiverId !== undefined &&
-                            msg.receiverNickname !== undefined &&
-                            msg.content !== undefined &&
-                            msg.createdAt !== undefined &&
-                            msg.read !== undefined,
-                    )
-
-                    setMessages((prev) => (newCursor ? [...prev, ...validMessages] : validMessages))
+                    setMessages((prev) => (newCursor ? [...prev, ...newMessages] : newMessages))
                     setHasNext(response.data.data.hasNext ?? false)
-                    if (validMessages.length > 0) {
-                        setCursor(validMessages[validMessages.length - 1].createdAt)
+                    const lastMessage = newMessages[newMessages.length - 1]
+                    if (lastMessage?.createdAt) {
+                        setCursor(lastMessage.createdAt)
                     }
                 }
             }
@@ -114,13 +86,15 @@ export default function MessagesPage() {
         if (selectAll) {
             setSelectedMessages([])
         } else {
-            setSelectedMessages(messages.map((msg) => msg.id))
+            const messageIds = messages.map((msg) => msg.id).filter((id): id is number => id !== undefined)
+            setSelectedMessages(messageIds)
         }
         setSelectAll(!selectAll)
     }
 
     // 개별 선택 핸들러
-    const handleSelectMessage = (id: number) => {
+    const handleSelectMessage = (id: Message['id']) => {
+        if (id === undefined) return
         setSelectedMessages((prev) => {
             if (prev.includes(id)) {
                 return prev.filter((msgId) => msgId !== id)
@@ -132,6 +106,9 @@ export default function MessagesPage() {
 
     // 메시지 상세 보기 및 읽음 처리
     const handleOpenMessage = async (message: Message) => {
+        const messageId = message.id
+        if (messageId === undefined) return
+
         setSelectedMessage(message)
         setIsModalOpen(true)
 
@@ -141,13 +118,13 @@ export default function MessagesPage() {
                 await client.PATCH('/messages/{id}/read', {
                     params: {
                         path: {
-                            id: message.id,
+                            id: messageId,
                         },
                     },
                 })
 
                 // 메시지 목록 업데이트
-                setMessages((prev) => prev.map((msg) => (msg.id === message.id ? { ...msg, read: true } : msg)))
+                setMessages((prev) => prev.map((msg) => (msg.id === messageId ? { ...msg, read: true } : msg)))
             } catch (error) {
                 console.error('읽음 상태 업데이트 실패:', error)
             }
@@ -173,7 +150,9 @@ export default function MessagesPage() {
             )
 
             // 메시지 목록 업데이트
-            setMessages((prev) => prev.map((msg) => (selectedMessages.includes(msg.id) ? { ...msg, read: true } : msg)))
+            setMessages((prev) =>
+                prev.map((msg) => (selectedMessages.includes(msg.id ?? -1) ? { ...msg, read: true } : msg)),
+            )
 
             // 선택 초기화
             setSelectedMessages([])
@@ -213,7 +192,7 @@ export default function MessagesPage() {
 
     // 답장 보내기 핸들러
     const handleSendReply = async () => {
-        if (!selectedMessage || !replyContent.trim()) return
+        if (!selectedMessage?.senderId || !replyContent.trim()) return
 
         setIsSending(true)
         try {
@@ -503,7 +482,7 @@ export default function MessagesPage() {
                                     {(activeTab === 'received'
                                         ? selectedMessage.senderNickname
                                         : selectedMessage.receiverNickname
-                                    ).charAt(0)}
+                                    )?.charAt(0) ?? '?'}
                                 </div>
                                 <div className="font-medium text-white">
                                     {activeTab === 'received'

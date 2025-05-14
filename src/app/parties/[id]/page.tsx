@@ -94,11 +94,8 @@ export default function PartyDetailPage() {
                 )
             } catch (error) {
                 console.error('모임 정보 조회 실패:', error)
-                if (error instanceof Error) {
-                    alert(`모임 정보를 불러오는데 실패했습니다: ${error.message}`)
-                } else {
-                    alert('모임 정보를 불러오는데 실패했습니다.')
-                }
+                // TODO: 500 에러
+                alert(`서버 오류가 발생했습니다.`)      
             } finally {
                 setLoading(false)
             }

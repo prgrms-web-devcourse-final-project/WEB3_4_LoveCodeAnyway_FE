@@ -1,48 +1,31 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { components } from '@/lib/backend/apiV1/schema'
+import client from '@/lib/backend/client'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import client from '@/lib/backend/client'
+import { use, useEffect, useState } from 'react'
 
-// 문의 유형 enum
-enum PostType {
-    QNA = 'QNA', // 사이트 이용 문의
-    REPORT = 'REPORT', // 신고
-    THEME = 'THEME', // 테마 관련
-}
+type PostDetailResponse = components['schemas']['PostDetailResponse']
 
-// 문의 유형 매핑
-const inquiryTypeMap = {
-    '사이트 이용 문의': PostType.QNA,
-    신고: PostType.REPORT,
-    '테마 관련': PostType.THEME,
-}
+const INQUIRY_TYPES = {
+    '사이트 이용 문의': 'QNA',
+    신고: 'REPORT',
+    '테마 관련': 'THEME',
+} as const
 
-const inquiryTypes = ['사이트 이용 문의', '신고', '테마 관련']
-
-interface InquiryDetail {
-    id: number
-    type: 'QNA' | 'REPORT' | 'THEME'
-    title: string
-    content: string
-    attachments: {
-        id: number
-        fileName: string
-    }[]
-}
-
-export default function EditInquiryPage({ params }: { params: { id: string } }) {
+export default function EditInquiryPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params)
     const router = useRouter()
     const [inquiryType, setInquiryType] = useState('')
     const [title, setTitle] = useState('')
     const [content, setContent] = useState('')
     const [files, setFiles] = useState<File[]>([])
-    const [existingFiles, setExistingFiles] = useState<{ id: number; fileName: string }[]>([])
+    const [existingFiles, setExistingFiles] = useState<NonNullable<PostDetailResponse['attachments']>>([])
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(true)
-    const inquiryId = Number(params.id)
+    const inquiryId = Number(id)
 
     useEffect(() => {
         const fetchInquiryDetail = async () => {
@@ -50,20 +33,17 @@ export default function EditInquiryPage({ params }: { params: { id: string } }) 
                 setIsLoading(true)
                 const response = await client.GET('/api/v1/boards/{id}', {
                     params: {
-                        path: {
-                            id: inquiryId,
-                        },
+                        path: { id: inquiryId },
                     },
                 })
 
                 if (response.data?.data) {
-                    const data = response.data.data as InquiryDetail
-                    setInquiryType(
-                        data.type === 'QNA' ? '사이트 이용 문의' : data.type === 'REPORT' ? '신고' : '테마 관련',
-                    )
-                    setTitle(data.title)
-                    setContent(data.content)
-                    setExistingFiles(data.attachments)
+                    const data = response.data.data as PostDetailResponse
+                    const typeKey = Object.entries(INQUIRY_TYPES).find(([_, value]) => value === data.type)?.[0] || ''
+                    setInquiryType(typeKey)
+                    setTitle(data.title ?? '')
+                    setContent(data.content ?? '')
+                    setExistingFiles(data.attachments || [])
                 } else {
                     setError('해당 문의를 찾을 수 없습니다.')
                 }
@@ -107,15 +87,12 @@ export default function EditInquiryPage({ params }: { params: { id: string } }) 
             setIsSubmitting(true)
             setError(null)
 
-            // 1. 문의 수정
             const putResponse = await client.PUT('/api/v1/boards/{id}', {
                 params: {
-                    path: {
-                        id: inquiryId,
-                    },
+                    path: { id: inquiryId },
                 },
                 body: {
-                    type: inquiryTypeMap[inquiryType as keyof typeof inquiryTypeMap],
+                    type: INQUIRY_TYPES[inquiryType as keyof typeof INQUIRY_TYPES],
                     title,
                     content,
                     attachments: existingFiles.map((file) => file.id),
@@ -192,7 +169,7 @@ export default function EditInquiryPage({ params }: { params: { id: string } }) 
                             required
                         >
                             <option value="">선택해주세요</option>
-                            {inquiryTypes.map((type) => (
+                            {Object.keys(INQUIRY_TYPES).map((type) => (
                                 <option key={type} value={type}>
                                     {type}
                                 </option>

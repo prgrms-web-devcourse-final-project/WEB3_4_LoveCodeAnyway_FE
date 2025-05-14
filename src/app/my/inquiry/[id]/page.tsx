@@ -1,34 +1,25 @@
 'use client'
 
+import { components } from '@/lib/backend/apiV1/schema'
 import client from '@/lib/backend/client'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { use, useEffect, useState } from 'react'
 
-interface InquiryDetail {
-    id: number
-    type: 'QNA' | 'REPORT' | 'THEME'
-    title: string
-    content: string
-    createdAt: string
-    attachments: {
-        id: number
-        fileName: string
-    }[]
-    replies: {
-        content: string
-        createdAt: string
-        nickname: string
-    }[]
+type PostDetailResponse = components['schemas']['PostDetailResponse']
+type InquiryDetail = Omit<PostDetailResponse, 'replies' | 'attachments'> & {
+    replies: NonNullable<PostDetailResponse['replies']>
+    attachments: NonNullable<PostDetailResponse['attachments']>
 }
 
-export default function Page({ params }: { params: { id: string } }) {
+export default function InquiryDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params)
     const router = useRouter()
     const [inquiry, setInquiry] = useState<InquiryDetail | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
-    const inquiryId = Number(params.id)
+    const inquiryId = Number(id)
 
     useEffect(() => {
         const fetchInquiryDetail = async () => {
@@ -45,7 +36,8 @@ export default function Page({ params }: { params: { id: string } }) {
                 if (response.data?.data) {
                     setInquiry(response.data.data as InquiryDetail)
                 } else {
-                    setError('해당 문의를 찾을 수 없습니다.')
+                    // TODO: 403 에러
+                    setError('접근 권한이 없습니다.')
                 }
             } catch (error) {
                 console.error('문의 상세 조회 에러:', error)
@@ -119,14 +111,14 @@ export default function Page({ params }: { params: { id: string } }) {
                             <div className="flex items-center gap-2">
                                 <span
                                     className={`px-3 py-1 text-sm rounded-full ${
-                                        inquiry.replies?.length > 0
+                                        inquiry.replies.length > 0
                                             ? 'bg-green-900 text-green-300'
                                             : 'bg-yellow-900 text-yellow-300'
                                     }`}
                                 >
-                                    {inquiry.replies?.length > 0 ? '답변 완료' : '답변 대기'}
+                                    {inquiry.replies.length > 0 ? '답변 완료' : '답변 대기'}
                                 </span>
-                                {!inquiry.replies?.length && (
+                                {!inquiry.replies.length && (
                                     <div className="flex gap-2">
                                         <Link
                                             href={`/my/inquiry/${inquiryId}/edit`}
@@ -162,7 +154,7 @@ export default function Page({ params }: { params: { id: string } }) {
                                 <div>
                                     <h2 className="text-sm font-medium text-gray-300 mb-2">첨부 파일</h2>
                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                        {inquiry.attachments.map((file, index) => (
+                                        {inquiry.attachments.map((file) => (
                                             <a
                                                 key={file.id}
                                                 href={`/api/v1/posts/attachment/${file.id}`}
@@ -173,7 +165,7 @@ export default function Page({ params }: { params: { id: string } }) {
                                                 <div className="aspect-square relative rounded-lg overflow-hidden border border-gray-700">
                                                     <Image
                                                         src={`/api/v1/posts/attachment/${file.id}`}
-                                                        alt={file.fileName}
+                                                        alt={file.fileName || ''}
                                                         fill
                                                         className="object-cover"
                                                     />
@@ -188,7 +180,7 @@ export default function Page({ params }: { params: { id: string } }) {
                 </div>
 
                 {/* 답변 내용 */}
-                {inquiry.replies?.length > 0 && (
+                {inquiry.replies.length > 0 && (
                     <div className="bg-gray-800 rounded-lg shadow-sm mb-6 border border-gray-700">
                         <div className="p-8">
                             <h2 className="text-xl font-bold mb-6 text-white">답변 내용</h2>
@@ -197,17 +189,10 @@ export default function Page({ params }: { params: { id: string } }) {
                                     <div key={index} className="space-y-6">
                                         <div className="flex justify-between text-sm text-gray-400">
                                             <div>
-                                                <span className="font-medium">닉네임</span>
-                                                <span className="ml-2">{reply.nickname}</span>
-                                            </div>
-                                            <div>
-                                                <span className="font-medium">작성시간</span>
-                                                <span className="ml-2">{reply.createdAt}</span>
+                                                <span className="font-medium">내용</span>
                                             </div>
                                         </div>
-
                                         <div>
-                                            <h2 className="text-sm font-medium text-gray-300 mb-2">내용</h2>
                                             <p className="text-gray-300 whitespace-pre-wrap">{reply.content}</p>
                                         </div>
                                     </div>
