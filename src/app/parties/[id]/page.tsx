@@ -613,16 +613,12 @@ export default function PartyDetailPage() {
                     <h2 className="text-xl font-bold mb-6 text-white">테마 정보</h2>
                     <div className="flex flex-col md:flex-row gap-8">
                         <div className="w-full md:w-48 h-64 relative rounded-lg overflow-hidden bg-gray-700">
-                            {partyData.themeThumbnailUrl ? (
-                                <Image
-                                    src={partyData.themeThumbnailUrl}
-                                    alt={partyData.themeName || '테마 이미지'}
-                                    fill
-                                    className="object-cover"
-                                />
-                            ) : (
-                                <Image src="/theme-default.jpg" alt="기본 테마 이미지" fill className="object-cover" />
-                            )}
+                            <Image
+                                src={partyData.themeThumbnailUrl || '/default-thumbnail.svg'}
+                                alt={partyData.themeName || '테마 이미지'}
+                                fill
+                                className="object-cover"
+                            />
                         </div>
                         <div className="flex-1">
                             <h3 className="text-xl font-bold mb-2 text-white">{partyData.themeName}</h3>

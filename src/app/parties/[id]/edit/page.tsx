@@ -23,6 +23,7 @@ interface PartyFormData {
 }
 
 type PartyRequest = components['schemas']['PartyRequest']
+type PartyDetailResponse = components['schemas']['PartyDetailResponse']
 
 export default function EditPartyPage() {
     const router = useRouter()
@@ -47,13 +48,6 @@ export default function EditPartyPage() {
     const [error, setError] = useState<string | null>(null)
     const [loading, setLoading] = useState(true)
 
-    // 기본 베이스 URL 설정
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL
-        ? process.env.NEXT_PUBLIC_API_URL
-        : process.env.NODE_ENV === 'development'
-        ? 'http://localhost:8080'
-        : 'https://api.ddobang.site'
-
     // 모임 ID 가져오기
     const partyId = params?.id
 
@@ -74,15 +68,17 @@ export default function EditPartyPage() {
             setLoading(true)
 
             try {
-                const response = await axios.get(`${baseUrl}/api/v1/parties/${partyId}`, {
-                    withCredentials: true,
+                const response = await client.GET('/api/v1/parties/{id}', {
+                    params: {
+                        path: { id: Number(partyId) },
+                    },
                 })
 
-                if (response.data.data) {
-                    const partyData = response.data.data
+                if (response.data?.data) {
+                    const partyData = response.data.data as PartyDetailResponse
 
                     // 모임장인지 확인
-                    if (partyData.hostId !== loginMember.id) {
+                    if (partyData.hostNickname !== loginMember?.nickname) {
                         alert('모임 수정 권한이 없습니다.')
                         router.push(`/parties/${partyId}`)
                         return
@@ -102,7 +98,9 @@ export default function EditPartyPage() {
                         themeId: partyData.themeId || 0,
                         date: date,
                         time: time,
-                        participantsNeeded: String(partyData.recruitableCount || ''),
+                        participantsNeeded: String(
+                            (partyData.totalParticipants || 0) - (partyData.acceptedParticipantsCount || 0),
+                        ),
                         totalParticipants: String(partyData.totalParticipants || ''),
                         rookieAvailable: partyData.rookieAvailable || false,
                         content: partyData.content || '',
@@ -123,7 +121,7 @@ export default function EditPartyPage() {
         }
 
         fetchPartyDetail()
-    }, [partyId, baseUrl, isLogin, router, loginMember])
+    }, [partyId, isLogin, router, loginMember])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -172,11 +170,10 @@ export default function EditPartyPage() {
                 rookieAvailable: formData.rookieAvailable,
             }
 
-            // API 호출 (PUT 메서드로 변경)
-
-            const response = await client.PUT('/api/v1/parties/{partyId}', {
+            // API 호출
+            const response = await client.PUT('/api/v1/parties/{id}', {
                 params: {
-                    path: { partyId },
+                    path: { id: Number(partyId) },
                 },
                 body: requestData,
             })
