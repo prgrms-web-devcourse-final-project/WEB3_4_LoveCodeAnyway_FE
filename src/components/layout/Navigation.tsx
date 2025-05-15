@@ -5,37 +5,19 @@ import { Notification } from '@/components/layout/Notification'
 import { useGlobalLoginMember } from '@/stores/auth/loginMember'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useContext, useEffect, useRef, useState } from 'react'
 
-// 알림 데이터 타입 직접 정의
-interface Alarm {
-    id: number
-    title: string
-    content: string
-    createdAt: string
-    readStatus: boolean
-    alarmType: 'SYSTEM' | 'MESSAGE' | 'SUBSCRIBE' | string
-}
-
 export function Navigation({ activePage }: { activePage?: string }) {
-    const router = useRouter()
     const { isLogin, loginMember, logoutAndHome } = useGlobalLoginMember()
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
     const [isNotificationOpen, setIsNotificationOpen] = useState(false)
-    const [mounted, setMounted] = useState(false)
-
-    const { notifications, addNotification, unreadCount } = useContext(NotificationContext)
+    const { unreadCount } = useContext(NotificationContext)
 
     // 드롭다운 요소에 대한 참조 추가
     const profileMenuRef = useRef<HTMLDivElement>(null)
     const notificationMenuRef = useRef<HTMLDivElement>(null)
     const profileButtonRef = useRef<HTMLButtonElement>(null)
     const notificationButtonRef = useRef<HTMLButtonElement>(null)
-
-    useEffect(() => {
-        setMounted(true)
-    }, [])
 
     // 외부 클릭 감지를 위한 이벤트 리스너 추가
     useEffect(() => {
@@ -72,73 +54,6 @@ export function Navigation({ activePage }: { activePage?: string }) {
         }
     }, [isProfileMenuOpen, isNotificationOpen])
 
-    const fetchNotifications = async () => {
-        try {
-            // 임의의 알림 데이터 사용
-            const mockNotifications: Alarm[] = [
-                {
-                    id: 1,
-                    title: '새로운 모임이 생성되었습니다',
-                    content: '관심 테마의 새로운 모임이 생성되었습니다. 확인해보세요!',
-                    createdAt: new Date().toISOString(),
-                    readStatus: false,
-                    alarmType: 'SYSTEM',
-                },
-                {
-                    id: 2,
-                    title: '새 메시지가 도착했습니다',
-                    content: '모임장으로부터 새 메시지가 도착했습니다.',
-                    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-                    readStatus: true,
-                    alarmType: 'MESSAGE',
-                },
-            ]
-            // TODO: 실제 API 호출 구현 필요
-        } catch (error) {
-            console.error('알림 목록 조회 실패:', error)
-            // 오류 발생 시 기본 데이터 유지
-        }
-    }
-
-    const subscribeToNotifications = () => {
-        // SSE 관련 코드 임시 주석 처리
-        /*
-    const sse = new EventSource(
-      `${process.env.NEXT_PUBLIC_API_URL}/alarms/subscribe`,
-      {
-        withCredentials: true,
-      }
-    );
-
-    sse.onmessage = (event) => {
-      const newNotification = JSON.parse(event.data);
-      // TODO: 실제 API 호출 구현 필요
-    };
-
-    sse.onerror = () => {
-      sse.close();
-    };
-    */
-    }
-
-    const markAsRead = async (id: number) => {
-        try {
-            // API 호출 없이 상태만 업데이트
-            // TODO: 실제 API 호출 구현 필요
-        } catch (error) {
-            console.error('알림 읽음 처리 실패:', error)
-        }
-    }
-
-    const markAllAsRead = async () => {
-        try {
-            // API 호출 없이 상태만 업데이트
-            // TODO: 실제 API 호출 구현 필요
-        } catch (error) {
-            console.error('전체 알림 읽음 처리 실패:', error)
-        }
-    }
-
     const toggleProfileMenu = () => {
         setIsProfileMenuOpen(!isProfileMenuOpen)
         if (isNotificationOpen) setIsNotificationOpen(false)
@@ -147,10 +62,6 @@ export function Navigation({ activePage }: { activePage?: string }) {
     const toggleNotification = () => {
         setIsNotificationOpen(!isNotificationOpen)
         if (isProfileMenuOpen) setIsProfileMenuOpen(false)
-    }
-
-    if (!mounted) {
-        return null
     }
 
     return (
@@ -224,7 +135,7 @@ export function Navigation({ activePage }: { activePage?: string }) {
                                                     <span className="text-[#FFB230] text-xl font-bold">알림</span>
                                                 </div>
                                             </div>
-                                            <Notification onNewNotification={addNotification} />
+                                            <Notification />
                                         </div>
                                     )}
                                 </div>
