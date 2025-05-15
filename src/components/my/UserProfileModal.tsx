@@ -13,6 +13,12 @@ interface UserProfileModalProps {
 type OtherMemberProfileResponse = components['schemas']['OtherMemberProfileResponse']
 type MemberReviewResponse = components['schemas']['MemberReviewResponse']
 
+interface ApiError {
+    errorCode: string
+    message: string
+    errors: null
+}
+
 const DEFAULT_PROFILE_IMAGE = '/profile_default.jpg'
 
 export default function UserProfileModal({ memberId, isOpen, onClose }: UserProfileModalProps) {
@@ -41,8 +47,10 @@ export default function UserProfileModal({ memberId, isOpen, onClose }: UserProf
                 },
             })
 
-            if (response.data?.message) {
-                alert(response.data.message)
+            // @ts-ignore - openapi-fetch의 타입 정의가 실제 응답과 다름
+            if (response.error?.message) {
+                // @ts-ignore
+                alert(response.error.message)
                 onClose()
                 return
             }
@@ -71,9 +79,12 @@ export default function UserProfileModal({ memberId, isOpen, onClose }: UserProf
                 },
             })
 
-            if (response.data?.message) {
-                alert(response.data.message)
-                setReviewError(response.data.message)
+            // @ts-ignore - openapi-fetch의 타입 정의가 실제 응답과 다름
+            if (response.error?.message) {
+                // @ts-ignore
+                alert(response.error.message)
+                // @ts-ignore
+                setReviewError(response.error.message)
                 setReviewStats(null)
                 return
             }
@@ -95,7 +106,7 @@ export default function UserProfileModal({ memberId, isOpen, onClose }: UserProf
 
     return (
         <>
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
                 <div className="bg-gray-800 rounded-xl max-w-lg w-full mx-4 overflow-hidden">
                     {loading ? (
                         <div className="p-6 text-center">
