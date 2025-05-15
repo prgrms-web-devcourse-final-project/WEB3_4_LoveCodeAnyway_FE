@@ -19,7 +19,8 @@ export default function UserProfileModal({ memberId, isOpen, onClose }: UserProf
     const [profile, setProfile] = useState<OtherMemberProfileResponse | null>(null)
     const [reviewStats, setReviewStats] = useState<MemberReviewResponse | null>(null)
     const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
+    const [profileError, setProfileError] = useState<string | null>(null)
+    const [reviewError, setReviewError] = useState<string | null>(null)
     const [isMessageModalOpen, setIsMessageModalOpen] = useState(false)
 
     useEffect(() => {
@@ -40,13 +41,21 @@ export default function UserProfileModal({ memberId, isOpen, onClose }: UserProf
                 },
             })
 
+            if (response.data?.message) {
+                alert(response.data.message)
+                onClose()
+                return
+            }
+
             if (response.data?.data) {
                 setProfile(response.data.data)
-                setError(null)
+                setProfileError(null)
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('프로필 정보 로드 중 오류:', err)
-            setError('프로필 정보를 불러오는데 실패했습니다.')
+            const errorMessage = err.response?.data?.message || '프로필 정보를 불러오는데 실패했습니다.'
+            alert(errorMessage)
+            onClose()
         } finally {
             setLoading(false)
         }
@@ -62,11 +71,23 @@ export default function UserProfileModal({ memberId, isOpen, onClose }: UserProf
                 },
             })
 
+            if (response.data?.message) {
+                alert(response.data.message)
+                setReviewError(response.data.message)
+                setReviewStats(null)
+                return
+            }
+
             if (response.data?.data) {
                 setReviewStats(response.data.data)
+                setReviewError(null)
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('리뷰 통계 로드 중 오류:', err)
+            const errorMessage = err.response?.data?.message || '리뷰 통계를 불러오는데 실패했습니다.'
+            alert(errorMessage)
+            setReviewError(errorMessage)
+            setReviewStats(null)
         }
     }
 
@@ -81,9 +102,9 @@ export default function UserProfileModal({ memberId, isOpen, onClose }: UserProf
                             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FFB130] mx-auto"></div>
                             <p className="mt-4 text-gray-400">로딩 중...</p>
                         </div>
-                    ) : error ? (
+                    ) : profileError ? (
                         <div className="p-6 text-center">
-                            <p className="text-red-500">{error}</p>
+                            <p className="text-red-500">{profileError}</p>
                             <button
                                 onClick={onClose}
                                 className="mt-4 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600"
@@ -187,7 +208,7 @@ export default function UserProfileModal({ memberId, isOpen, onClose }: UserProf
                                     </div>
                                 )}
 
-                                {reviewStats && (
+                                {reviewStats && !reviewError ? (
                                     <div className="mt-6">
                                         <h3 className="text-sm font-medium text-gray-400 mb-3">리뷰 통계</h3>
                                         <div className="flex gap-2">
@@ -223,7 +244,11 @@ export default function UserProfileModal({ memberId, isOpen, onClose }: UserProf
                                             </div>
                                         </div>
                                     </div>
-                                )}
+                                ) : reviewError ? (
+                                    <div className="mt-6 p-4 bg-gray-700 rounded-lg">
+                                        <p className="text-red-400 text-sm text-center">{reviewError}</p>
+                                    </div>
+                                ) : null}
 
                                 <div className="mt-6 flex justify-end">
                                     <button
